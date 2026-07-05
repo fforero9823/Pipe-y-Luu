@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Itinerario Financiero - Julio 2026</title>
+    <title>💰 Pipe & Luu - Finanzas Familiares</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
@@ -40,10 +40,49 @@
             margin-bottom: 30px;
         }
         
+        .cats-banner {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #764ba2;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .nav-tab {
+            padding: 10px 20px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         .summary-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
             margin-bottom: 30px;
         }
         
@@ -67,6 +106,14 @@
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
         
+        .card.deudas {
+            background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+        }
+        
+        .card.proyectos {
+            background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%);
+        }
+        
         .card h3 {
             font-size: 0.9em;
             margin-bottom: 10px;
@@ -74,7 +121,7 @@
         }
         
         .card .monto {
-            font-size: 1.8em;
+            font-size: 1.5em;
             font-weight: bold;
         }
         
@@ -100,28 +147,41 @@
             transition: all 0.3s;
         }
         
-        .btn-export {
+        .btn-primary {
             background: #667eea;
             color: white;
         }
         
-        .btn-export:hover {
+        .btn-primary:hover {
             background: #5568d3;
             transform: translateY(-2px);
         }
         
-        .btn-reset {
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #219a52;
+        }
+        
+        .btn-danger {
             background: #e74c3c;
             color: white;
         }
         
-        .btn-reset:hover {
+        .btn-danger:hover {
             background: #c0392b;
         }
         
-        .btn-save {
-            background: #27ae60;
+        .btn-secondary {
+            background: #95a5a6;
             color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
         }
         
         table {
@@ -153,106 +213,137 @@
             background: #f5f5f5;
         }
         
-        tbody tr.completed {
-            background: #d4edda;
-        }
-        
-        tbody tr.completed td {
-            color: #155724;
-        }
-        
-        .checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-        
-        .monto-input {
-            width: 120px;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            font-family: monospace;
-        }
-        
-        .monto-input:hover, .monto-input:focus {
-            border-color: #667eea;
-            outline: none;
-        }
-        
-        .diferencia {
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-        
-        .diferencia.positiva {
-            color: #27ae60;
-        }
-        
-        .diferencia.negativa {
-            color: #e74c3c;
-        }
-        
-        .tipo-ingreso {
-            color: #27ae60;
-            font-weight: bold;
-        }
-        
-        .tipo-egreso {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-        
-        .nota {
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
             font-size: 0.85em;
-            color: #666;
-            font-style: italic;
-        }
-        
-        .alert {
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        
-        .alert-warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 30px;
-            background: #ecf0f1;
-            border-radius: 15px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
             font-weight: bold;
+        }
+        
+        .badge-pipe {
+            background: #3498db;
+            color: white;
+        }
+        
+        .badge-luu {
+            background: #e91e63;
+            color: white;
+        }
+        
+        .badge-both {
+            background: #9c27b0;
+            color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .split-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 5px;
+        }
+        
+        .split-option {
+            padding: 8px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .split-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        
+        .debt-card {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f7971e;
+        }
+        
+        .debt-card.paid {
+            border-left-color: #27ae60;
+            opacity: 0.7;
+        }
+        
+        .debt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .debt-progress {
+            width: 100%;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .debt-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f7971e 0%, #ffd200 100%);
             transition: width 0.3s;
         }
         
-        @media (max-width: 768px) {
-            table {
-                font-size: 0.85em;
-            }
-            
-            .monto-input {
-                width: 90px;
-            }
-            
-            th, td {
-                padding: 8px;
-            }
+        .project-card {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #0ba360;
+        }
+        
+        .balance-indicator {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .balance-positive {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .balance-negative {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.2em;
         }
         
         .modal {
@@ -268,11 +359,15 @@
             justify-content: center;
         }
         
+        .modal.show {
+            display: flex;
+        }
+        
         .modal-content {
             background: white;
             padding: 30px;
             border-radius: 10px;
-            max-width: 600px;
+            max-width: 700px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
@@ -295,163 +390,1282 @@
             color: #333;
         }
         
-        textarea {
-            width: 100%;
-            min-height: 200px;
-            padding: 10px;
-            border: 1px solid #ddd;
+        .alert {
+            padding: 15px;
             border-radius: 5px;
-            font-family: monospace;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #27ae60;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            table {
+                font-size: 0.85em;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📊 Itinerario Financiero - Julio 2026</h1>
-        <p class="subtitle">Control de ingresos y egresos en tiempo real</p>
+        <h1>💰 Pipe & Luu - Finanzas Familiares</h1>
+        <p class="subtitle">Control de presupuesto, gastos, deudas y proyectos</p>
+        <div class="cats-banner">🐱 Lua & Patacon 🐱</div>
         
-        <div class="summary-cards">
-            <div class="card ingresos">
-                <h3>💰 Total Ingresos</h3>
-                <div class="monto" id="totalIngresos">$ 0</div>
-            </div>
-            <div class="card egresos">
-                <h3>💸 Total Egresos</h3>
-                <div class="monto" id="totalEgresos">$ 0</div>
-            </div>
-            <div class="card saldo">
-                <h3>📈 Saldo Final</h3>
-                <div class="monto" id="saldoFinal">$ 0</div>
-                <div class="meta">Meta: $ 150,000</div>
-            </div>
-        </div>
-        
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressBar">0% completado</div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="showTab('transacciones')">💳 Transacciones</button>
+            <button class="nav-tab" onclick="showTab('deudas')">💵 Deudas & Créditos</button>
+            <button class="nav-tab" onclick="showTab('proyectos')">🎯 Proyectos Futuros</button>
+            <button class="nav-tab" onclick="showTab('importar')">📁 Importar/Exportar</button>
         </div>
         
         <div id="alertContainer"></div>
         
-        <div class="controls">
-            <button class="btn-save" onclick="guardarDatos()">💾 Guardar Datos</button>
-            <button class="btn-export" onclick="exportarCSV()">📥 Exportar CSV</button>
-            <button class="btn-export" onclick="exportarJSON()">📋 Copiar JSON</button>
-            <button class="btn-export" onclick="importarJSON()">📤 Importar JSON</button>
-            <button class="btn-reset" onclick="resetearDatos()">🔄 Reiniciar Todo</button>
+        <!-- DASHBOARD TAB -->
+        <div id="dashboard" class="tab-content active">
+            <div class="balance-indicator">
+                <div>
+                    <strong>Balance entre Pipe y Luu:</strong>
+                </div>
+                <div id="balanceIndicator">Cargando...</div>
+            </div>
+            
+            <div class="summary-cards">
+                <div class="card ingresos">
+                    <h3>💰 Total Ingresos</h3>
+                    <div class="monto" id="totalIngresos">$ 0</div>
+                </div>
+                <div class="card egresos">
+                    <h3>💸 Total Egresos</h3>
+                    <div class="monto" id="totalEgresos">$ 0</div>
+                </div>
+                <div class="card saldo">
+                    <h3>📈 Saldo Actual</h3>
+                    <div class="monto" id="saldoActual">$ 0</div>
+                </div>
+                <div class="card deudas">
+                    <h3>🏦 Total Deudas</h3>
+                    <div class="monto" id="totalDeudas">$ 0</div>
+                </div>
+                <div class="card proyectos">
+                    <h3>🎯 Ahorrado para Proyectos</h3>
+                    <div class="monto" id="ahorroProyectos">$ 0</div>
+                </div>
+            </div>
+            
+            <h2 style="margin: 30px 0 15px;">📅 Próximos Vencimientos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Concepto</th>
+                        <th>Monto</th>
+                        <th>Tipo</th>
+                    </tr>
+                </thead>
+                <tbody id="proximosVencimientos">
+                    <!-- Se llena dinámicamente -->
+                </tbody>
+            </table>
+            
+            <h2 style="margin: 30px 0 15px;">📊 Resumen de División de Gastos</h2>
+            <div class="summary-cards">
+                <div class="card" style="background: #3498db;">
+                    <h3>👨 Pagado por Pipe</h3>
+                    <div class="monto" id="pagadoPipe">$ 0</div>
+                </div>
+                <div class="card" style="background: #e91e63;">
+                    <h3>👩 Pagado por Luu</h3>
+                    <div class="monto" id="pagadoLuu">$ 0</div>
+                </div>
+                <div class="card" style="background: #9c27b0;">
+                    <h3>🤝 Gastos Compartidos</h3>
+                    <div class="monto" id="gastosCompartidos">$ 0</div>
+                </div>
+            </div>
         </div>
         
-        <table>
-            <thead>
-                <tr>
-                    <th>✓</th>
-                    <th>Fecha</th>
-                    <th>Concepto</th>
-                    <th>Tipo</th>
-                    <th>Monto Ideal</th>
-                    <th>Monto Real</th>
-                    <th>Diferencia</th>
-                    <th>Notas</th>
-                </tr>
-            </thead>
-            <tbody id="tablaDatos">
-                <!-- Los datos se generan con JavaScript -->
-            </tbody>
-        </table>
+        <!-- TRANSACCIONES TAB -->
+        <div id="transacciones" class="tab-content">
+            <div class="controls">
+                <button class="btn-success" onclick="openModal('modalTransaccion')">➕ Nueva Transacción</button>
+                <button class="btn-primary" onclick="renderizarTransacciones()">🔄 Actualizar</button>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Concepto</th>
+                        <th>Tipo</th>
+                        <th>Monto</th>
+                        <th>Quién Pagó</th>
+                        <th>División</th>
+                        <th>Categoría</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaTransacciones">
+                    <!-- Se llena dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- DEUDAS TAB -->
+        <div id="deudas" class="tab-content">
+            <div class="controls">
+                <button class="btn-success" onclick="openModal('modalDeuda')">➕ Nueva Deuda/Crédito</button>
+                <button class="btn-primary" onclick="renderizarDeudas()">🔄 Actualizar</button>
+            </div>
+            
+            <div id="listaDeudas">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- PROYECTOS TAB -->
+        <div id="proyectos" class="tab-content">
+            <div class="controls">
+                <button class="btn-success" onclick="openModal('modalProyecto')">➕ Nuevo Proyecto</button>
+                <button class="btn-primary" onclick="renderizarProyectos()">🔄 Actualizar</button>
+            </div>
+            
+            <div id="listaProyectos">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- IMPORTAR/EXPORTAR TAB -->
+        <div id="importar" class="tab-content">
+            <h2>📁 Gestión de Datos</h2>
+            
+            <div class="controls" style="margin-top: 20px;">
+                <button class="btn-success" onclick="guardarTodo()">💾 Guardar Todo</button>
+                <button class="btn-primary" onclick="exportarCSV()">📥 Exportar CSV</button>
+                <button class="btn-primary" onclick="exportarJSON()">📋 Exportar JSON</button>
+                <div class="file-input-wrapper">
+                    <button class="btn-secondary">📤 Importar CSV</button>
+                    <input type="file" id="csvFile" accept=".csv" onchange="importarCSV(event)">
+                </div>
+                <div class="file-input-wrapper">
+                    <button class="btn-secondary">📤 Importar JSON</button>
+                    <input type="file" id="jsonFile" accept=".json" onchange="importarJSON(event)">
+                </div>
+                <button class="btn-danger" onclick="confirmarReset()">🗑️ Resetear Todo</button>
+            </div>
+            
+            <div class="alert alert-warning" style="margin-top: 20px;">
+                <strong>Formato CSV esperado:</strong><br>
+                fecha,concepto,tipo,monto,quienPago,division,categoria<br>
+                Ejemplo: 2025-01-15,Mercado,egreso,150000,Pipe,50/50,hogar
+            </div>
+        </div>
     </div>
     
-    <!-- Modal para importar JSON -->
-    <div id="modalImportar" class="modal">
+    <!-- MODAL TRANSACCIÓN -->
+    <div id="modalTransaccion" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Importar Datos JSON</h2>
-                <span class="close" onclick="cerrarModal()">&times;</span>
+                <h2>➕ Nueva Transacción</h2>
+                <span class="close" onclick="closeModal('modalTransaccion')">&times;</span>
             </div>
-            <p>Pega aquí los datos JSON que exportaste previamente:</p>
-            <textarea id="jsonInput" placeholder='{"datos":...}'></textarea>
-            <button class="btn-save" onclick="confirmarImportar()">Importar Datos</button>
+            <form id="formTransaccion">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha *</label>
+                        <input type="date" id="transFecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo *</label>
+                        <select id="transTipo" required onchange="toggleDivisionFields()">
+                            <option value="egreso">💸 Egreso</option>
+                            <option value="ingreso">💰 Ingreso</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Concepto *</label>
+                    <input type="text" id="transConcepto" placeholder="Ej: Mercado, Salario, Servicios..." required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Monto *</label>
+                        <input type="number" id="transMonto" placeholder="0" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="transCategoria">
+                            <option value="hogar">🏠 Hogar</option>
+                            <option value="alimentacion">🍔 Alimentación</option>
+                            <option value="servicios">💡 Servicios</option>
+                            <option value="transporte">🚗 Transporte</option>
+                            <option value="salud">🏥 Salud</option>
+                            <option value="ocio">🎉 Ocio</option>
+                            <option value="gatos">🐱 Gatos (Lua & Patacon)</option>
+                            <option value="deuda">💵 Pago Deuda</option>
+                            <option value="otro">📦 Otro</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="divisionFields">
+                    <div class="form-group">
+                        <label>¿Quién pagó/gastó? *</label>
+                        <select id="transQuienPago" required>
+                            <option value="Pipe">👨 Pipe</option>
+                            <option value="Luu">👩 Luu</option>
+                            <option value="Ambos">🤝 Ambos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>¿Cómo dividir el gasto?</label>
+                        <div class="split-selector">
+                            <div class="split-option selected" onclick="selectSplit('50/50')" data-split="50/50">50/50</div>
+                            <div class="split-option" onclick="selectSplit('100/0')" data-split="100/0">100% Pipe</div>
+                            <div class="split-option" onclick="selectSplit('0/100')" data-split="0/100">100% Luu</div>
+                            <div class="split-option" onclick="selectSplit('personalizado')" data-split="personalizado">Personalizado</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="splitPersonalizado" style="display: none;">
+                        <div class="form-group">
+                            <label>% Pipe</label>
+                            <input type="number" id="splitPipe" min="0" max="100" value="50">
+                        </div>
+                        <div class="form-group">
+                            <label>% Luu</label>
+                            <input type="number" id="splitLuu" min="0" max="100" value="50">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="transNotas" rows="2" placeholder="Notas adicionales..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-success" style="width: 100%;">Guardar Transacción</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- MODAL DEUDA -->
+    <div id="modalDeuda" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💵 Nueva Deuda / Crédito</h2>
+                <span class="close" onclick="closeModal('modalDeuda')">&times;</span>
+            </div>
+            <form id="formDeuda">
+                <div class="form-group">
+                    <label>Nombre de la deuda/crédito *</label>
+                    <input type="text" id="deudaNombre" placeholder="Ej: Tarjeta Visa, Crédito Bancolombia..." required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Monto Total *</label>
+                        <input type="number" id="deudaMontoTotal" placeholder="0" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Saldo Pendiente *</label>
+                        <input type="number" id="deudaSaldoPendiente" placeholder="0" min="0" step="0.01" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tasa de Interés Mensual (%)</label>
+                        <input type="number" id="deudaTasaInteres" placeholder="Ej: 2.5" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Número de Cuotas</label>
+                        <input type="number" id="deudaCuotas" placeholder="Ej: 12" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Valor Cuota</label>
+                        <input type="number" id="deudaValorCuota" placeholder="0" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Día de Vencimiento</label>
+                        <input type="number" id="deudaDiaVencimiento" placeholder="Ej: 15" min="1" max="31">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Titular</label>
+                    <select id="deudaTitular">
+                        <option value="Pipe">👨 Pipe</option>
+                        <option value="Luu">👩 Luu</option>
+                        <option value="Ambos">🤝 Ambos</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Fecha de Inicio</label>
+                    <input type="date" id="deudaFechaInicio">
+                </div>
+                
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="deudaNotas" rows="2" placeholder="Información adicional..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-success" style="width: 100%;">Guardar Deuda</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- MODAL ABONO A DEUDA -->
+    <div id="modalAbono" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💰 Registrar Abono a Capital</h2>
+                <span class="close" onclick="closeModal('modalAbono')">&times;</span>
+            </div>
+            <form id="formAbono">
+                <input type="hidden" id="abonoDeudaId">
+                
+                <div class="form-group">
+                    <label>Deuda</label>
+                    <input type="text" id="abonoDeudaNombre" disabled>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Monto del Abono *</label>
+                        <input type="number" id="abonoMonto" placeholder="0" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input type="date" id="abonoFecha" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="abonoNotas" rows="2" placeholder="Notas del abono..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-success" style="width: 100%;">Registrar Abono</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- MODAL PROYECTO -->
+    <div id="modalProyecto" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎯 Nuevo Proyecto Futuro</h2>
+                <span class="close" onclick="closeModal('modalProyecto')">&times;</span>
+            </div>
+            <form id="formProyecto">
+                <div class="form-group">
+                    <label>Nombre del Proyecto *</label>
+                    <input type="text" id="proyectoNombre" placeholder="Ej: Viaje, Apartamento, Carro..." required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Meta de Ahorro *</label>
+                        <input type="number" id="proyectoMeta" placeholder="0" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ahorrado hasta ahora</label>
+                        <input type="number" id="proyectoAhorrado" placeholder="0" min="0" step="0.01" value="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha Límite</label>
+                        <input type="date" id="proyectoFechaLimite">
+                    </div>
+                    <div class="form-group">
+                        <label>Prioridad</label>
+                        <select id="proyectoPrioridad">
+                            <option value="alta">🔴 Alta</option>
+                            <option value="media" selected>🟡 Media</option>
+                            <option value="baja">🟢 Baja</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="proyectoDescripcion" rows="3" placeholder="Detalles del proyecto..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-success" style="width: 100%;">Guardar Proyecto</button>
+            </form>
         </div>
     </div>
 
     <script>
-        // Datos iniciales
-        const datosIniciales = [
-            { fecha: '01/07/2026', concepto: 'Saldo Inicial Davivienda', tipo: 'ingreso', montoIdeal: 366000, montoReal: 366000, completado: true, nota: '' },
-            { fecha: '02/07/2026', concepto: 'Impuesto Carro Nerú', tipo: 'egreso', montoIdeal: 155000, montoReal: 155000, completado: false, nota: '' },
-            { fecha: '05/07/2026', concepto: 'SS Pipe (Mitad 1)', tipo: 'egreso', montoIdeal: 540000, montoReal: 540000, completado: false, nota: 'Usar cupo TC' },
-            { fecha: '05/07/2026', concepto: 'SS luu Atrasada', tipo: 'egreso', montoIdeal: 540000, montoReal: 540000, completado: false, nota: 'Usar cupo TC' },
-            { fecha: '05/07/2026', concepto: 'SS luu Mes Actual', tipo: 'egreso', montoIdeal: 947800, montoReal: 947800, completado: false, nota: 'Usar cupo TC' },
-            { fecha: '05/07/2026', concepto: 'Terapia + Medicamentos', tipo: 'egreso', montoIdeal: 450000, montoReal: 450000, completado: false, nota: 'Usar cupo TC' },
-            { fecha: '05/07/2026', concepto: 'Mercado (Parte 1)', tipo: 'egreso', montoIdeal: 300000, montoReal: 300000, completado: false, nota: 'Usar cupo TC' },
-            { fecha: '05/07/2026', concepto: 'Flores/Weed', tipo: 'egreso', montoIdeal: 200000, montoReal: 200000, completado: false, nota: 'Usar cupo TC' },
-            { fecha: '10/07/2026', concepto: 'Contrato UIS luu', tipo: 'ingreso', montoIdeal: 5880000, montoReal: 5880000, completado: false, nota: '' },
-            { fecha: '10/07/2026', concepto: 'Niños (Gatos)', tipo: 'egreso', montoIdeal: 500000, montoReal: 500000, completado: false, nota: '' },
-            { fecha: '10/07/2026', concepto: 'Cuota Nerú (1 de 2)', tipo: 'egreso', montoIdeal: 1084000, montoReal: 1084000, completado: false, nota: '' },
-            { fecha: '15/07/2026', concepto: 'Demanda', tipo: 'ingreso', montoIdeal: 4500000, montoReal: 4500000, completado: false, nota: '' },
-            { fecha: '15/07/2026', concepto: 'Tanqueada', tipo: 'egreso', montoIdeal: 360000, montoReal: 360000, completado: false, nota: '' },
-            { fecha: '15/07/2026', concepto: 'Mercado (Parte 2)', tipo: 'egreso', montoIdeal: 300000, montoReal: 300000, completado: false, nota: '' },
-            { fecha: '17/07/2026', concepto: 'Salario Pipe', tipo: 'ingreso', montoIdeal: 2250000, montoReal: 2250000, completado: false, nota: '' },
-            { fecha: '17/07/2026', concepto: 'Crédito Banco de Bogotá', tipo: 'egreso', montoIdeal: 315000, montoReal: 315000, completado: false, nota: '' },
-            { fecha: '18/07/2026', concepto: 'Deuda luu', tipo: 'egreso', montoIdeal: 500000, montoReal: 500000, completado: false, nota: '' },
-            { fecha: '19/07/2026', concepto: 'SOAT', tipo: 'egreso', montoIdeal: 680000, montoReal: 680000, completado: false, nota: '' },
-            { fecha: '20/07/2026', concepto: 'TC Pipe', tipo: 'egreso', montoIdeal: 695000, montoReal: 695000, completado: false, nota: '' },
-            { fecha: '20/07/2026', concepto: 'TC luu', tipo: 'egreso', montoIdeal: 2000000, montoReal: 2000000, completado: false, nota: '' },
-            { fecha: '22/07/2026', concepto: 'Parche (Ocio)', tipo: 'egreso', montoIdeal: 500000, montoReal: 500000, completado: false, nota: '' },
-            { fecha: '25/07/2026', concepto: 'Tecnicomecánica', tipo: 'egreso', montoIdeal: 370000, montoReal: 370000, completado: false, nota: '' },
-            { fecha: '25/07/2026', concepto: 'Kasa (Crédito Hipotecario)', tipo: 'egreso', montoIdeal: 1057000, montoReal: 1057000, completado: false, nota: '' },
-            { fecha: '25/07/2026', concepto: 'Cuota Nerú (2 de 2)', tipo: 'egreso', montoIdeal: 1084000, montoReal: 1084000, completado: false, nota: '' },
-            { fecha: '28/07/2026', concepto: 'SS Pipe (Mitad 2)', tipo: 'egreso', montoIdeal: 540000, montoReal: 540000, completado: false, nota: 'Usar cupo TC' },
-            { fecha: '30/07/2026', concepto: 'Kathe', tipo: 'ingreso', montoIdeal: 700000, montoReal: 700000, completado: false, nota: '' },
-            { fecha: '31/07/2026', concepto: 'Deuda Sara', tipo: 'egreso', montoIdeal: 500000, montoReal: 500000, completado: false, nota: '' }
-        ];
+        // ============================================
+        // PIPE & LUU - FINANZAS FAMILIARES
+        // App personalizada para Pipe, Luu, Lua y Patacon 🐱
+        // ============================================
 
-        let datos = [];
-
-        // Cargar datos al iniciar
-        window.onload = function() {
-            cargarDatosGuardados();
-            renderizarTabla();
-            actualizarResumen();
+        // Estado de la aplicación
+        let appData = {
+            transacciones: [],
+            deudas: [],
+            proyectos: [],
+            abonos: []
         };
 
-        function cargarDatosGuardados() {
-            const guardados = localStorage.getItem('itinerarioJulio2026');
-            if (guardados) {
-                datos = JSON.parse(guardados);
-                mostrarAlerta('Datos cargados automáticamente', 'success');
-            } else {
-                datos = JSON.parse(JSON.stringify(datosIniciales));
+        // Variables temporales para splits
+        let currentSplit = '50/50';
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        window.onload = function() {
+            cargarDatos();
+            renderizarTodo();
+            establecerFechaHoy();
+        };
+
+        function establecerFechaHoy() {
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('transFecha').value = hoy;
+            document.getElementById('abonoFecha').value = hoy;
+            document.getElementById('deudaFechaInicio').value = hoy;
+        }
+
+        // ============================================
+        // NAVEGACIÓN ENTRE TABS
+        // ============================================
+        function showTab(tabId) {
+            // Ocultar todos los tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Mostrar tab seleccionado
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+
+            // Renderizar contenido según el tab
+            if (tabId === 'dashboard') {
+                actualizarDashboard();
+            } else if (tabId === 'transacciones') {
+                renderizarTransacciones();
+            } else if (tabId === 'deudas') {
+                renderizarDeudas();
+            } else if (tabId === 'proyectos') {
+                renderizarProyectos();
             }
         }
 
-        function renderizarTabla() {
-            const tbody = document.getElementById('tablaDatos');
+        // ============================================
+        // MODALES
+        // ============================================
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // ============================================
+        // SPLITS DE GASTOS
+        // ============================================
+        function selectSplit(splitType) {
+            currentSplit = splitType;
+            document.querySelectorAll('.split-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector(`[data-split="${splitType}"]`).classList.add('selected');
+
+            const splitPersonalizado = document.getElementById('splitPersonalizado');
+            if (splitType === 'personalizado') {
+                splitPersonalizado.style.display = 'grid';
+            } else {
+                splitPersonalizado.style.display = 'none';
+            }
+        }
+
+        function toggleDivisionFields() {
+            const tipo = document.getElementById('transTipo').value;
+            const divisionFields = document.getElementById('divisionFields');
+            if (tipo === 'ingreso') {
+                divisionFields.style.display = 'none';
+            } else {
+                divisionFields.style.display = 'block';
+            }
+        }
+
+        function getSplitValues() {
+            if (currentSplit === '50/50') return { pipe: 50, luu: 50 };
+            if (currentSplit === '100/0') return { pipe: 100, luu: 0 };
+            if (currentSplit === '0/100') return { pipe: 0, luu: 100 };
+            
+            const pipe = parseFloat(document.getElementById('splitPipe').value) || 50;
+            const luu = parseFloat(document.getElementById('splitLuu').value) || 50;
+            return { pipe, luu };
+        }
+
+        // ============================================
+        // TRANSACCIONES
+        // ============================================
+        document.getElementById('formTransaccion').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const split = getSplitValues();
+            const nuevaTransaccion = {
+                id: Date.now(),
+                fecha: document.getElementById('transFecha').value,
+                concepto: document.getElementById('transConcepto').value,
+                tipo: document.getElementById('transTipo').value,
+                monto: parseFloat(document.getElementById('transMonto').value),
+                categoria: document.getElementById('transCategoria').value,
+                quienPago: document.getElementById('transQuienPago').value,
+                division: currentSplit,
+                splitPipe: split.pipe,
+                splitLuu: split.luu,
+                notas: document.getElementById('transNotas').value
+            };
+
+            appData.transacciones.push(nuevaTransaccion);
+            guardarDatos();
+            renderizarTransacciones();
+            actualizarDashboard();
+            closeModal('modalTransaccion');
+            mostrarAlerta('✅ Transacción guardada exitosamente', 'success');
+            this.reset();
+            establecerFechaHoy();
+            selectSplit('50/50');
+        });
+
+        function renderizarTransacciones() {
+            const tbody = document.getElementById('tablaTransacciones');
             tbody.innerHTML = '';
 
-            datos.forEach((item, index) => {
+            // Ordenar por fecha descendente
+            const transaccionesOrdenadas = [...appData.transacciones].sort((a, b) => 
+                new Date(b.fecha) - new Date(a.fecha)
+            );
+
+            transaccionesOrdenadas.forEach(trans => {
                 const tr = document.createElement('tr');
-                if (item.completado) tr.classList.add('completed');
-
-                const diferencia = item.montoReal - item.montoIdeal;
-                const claseDiferencia = diferencia === 0 ? '' : (diferencia > 0 ? 'positiva' : 'negativa');
-                const simbolo = item.tipo === 'ingreso' ? '+' : '-';
-                const signoDiferencia = diferencia > 0 ? '+' : '';
-
+                const badgeClass = trans.quienPago === 'Pipe' ? 'badge-pipe' : 
+                                   trans.quienPago === 'Luu' ? 'badge-luu' : 'badge-both';
+                
                 tr.innerHTML = `
+                    <td>${trans.fecha}</td>
+                    <td>${trans.concepto}</td>
+                    <td>${trans.tipo === 'ingreso' ? '💰' : '💸'} ${trans.tipo}</td>
+                    <td>$ ${trans.monto.toLocaleString()}</td>
+                    <td><span class="badge ${badgeClass}">${trans.quienPago}</span></td>
+                    <td>${trans.division}</td>
+                    <td>${trans.categoria}</td>
                     <td>
-                        <input type="checkbox" class="checkbox" 
-                            ${item.completado ? 'checked' : ''} 
-                            onchange="toggleCompletado(${index})">
+                        <button class="btn-danger" style="padding: 5px 10px;" onclick="eliminarTransaccion(${trans.id})">🗑️</button>
                     </td>
-                    <td>${item.fecha}</td>
-                    <td>${item.concepto}</td>
-                    <td class="${item.tipo === 'ingreso' ? 'tipo-ingreso' : 'tipo-egreso'}">
-                        ${item.tipo === 'ingreso' ? '💰 Ingreso' : '💸 Egreso'}
-                    </td>
-                    <td>$ ${item.montoIdeal.toLocaleString()}</td>
-                    <td>
-                        <input type="number" class="monto-input" 
-                            value="${item.montoReal}" 
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function eliminarTransaccion(id) {
+            if (confirm('¿Estás seguro de eliminar esta transacción?')) {
+                appData.transacciones = appData.transacciones.filter(t => t.id !== id);
+                guardarDatos();
+                renderizarTransacciones();
+                actualizarDashboard();
+                mostrarAlerta('Transacción eliminada', 'warning');
+            }
+        }
+
+        // ============================================
+        // DEUDAS Y CRÉDITOS
+        // ============================================
+        document.getElementById('formDeuda').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const montoTotal = parseFloat(document.getElementById('deudaMontoTotal').value);
+            const saldoPendiente = parseFloat(document.getElementById('deudaSaldoPendiente').value);
+            const tasaInteres = parseFloat(document.getElementById('deudaTasaInteres').value) || 0;
+            const cuotas = parseInt(document.getElementById('deudaCuotas').value) || 0;
+            const valorCuota = parseFloat(document.getElementById('deudaValorCuota').value) || 0;
+
+            // Calcular cuota si no se proporcionó
+            let cuotaCalculada = valorCuota;
+            if (!valorCuota && cuotas > 0 && tasaInteres > 0) {
+                // Fórmula de cuota fija con interés
+                const i = tasaInteres / 100;
+                cuotaCalculada = (saldoPendiente * i) / (1 - Math.pow(1 + i, -cuotas));
+            } else if (!valorCuota && cuotas > 0) {
+                cuotaCalculada = saldoPendiente / cuotas;
+            }
+
+            // Proyectar fechas de pago
+            const fechaInicio = document.getElementById('deudaFechaInicio').value;
+            const proyeccion = calcularProyeccionPago(saldoPendiente, cuotaCalculada, tasaInteres, fechaInicio);
+
+            const nuevaDeuda = {
+                id: Date.now(),
+                nombre: document.getElementById('deudaNombre').value,
+                montoTotal,
+                saldoPendiente,
+                tasaInteres,
+                cuotasTotales: cuotas,
+                cuotasPagadas: 0,
+                valorCuota: cuotaCalculada,
+                diaVencimiento: parseInt(document.getElementById('deudaDiaVencimiento').value) || 15,
+                titular: document.getElementById('deudaTitular').value,
+                fechaInicio,
+                notas: document.getElementById('deudaNotas').value,
+                proyeccion,
+                estado: 'activa'
+            };
+
+            appData.deudas.push(nuevaDeuda);
+            guardarDatos();
+            renderizarDeudas();
+            actualizarDashboard();
+            closeModal('modalDeuda');
+            mostrarAlerta('✅ Deuda/Crédito registrado exitosamente', 'success');
+            this.reset();
+            establecerFechaHoy();
+        });
+
+        function calcularProyeccionPago(saldo, cuota, tasa, fechaInicio) {
+            if (!cuota || cuota <= 0) return [];
+            
+            const proyeccion = [];
+            let saldoRestante = saldo;
+            const i = tasa / 100;
+            let fecha = new Date(fechaInicio);
+            
+            while (saldoRestante > 0 && proyeccion.length < 120) { // Máximo 10 años
+                const interesMes = saldoRestante * i;
+                const capitalAmortizar = cuota - interesMes;
+                
+                if (capitalAmortizar <= 0) break; // No se paga nada
+                
+                saldoRestante -= capitalAmortizar;
+                if (saldoRestante < 0) saldoRestante = 0;
+                
+                // Avanzar un mes
+                fecha.setMonth(fecha.getMonth() + 1);
+                
+                proyeccion.push({
+                    numero: proyeccion.length + 1,
+                    fecha: fecha.toISOString().split('T')[0],
+                    cuota: cuota,
+                    interes: interesMes,
+                    capital: capitalAmortizar,
+                    saldoRestante
+                });
+            }
+            
+            return proyeccion;
+        }
+
+        function renderizarDeudas() {
+            const container = document.getElementById('listaDeudas');
+            container.innerHTML = '';
+
+            if (appData.deudas.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No hay deudas registradas. ¡Agrega una nueva!</p>';
+                return;
+            }
+
+            appData.deudas.forEach(deuda => {
+                const porcentajePagado = ((deuda.montoTotal - deuda.saldoPendiente) / deuda.montoTotal) * 100;
+                const cuotasFaltantes = deuda.proyeccion ? deuda.proyeccion.length : 0;
+                const proximaFecha = deuda.proyeccion && deuda.proyeccion.length > 0 ? deuda.proyeccion[0].fecha : 'N/A';
+                const proximaCuota = deuda.proyeccion && deuda.proyeccion.length > 0 ? deuda.proyeccion[0].cuota : 0;
+
+                const card = document.createElement('div');
+                card.className = `debt-card ${deuda.saldoPendiente <= 0 ? 'paid' : ''}`;
+                card.innerHTML = `
+                    <div class="debt-header">
+                        <div>
+                            <h3>${deuda.nombre}</h3>
+                            <p>Titular: ${deuda.titular === 'Pipe' ? '👨' : deuda.titular === 'Luu' ? '👩' : '🤝'} ${deuda.titular}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-size: 1.3em; font-weight: bold; color: ${deuda.saldoPendiente <= 0 ? '#27ae60' : '#e74c3c'};">
+                                $ ${deuda.saldoPendiente.toLocaleString()} pendientes
+                            </p>
+                            <p style="font-size: 0.9em; color: #666;">Total: $ ${deuda.montoTotal.toLocaleString()}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="debt-progress">
+                        <div class="debt-progress-fill" style="width: ${porcentajePagado}%;"></div>
+                    </div>
+                    <p style="text-align: center; margin-bottom: 15px;">${porcentajePagado.toFixed(1)}% pagado</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <strong>Tasa de interés:</strong> ${deuda.tasaInteres}% mensual
+                        </div>
+                        <div>
+                            <strong>Valor cuota:</strong> $ ${deuda.valorCuota.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}
+                        </div>
+                        <div>
+                            <strong>Cuotas faltantes:</strong> ${cuotasFaltantes}
+                        </div>
+                        <div>
+                            <strong>Próximo vencimiento:</strong> ${proximaFecha}
+                        </div>
+                    </div>
+                    
+                    ${deuda.notas ? `<p style="color: #666; font-style: italic; margin-bottom: 15px;">📝 ${deuda.notas}</p>` : ''}
+                    
+                    <div class="controls">
+                        <button class="btn-success" onclick="openAbonoModal(${deuda.id})">💰 Registrar Abono</button>
+                        ${deuda.saldoPendiente > 0 ? `<button class="btn-primary" onclick="pagarCuota(${deuda.id})">💳 Pagar Cuota</button>` : ''}
+                        <button class="btn-danger" onclick="eliminarDeuda(${deuda.id})">🗑️ Eliminar</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openAbonoModal(deudaId) {
+            const deuda = appData.deudas.find(d => d.id === deudaId);
+            if (deuda) {
+                document.getElementById('abonoDeudaId').value = deuda.id;
+                document.getElementById('abonoDeudaNombre').value = deuda.nombre;
+                openModal('modalAbono');
+            }
+        }
+
+        document.getElementById('formAbono').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const deudaId = parseInt(document.getElementById('abonoDeudaId').value);
+            const monto = parseFloat(document.getElementById('abonoMonto').value);
+            const fecha = document.getElementById('abonoFecha').value;
+            const notas = document.getElementById('abonoNotas').value;
+
+            const deuda = appData.deudas.find(d => d.id === deudaId);
+            if (deuda && monto > 0) {
+                // Registrar abono
+                appData.abonos.push({
+                    id: Date.now(),
+                    deudaId,
+                    monto,
+                    fecha,
+                    notas
+                });
+
+                // Actualizar saldo de la deuda
+                deuda.saldoPendiente -= monto;
+                if (deuda.saldoPendiente < 0) deuda.saldoPendiente = 0;
+
+                // Recalcular proyección
+                deuda.proyeccion = calcularProyeccionPago(
+                    deuda.saldoPendiente,
+                    deuda.valorCuota,
+                    deuda.tasaInteres,
+                    fecha
+                );
+
+                // Registrar transacción del abono
+                appData.transacciones.push({
+                    id: Date.now() + 1,
+                    fecha,
+                    concepto: `Abono a ${deuda.nombre}`,
+                    tipo: 'egreso',
+                    monto,
+                    categoria: 'deuda',
+                    quienPago: deuda.titular === 'Ambos' ? 'Ambos' : deuda.titular,
+                    division: deuda.titular === 'Ambos' ? '50/50' : '100/0',
+                    splitPipe: deuda.titular === 'Pipe' ? 100 : deuda.titular === 'Luu' ? 0 : 50,
+                    splitLuu: deuda.titular === 'Pipe' ? 0 : deuda.titular === 'Luu' ? 100 : 50,
+                    notas: notas || 'Abono a capital'
+                });
+
+                guardarDatos();
+                renderizarDeudas();
+                actualizarDashboard();
+                closeModal('modalAbono');
+                mostrarAlerta('✅ Abono registrado exitosamente', 'success');
+                this.reset();
+                establecerFechaHoy();
+            }
+        });
+
+        function pagarCuota(deudaId) {
+            const deuda = appData.deudas.find(d => d.id === deudaId);
+            if (deuda && deuda.proyeccion && deuda.proyeccion.length > 0) {
+                const proximaCuota = deuda.proyeccion[0];
+                
+                if (confirm(`¿Registrar pago de cuota de $ ${proximaCuota.cuota.toLocaleString()}?`)) {
+                    // Registrar pago
+                    appData.transacciones.push({
+                        id: Date.now(),
+                        fecha: proximaCuota.fecha,
+                        concepto: `Cuota ${proximaCuota.numero} - ${deuda.nombre}`,
+                        tipo: 'egreso',
+                        monto: proximaCuota.cuota,
+                        categoria: 'deuda',
+                        quienPago: deuda.titular === 'Ambos' ? 'Ambos' : deuda.titular,
+                        division: deuda.titular === 'Ambos' ? '50/50' : '100/0',
+                        splitPipe: deuda.titular === 'Pipe' ? 100 : deuda.titular === 'Luu' ? 0 : 50,
+                        splitLuu: deuda.titular === 'Pipe' ? 0 : deuda.titular === 'Luu' ? 100 : 50,
+                        notas: `Interés: $${proximaCuota.interes.toLocaleString()}, Capital: $${proximaCuota.capital.toLocaleString()}`
+                    });
+
+                    // Actualizar deuda
+                    deuda.saldoPendiente = proximaCuota.saldoRestante;
+                    deuda.cuotasPagadas++;
+                    deuda.proyeccion.shift(); // Remover cuota pagada
+
+                    if (deuda.saldoPendiente <= 0) {
+                        deuda.estado = 'pagada';
+                    }
+
+                    guardarDatos();
+                    renderizarDeudas();
+                    actualizarDashboard();
+                    mostrarAlerta('✅ Cuota pagada exitosamente', 'success');
+                }
+            }
+        }
+
+        function eliminarDeuda(id) {
+            if (confirm('¿Estás seguro de eliminar esta deuda? Esta acción no se puede deshacer.')) {
+                appData.deudas = appData.deudas.filter(d => d.id !== id);
+                appData.abonos = appData.abonos.filter(a => a.deudaId !== id);
+                guardarDatos();
+                renderizarDeudas();
+                actualizarDashboard();
+                mostrarAlerta('Deuda eliminada', 'warning');
+            }
+        }
+
+        // ============================================
+        // PROYECTOS FUTUROS
+        // ============================================
+        document.getElementById('formProyecto').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const nuevoProyecto = {
+                id: Date.now(),
+                nombre: document.getElementById('proyectoNombre').value,
+                meta: parseFloat(document.getElementById('proyectoMeta').value),
+                ahorrado: parseFloat(document.getElementById('proyectoAhorrado').value) || 0,
+                fechaLimite: document.getElementById('proyectoFechaLimite').value,
+                prioridad: document.getElementById('proyectoPrioridad').value,
+                descripcion: document.getElementById('proyectoDescripcion').value,
+                estado: 'activo'
+            };
+
+            appData.proyectos.push(nuevoProyecto);
+            guardarDatos();
+            renderizarProyectos();
+            actualizarDashboard();
+            closeModal('modalProyecto');
+            mostrarAlerta('✅ Proyecto creado exitosamente', 'success');
+            this.reset();
+        });
+
+        function renderizarProyectos() {
+            const container = document.getElementById('listaProyectos');
+            container.innerHTML = '';
+
+            if (appData.proyectos.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No hay proyectos registrados. ¡Crea uno nuevo!</p>';
+                return;
+            }
+
+            appData.proyectos.forEach(proy => {
+                const porcentaje = (proy.ahorrado / proy.meta) * 100;
+                const faltante = proy.meta - proy.ahorrado;
+                const iconoPrioridad = proy.prioridad === 'alta' ? '🔴' : proy.prioridad === 'media' ? '🟡' : '🟢';
+
+                const card = document.createElement('div');
+                card.className = 'project-card';
+                card.innerHTML = `
+                    <div class="debt-header">
+                        <div>
+                            <h3>${iconoPrioridad} ${proy.nombre}</h3>
+                            ${proy.descripcion ? `<p style="color: #666;">${proy.descripcion}</p>` : ''}
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-size: 1.3em; font-weight: bold; color: #0ba360;">
+                                $ ${proy.ahorrado.toLocaleString()}
+                            </p>
+                            <p style="font-size: 0.9em; color: #666;">Meta: $ ${proy.meta.toLocaleString()}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="debt-progress">
+                        <div class="debt-progress-fill" style="width: ${Math.min(porcentaje, 100)}%; background: linear-gradient(90deg, #0ba360 0%, #3cba92 100%);"></div>
+                    </div>
+                    <p style="text-align: center; margin-bottom: 15px;">${porcentaje.toFixed(1)}% completado - Faltan: $ ${faltante.toLocaleString()}</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <strong>Fecha límite:</strong> ${proy.fechaLimite || 'Sin definir'}
+                        </div>
+                        <div>
+                            <strong>Prioridad:</strong> ${proy.prioridad}
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="btn-success" onclick="agregarAhorro(${proy.id})">➕ Agregar Ahorro</button>
+                        <button class="btn-danger" onclick="eliminarProyecto(${proy.id})">🗑️ Eliminar</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function agregarAhorro(proyectoId) {
+            const proyecto = appData.proyectos.find(p => p.id === proyectoId);
+            if (proyecto) {
+                const monto = prompt(`Ingresa el monto a agregar al proyecto "${proyecto.nombre}":`);
+                if (monto && !isNaN(monto) && parseFloat(monto) > 0) {
+                    proyecto.ahorrado += parseFloat(monto);
+                    
+                    // Registrar como transacción
+                    appData.transacciones.push({
+                        id: Date.now(),
+                        fecha: new Date().toISOString().split('T')[0],
+                        concepto: `Ahorro para ${proyecto.nombre}`,
+                        tipo: 'egreso',
+                        monto: parseFloat(monto),
+                        categoria: 'otro',
+                        quienPago: 'Ambos',
+                        division: '50/50',
+                        splitPipe: 50,
+                        splitLuu: 50,
+                        notas: 'Ahorro para proyecto futuro'
+                    });
+
+                    guardarDatos();
+                    renderizarProyectos();
+                    actualizarDashboard();
+                    mostrarAlerta('✅ Ahorro agregado exitosamente', 'success');
+                }
+            }
+        }
+
+        function eliminarProyecto(id) {
+            if (confirm('¿Estás seguro de eliminar este proyecto?')) {
+                appData.proyectos = appData.proyectos.filter(p => p.id !== id);
+                guardarDatos();
+                renderizarProyectos();
+                actualizarDashboard();
+                mostrarAlerta('Proyecto eliminado', 'warning');
+            }
+        }
+
+        // ============================================
+        // DASHBOARD
+        // ============================================
+        function actualizarDashboard() {
+            // Totales generales
+            let totalIngresos = 0;
+            let totalEgresos = 0;
+            let pagadoPipe = 0;
+            let pagadoLuu = 0;
+            let gastosCompartidos = 0;
+
+            appData.transacciones.forEach(trans => {
+                if (trans.tipo === 'ingreso') {
+                    totalIngresos += trans.monto;
+                } else {
+                    totalEgresos += trans.monto;
+                    
+                    // Calcular quién pagó según división
+                    if (trans.quienPago === 'Pipe') {
+                        pagadoPipe += trans.monto;
+                    } else if (trans.quienPago === 'Luu') {
+                        pagadoLuu += trans.monto;
+                    } else {
+                        // Ambos - dividir según split
+                        gastosCompartidos += trans.monto;
+                        pagadoPipe += trans.monto * (trans.splitPipe / 100);
+                        pagadoLuu += trans.monto * (trans.splitLuu / 100);
+                    }
+                }
+            });
+
+            const saldo = totalIngresos - totalEgresos;
+            const totalDeudas = appData.deudas.reduce((sum, d) => sum + d.saldoPendiente, 0);
+            const ahorroProyectos = appData.proyectos.reduce((sum, p) => sum + p.ahorrado, 0);
+
+            // Actualizar cards
+            document.getElementById('totalIngresos').textContent = `$ ${totalIngresos.toLocaleString()}`;
+            document.getElementById('totalEgresos').textContent = `$ ${totalEgresos.toLocaleString()}`;
+            document.getElementById('saldoActual').textContent = `$ ${saldo.toLocaleString()}`;
+            document.getElementById('totalDeudas').textContent = `$ ${totalDeudas.toLocaleString()}`;
+            document.getElementById('ahorroProyectos').textContent = `$ ${ahorroProyectos.toLocaleString()}`;
+
+            // Balance entre Pipe y Luu
+            const diferencia = Math.abs(pagadoPipe - pagadoLuu);
+            const balanceEl = document.getElementById('balanceIndicator');
+            
+            if (diferencia < 1000) {
+                balanceEl.innerHTML = `<span class="balance-positive">✅ ¡Están equilibrados! Diferencia: $ ${diferencia.toLocaleString()}</span>`;
+            } else if (pagadoPipe > pagadoLuu) {
+                balanceEl.innerHTML = `<span class="balance-negative">👨 Pipe ha pagado $ ${(pagadoPipe - pagadoLuu).toLocaleString()} más</span>`;
+            } else {
+                balanceEl.innerHTML = `<span class="balance-negative">👩 Luu ha pagado $ ${(pagadoLuu - pagadoPipe).toLocaleString()} más</span>`;
+            }
+
+            // Resumen de pagos
+            document.getElementById('pagadoPipe').textContent = `$ ${pagadoPipe.toLocaleString()}`;
+            document.getElementById('pagadoLuu').textContent = `$ ${pagadoLuu.toLocaleString()}`;
+            document.getElementById('gastosCompartidos').textContent = `$ ${gastosCompartidos.toLocaleString()}`;
+
+            // Próximos vencimientos
+            renderizarProximosVencimientos();
+        }
+
+        function renderizarProximosVencimientos() {
+            const tbody = document.getElementById('proximosVencimientos');
+            tbody.innerHTML = '';
+
+            const vencimientos = [];
+
+            // Agregar cuotas de deudas próximas
+            appData.deudas.forEach(deuda => {
+                if (deuda.proyeccion && deuda.proyeccion.length > 0 && deuda.saldoPendiente > 0) {
+                    const proximas = deuda.proyeccion.slice(0, 3); // Próximas 3 cuotas
+                    proximas.forEach(cuota => {
+                        vencimientos.push({
+                            fecha: cuota.fecha,
+                            concepto: `Cuota ${cuota.numero} - ${deuda.nombre}`,
+                            monto: cuota.cuota,
+                            tipo: 'deuda'
+                        });
+                    });
+                }
+            });
+
+            // Ordenar por fecha
+            vencimientos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+            // Mostrar próximos 5
+            vencimientos.slice(0, 5).forEach(v => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${v.fecha}</td>
+                    <td>${v.concepto}</td>
+                    <td>$ ${v.monto.toLocaleString()}</td>
+                    <td><span class="badge badge-both">💵 ${v.tipo}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            if (vencimientos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #666;">No hay vencimientos próximos</td></tr>';
+            }
+        }
+
+        function renderizarTodo() {
+            actualizarDashboard();
+            renderizarTransacciones();
+            renderizarDeudas();
+            renderizarProyectos();
+        }
+
+        // ============================================
+        // IMPORTAR / EXPORTAR
+        // ============================================
+        function guardarTodo() {
+            guardarDatos();
+            mostrarAlerta('✅ Datos guardados exitosamente en el navegador', 'success');
+        }
+
+        function guardarDatos() {
+            localStorage.setItem('pipeLuuFinanzas', JSON.stringify(appData));
+        }
+
+        function cargarDatos() {
+            const guardados = localStorage.getItem('pipeLuuFinanzas');
+            if (guardados) {
+                appData = JSON.parse(guardados);
+                mostrarAlerta('✅ Datos cargados automáticamente', 'success');
+            }
+        }
+
+        function exportarCSV() {
+            let csv = 'fecha,concepto,tipo,monto,quienPago,division,categoria,notas\n';
+            
+            appData.transacciones.forEach(trans => {
+                csv += `${trans.fecha},"${trans.concepto}",${trans.tipo},${trans.monto},${trans.quienPago},${trans.division},${trans.categoria},"${trans.notas || ''}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pipe_luu_finanzas_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            
+            mostrarAlerta('✅ CSV exportado exitosamente', 'success');
+        }
+
+        function importarCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.split('\n').slice(1); // Saltar header
+                
+                lines.forEach(line => {
+                    if (line.trim()) {
+                        const match = line.match(/([^,]+),"([^"]*)",([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),"([^"]*)"/);
+                        if (match) {
+                            const split = match[6].includes('/') ? match[6] : '50/50';
+                            const [splitPipe, splitLuu] = split.split('/').map(Number);
+                            
+                            appData.transacciones.push({
+                                id: Date.now() + Math.random(),
+                                fecha: match[1],
+                                concepto: match[2],
+                                tipo: match[3],
+                                monto: parseFloat(match[4]),
+                                quienPago: match[5],
+                                division: split,
+                                splitPipe: splitPipe || 50,
+                                splitLuu: splitLuu || 50,
+                                categoria: match[7],
+                                notas: match[8]
+                            });
+                        }
+                    }
+                });
+
+                guardarDatos();
+                renderizarTodo();
+                mostrarAlerta('✅ CSV importado exitosamente', 'success');
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function exportarJSON() {
+            const json = JSON.stringify(appData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pipe_luu_finanzas_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            
+            mostrarAlerta('✅ JSON exportado exitosamente', 'success');
+        }
+
+        function importarJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.transacciones) appData.transacciones = data.transacciones;
+                    if (data.deudas) appData.deudas = data.deudas;
+                    if (data.proyectos) appData.proyectos = data.proyectos;
+                    if (data.abonos) appData.abonos = data.abonos;
+                    
+                    guardarDatos();
+                    renderizarTodo();
+                    mostrarAlerta('✅ JSON importado exitosamente', 'success');
+                } catch (err) {
+                    mostrarAlerta('❌ Error al importar JSON: ' + err.message, 'danger');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function confirmarReset() {
+            if (confirm('⚠️ ¿ESTÁS SEGURO DE QUE QUIERES ELIMINAR TODOS LOS DATOS? Esta acción no se puede deshacer.')) {
+                if (confirm('¿Seguro que quieres continuar? Se perderán todas las transacciones, deudas y proyectos.')) {
+                    localStorage.removeItem('pipeLuuFinanzas');
+                    appData = { transacciones: [], deudas: [], proyectos: [], abonos: [] };
+                    renderizarTodo();
+                    mostrarAlerta('🗑️ Todos los datos han sido eliminados', 'warning');
+                }
+            }
+        }
+
+        // ============================================
+        // UTILIDADES
+        // ============================================
+        function mostrarAlerta(mensaje, tipo = 'success') {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${tipo}`;
+            alert.textContent = mensaje;
+            container.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 4000);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>eal}" 
                             onchange="actualizarMontoReal(${index}, this.value)">
                     </td>
                     <td class="diferencia ${claseDiferencia}">
