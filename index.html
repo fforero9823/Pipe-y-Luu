@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Itinerario Financiero - Julio 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card.ingresos {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .card.egresos {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .card.saldo {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .card h3 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .card .monto {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        
+        .card .meta {
+            font-size: 0.85em;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-export {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-export:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-reset {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-reset:hover {
+            background: #c0392b;
+        }
+        
+        .btn-save {
+            background: #27ae60;
+            color: white;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            overflow-x: auto;
+            display: block;
+        }
+        
+        thead {
+            background: #667eea;
+            color: white;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+        
+        tbody tr.completed {
+            background: #d4edda;
+        }
+        
+        tbody tr.completed td {
+            color: #155724;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .monto-input {
+            width: 120px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        
+        .monto-input:hover, .monto-input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .diferencia {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .diferencia.positiva {
+            color: #27ae60;
+        }
+        
+        .diferencia.negativa {
+            color: #e74c3c;
+        }
+        
+        .tipo-ingreso {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .tipo-egreso {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .nota {
+            font-size: 0.85em;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #ecf0f1;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.3s;
+        }
+        
+        @media (max-width: 768px) {
+            table {
+                font-size: 0.85em;
+            }
+            
+            .monto-input {
+                width: 90px;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Itinerario Financiero - Julio 2026</h1>
+        <p class="subtitle">Control de ingresos y egresos en tiempo real</p>
+        
+        <div class="summary-cards">
+            <div class="card ingresos">
+                <h3>💰 Total Ingresos</h3>
+                <div class="monto" id="totalIngresos">$ 0</div>
+            </div>
+            <div class="card egresos">
+                <h3>💸 Total Egresos</h3>
+                <div class="monto" id="totalEgresos">$ 0</div>
+            </div>
+            <div class="card saldo">
+                <h3>📈 Saldo Final</h3>
+                <div class="monto" id="saldoFinal">$ 0</div>
+                <div class="meta">Meta: $ 150,000</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar">0% completado</div>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <div class="controls">
+            <button class="btn-save" onclick="guardarDatos()">💾 Guardar Datos</button>
+            <button class="btn-export" onclick="exportarCSV()">📥 Exportar CSV</button>
+            <button class="btn-export" onclick="exportarJSON()">📋 Copiar JSON</button>
+            <button class="btn-export" onclick="importarJSON()">📤 Importar JSON</button>
+            <button class="btn-reset" onclick="resetearDatos()">🔄 Reiniciar Todo</button>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>✓</th>
+                    <th>Fecha</th>
+                    <th>Concepto</th>
+                    <th>Tipo</th>
+                    <th>Monto Ideal</th>
+                    <th>Monto Real</th>
+                    <th>Diferencia</th>
+                    <th>Notas</th>
+                </tr>
+            </thead>
+            <tbody id="tablaDatos">
+                <!-- Los datos se generan con JavaScript -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Modal para importar JSON -->
+    <div id="modalImportar" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Importar Datos JSON</h2>
+                <span class="close" onclick="cerrarModal()">&times;</span>
+            </div>
+            <p>Pega aquí los datos JSON que exportaste previamente:</p>
+            <textarea id="jsonInput" placeholder='{"datos":...}'></textarea>
+            <button class="btn-save" onclick="confirmarImportar()">Importar Datos</button>
+        </div>
+    </div>
+
+    <script>
+        // Datos iniciales
+        const datosIniciales = [
+            { fecha: '01/07/2026', concepto: 'Saldo Inicial Davivienda', tipo: 'ingreso', montoIdeal: 366000, montoReal: 366000, completado: true, nota: '' },
+            { fecha: '02/07/2026', concepto: 'Impuesto Carro Nerú', tipo: 'egreso', montoIdeal: 155000, montoReal: 155000, completado: false, nota: '' },
+            { fecha: '05/07/2026', concepto: 'SS Pipe (Mitad 1)', tipo: 'egreso', montoIdeal: 540000, montoReal: 540000, completado: false, nota: 'Usar cupo TC' },
+            { fecha: '05/07/2026', concepto: 'SS luu Atrasada', tipo: 'egreso', montoIdeal: 540000, montoReal: 540000, completado: false, nota: 'Usar cupo TC' },
+            { fecha: '05/07/2026', concepto: 'SS luu Mes Actual', tipo: 'egreso', montoIdeal: 947800, montoReal: 947800, completado: false, nota: 'Usar cupo TC' },
+            { fecha: '05/07/2026', concepto: 'Terapia + Medicamentos', tipo: 'egreso', montoIdeal: 450000, montoReal: 450000, completado: false, nota: 'Usar cupo TC' },
+            { fecha: '05/07/2026', concepto: 'Mercado (Parte 1)', tipo: 'egreso', montoIdeal: 300000, montoReal: 300000, completado: false, nota: 'Usar cupo TC' },
+            { fecha: '05/07/2026', concepto: 'Flores/Weed', tipo: 'egreso', montoIdeal: 200000, montoReal: 200000, completado: false, nota: 'Usar cupo TC' },
+            { fecha: '10/07/2026', concepto: 'Contrato UIS luu', tipo: 'ingreso', montoIdeal: 5880000, montoReal: 5880000, completado: false, nota: '' },
+            { fecha: '10/07/2026', concepto: 'Niños (Gatos)', tipo: 'egreso', montoIdeal: 500000, montoReal: 500000, completado: false, nota: '' },
+            { fecha: '10/07/2026', concepto: 'Cuota Nerú (1 de 2)', tipo: 'egreso', montoIdeal: 1084000, montoReal: 1084000, completado: false, nota: '' },
+            { fecha: '15/07/2026', concepto: 'Demanda', tipo: 'ingreso', montoIdeal: 4500000, montoReal: 4500000, completado: false, nota: '' },
+            { fecha: '15/07/2026', concepto: 'Tanqueada', tipo: 'egreso', montoIdeal: 360000, montoReal: 360000, completado: false, nota: '' },
+            { fecha: '15/07/2026', concepto: 'Mercado (Parte 2)', tipo: 'egreso', montoIdeal: 300000, montoReal: 300000, completado: false, nota: '' },
+            { fecha: '17/07/2026', concepto: 'Salario Pipe', tipo: 'ingreso', montoIdeal: 2250000, montoReal: 2250000, completado: false, nota: '' },
+            { fecha: '17/07/2026', concepto: 'Crédito Banco de Bogotá', tipo: 'egreso', montoIdeal: 315000, montoReal: 315000, completado: false, nota: '' },
+            { fecha: '18/07/2026', concepto: 'Deuda luu', tipo: 'egreso', montoIdeal: 500000, montoReal: 500000, completado: false, nota: '' },
+            { fecha: '19/07/2026', concepto: 'SOAT', tipo: 'egreso', montoIdeal: 680000, montoReal: 680000, completado: false, nota: '' },
+            { fecha: '20/07/2026', concepto: 'TC Pipe', tipo: 'egreso', montoIdeal: 695000, montoReal: 695000, completado: false, nota: '' },
+            { fecha: '20/07/2026', concepto: 'TC luu', tipo: 'egreso', montoIdeal: 2000000, montoReal: 2000000, completado: false, nota: '' },
+            { fecha: '22/07/2026', concepto: 'Parche (Ocio)', tipo: 'egreso', montoIdeal: 500000, montoReal: 500000, completado: false, nota: '' },
+            { fecha: '25/07/2026', concepto: 'Tecnicomecánica', tipo: 'egreso', montoIdeal: 370000, montoReal: 370000, completado: false, nota: '' },
+            { fecha: '25/07/2026', concepto: 'Kasa (Crédito Hipotecario)', tipo: 'egreso', montoIdeal: 1057000, montoReal: 1057000, completado: false, nota: '' },
+            { fecha: '25/07/2026', concepto: 'Cuota Nerú (2 de 2)', tipo: 'egreso', montoIdeal: 1084000, montoReal: 1084000, completado: false, nota: '' },
+            { fecha: '28/07/2026', concepto: 'SS Pipe (Mitad 2)', tipo: 'egreso', montoIdeal: 540000, montoReal: 540000, completado: false, nota: 'Usar cupo TC' },
+            { fecha: '30/07/2026', concepto: 'Kathe', tipo: 'ingreso', montoIdeal: 700000, montoReal: 700000, completado: false, nota: '' },
+            { fecha: '31/07/2026', concepto: 'Deuda Sara', tipo: 'egreso', montoIdeal: 500000, montoReal: 500000, completado: false, nota: '' }
+        ];
+
+        let datos = [];
+
+        // Cargar datos al iniciar
+        window.onload = function() {
+            cargarDatosGuardados();
+            renderizarTabla();
+            actualizarResumen();
+        };
+
+        function cargarDatosGuardados() {
+            const guardados = localStorage.getItem('itinerarioJulio2026');
+            if (guardados) {
+                datos = JSON.parse(guardados);
+                mostrarAlerta('Datos cargados automáticamente', 'success');
+            } else {
+                datos = JSON.parse(JSON.stringify(datosIniciales));
+            }
+        }
+
+        function renderizarTabla() {
+            const tbody = document.getElementById('tablaDatos');
+            tbody.innerHTML = '';
+
+            datos.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                if (item.completado) tr.classList.add('completed');
+
+                const diferencia = item.montoReal - item.montoIdeal;
+                const claseDiferencia = diferencia === 0 ? '' : (diferencia > 0 ? 'positiva' : 'negativa');
+                const simbolo = item.tipo === 'ingreso' ? '+' : '-';
+                const signoDiferencia = diferencia > 0 ? '+' : '';
+
+                tr.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="checkbox" 
+                            ${item.completado ? 'checked' : ''} 
+                            onchange="toggleCompletado(${index})">
+                    </td>
+                    <td>${item.fecha}</td>
+                    <td>${item.concepto}</td>
+                    <td class="${item.tipo === 'ingreso' ? 'tipo-ingreso' : 'tipo-egreso'}">
+                        ${item.tipo === 'ingreso' ? '💰 Ingreso' : '💸 Egreso'}
+                    </td>
+                    <td>$ ${item.montoIdeal.toLocaleString()}</td>
+                    <td>
+                        <input type="number" class="monto-input" 
+                            value="${item.montoReal}" 
+                            onchange="actualizarMontoReal(${index}, this.value)">
+                    </td>
+                    <td class="diferencia ${claseDiferencia}">
+                        ${diferencia !== 0 ? `${simbolo}$ ${signoDiferencia}${Math.abs(diferencia).toLocaleString()}` : '-'}
+                    </td>
+                    <td class="nota">${item.nota}</td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleCompletado(index) {
+            datos[index].completado = !datos[index].completado;
+            renderizarTabla();
+            actualizarResumen();
+            guardarDatos();
+        }
+
+        function actualizarMontoReal(index, valor) {
+            datos[index].montoReal = parseInt(valor) || 0;
+            renderizarTabla();
+            actualizarResumen();
+        }
+
+        function actualizarResumen() {
+            const totalIngresos = datos.filter(d => d.tipo === 'ingreso').reduce((sum, d) => sum + d.montoReal, 0);
+            const totalEgresos = datos.filter(d => d.tipo === 'egreso').reduce((sum, d) => sum + d.montoReal, 0);
+            const saldo = totalIngresos - totalEgresos;
+
+            document.getElementById('totalIngresos').textContent = `$ ${totalIngresos.toLocaleString()}`;
+            document.getElementById('totalEgresos').textContent = `$ ${totalEgresos.toLocaleString()}`;
+            document.getElementById('saldoFinal').textContent = `$ ${saldo.toLocaleString()}`;
+
+            // Actualizar barra de progreso
+            const completados = datos.filter(d => d.completado).length;
+            const porcentaje = Math.round((completados / datos.length) * 100);
+            document.getElementById('progressBar').style.width = `${porcentaje}%`;
+            document.getElementById('progressBar').textContent = `${porcentaje}% completado`;
+
+            // Alerta si no se llega a la meta
+            if (saldo < 150000 && completados === datos.length) {
+                mostrarAlerta(`⚠️ Te faltan $ ${(150000 - saldo).toLocaleString()} para llegar a la meta de $150,000`, 'warning');
+            } else if (saldo >= 150000 && completados === datos.length) {
+                mostrarAlerta('🎉 ¡Felicitaciones! Llegaste a la meta', 'success');
+            }
+        }
+
+        function guardarDatos() {
+            localStorage.setItem('itinerarioJulio2026', JSON.stringify(datos));
+            mostrarAlerta('Datos guardados automáticamente', 'success');
+        }
+
+        function exportarCSV() {
+            let csv = 'Fecha,Concepto,Tipo,Monto Ideal,Monto Real,Diferencia,Completado,Notas\n';
+            
+            datos.forEach(item => {
+                const diferencia = item.montoReal - item.montoIdeal;
+                csv += `${item.fecha},"${item.concepto}",${item.tipo},${item.montoIdeal},${item.montoReal},${diferencia},${item.completado},"${item.nota}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `itinerario_julio_2026_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            
+            mostrarAlerta('Archivo CSV descargado', 'success');
+        }
+
+        function exportarJSON() {
+            const jsonStr = JSON.stringify(datos, null, 2);
+            navigator.clipboard.writeText(jsonStr).then(() => {
+                mostrarAlerta('JSON copiado al portapapeles', 'success');
+            });
+        }
+
+        function importarJSON() {
+            document.getElementById('modalImportar').style.display = 'flex';
+        }
+
+        function confirmarImportar() {
+            try {
+                const jsonInput = document.getElementById('jsonInput').value;
+                const datosImportados = JSON.parse(jsonInput);
+                
+                if (Array.isArray(datosImportados)) {
+                    datos = datosImportados;
+                    renderizarTabla();
+                    actualizarResumen();
+                    guardarDatos();
+                    cerrarModal();
+                    mostrarAlerta('Datos importados correctamente', 'success');
+                } else {
+                    throw new Error('Formato inválido');
+                }
+            } catch (e) {
+                mostrarAlerta('Error al importar: Verifica el formato JSON', 'error');
+            }
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalImportar').style.display = 'none';
+        }
+
+        function resetearDatos() {
+            if (confirm('¿Estás seguro de reiniciar todos los datos? Se perderán los cambios.')) {
+                datos = JSON.parse(JSON.stringify(datosIniciales));
+                renderizarTabla();
+                actualizarResumen();
+                localStorage.removeItem('itinerarioJulio2026');
+                mostrarAlerta('Datos reiniciados', 'warning');
+            }
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${tipo}`;
+            alert.textContent = mensaje;
+            
+            container.innerHTML = '';
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 3000);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalImportar');
+            if (event.target === modal) {
+                cerrarModal();
+            }
+        }
+    </script>
+</body>
+</html>
