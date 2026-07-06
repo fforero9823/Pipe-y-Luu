@@ -28,7 +28,15 @@
         header { background: var(--primary-dark); color: white; padding: 1.5rem 1rem; text-align: center; position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow); }
         header h1 { font-size: 1.5rem; font-weight: 700; }
         header p { font-size: 0.85rem; opacity: 0.8; }
-        .status-badge { display: inline-block; font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-top: 5px; }
+        .status-badge { display: inline-block; font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-top: 5px; transition: all 0.3s ease; }
+        .status-badge.online { background: rgba(16, 185, 129, 0.3); }
+        .status-badge.offline { background: rgba(239, 68, 68, 0.3); animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
 
         nav { background: var(--card-bg); overflow-x: auto; white-space: nowrap; padding: 10px; position: sticky; top: 70px; z-index: 40; box-shadow: 0 2px 4px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; }
         nav button { background: none; border: none; padding: 8px 16px; margin-right: 8px; border-radius: 20px; font-weight: 600; color: var(--text-light); cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
@@ -98,6 +106,201 @@
         .progress-bar-fill { background: var(--accent-blue); height: 100%; width: 0%; transition: width 0.5s; }
         
         .settlement-box { background: #f8fafc; padding: 10px; border-radius: 8px; text-align: center; margin-top: 10px; border: 1px dashed #cbd5e1; }
+
+        .fab-add {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3B82F6, #1E40AF);
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+            border: none;
+            cursor: pointer;
+            z-index: 999;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .fab-add:active {
+            transform: scale(0.9);
+            box-shadow: 0 3px 10px rgba(59, 130, 246, 0.5);
+        }
+        .fab-add:hover {
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 350px;
+        }
+        .toast-msg {
+            background: rgba(30, 30, 30, 0.95);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-weight: 500;
+        }
+        .toast-msg.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast-msg.success { background: rgba(16, 185, 129, 0.95); }
+        .toast-msg.warning { background: rgba(245, 158, 11, 0.95); color: #1a1a1a; }
+        .toast-msg.error { background: rgba(239, 68, 68, 0.95); }
+
+        .btn-liquidate {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-liquidate:active {
+            transform: scale(0.98);
+        }
+
+        .budget-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        .budget-header strong {
+            color: var(--primary-dark);
+        }
+        .budget-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+        .budget-bar-bg {
+            background: #e2e8f0;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .budget-bar-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+        .budget-bar-fill.ok { background: var(--success); }
+        .budget-bar-fill.warn { background: var(--warning); }
+        .budget-bar-fill.over { background: var(--danger); }
+
+        .settlement-form {
+            display: flex;
+            flex-direction: column; /* CLAVE: Cambia de horizontal a vertical */
+            gap: 10px;
+            margin-top: 12px;
+            width: 100%;
+        }
+        .settlement-form input {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            border: 2px dashed var(--accent-blue); /* Borde punteado azul para resaltar */
+            border-radius: 8px;
+            background: #f0f9ff; /* Fondito azul suave */
+            color: var(--primary-dark);
+            margin: 0;
+        }
+        .settlement-form input:focus {
+            border-style: solid;
+            background: white;
+        }
+
+        .credit-status-paid {
+            background: #D1FAE5 !important;
+            color: #065F46 !important;
+        }
+
+        /* =========================================
+           NUEVOS ESTILOS: PROYECTOS CON UBICACIONES
+           ========================================= */
+        
+        .project-locations {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .location-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+        .location-item:last-child {
+            border-bottom: none;
+        }
+        .location-info {
+            flex: 1;
+        }
+        .location-name {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+        .location-details {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        .location-amount {
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+        .yield-badge {
+            background: #D1FAE5;
+            color: #065F46;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -153,6 +356,11 @@
         </div>
 
         <div class="card">
+            <h2>📊 Presupuestos del Mes</h2>
+            <div id="dash-budgets-summary">No hay presupuestos configurados.</div>
+        </div>
+
+        <div class="card">
             <h2>Resumen de Créditos este Mes</h2>
             <div id="dash-credits-summary">No hay cuotas este mes.</div>
         </div>
@@ -176,11 +384,15 @@
                 </div>
                 <div class="form-group">
                     <label>Monto ($)</label>
-                    <input type="number" id="m-amount" required placeholder="0">
+                    <input type="number" id="m-amount" required placeholder="0" inputmode="numeric" pattern="[0-9]*">
                 </div>
                 <div class="form-group">
                     <label>Categoría</label>
                     <select id="m-category"></select>
+                </div>
+                <div class="form-group">
+                    <label>¿De dónde sale/entra el dinero?</label>
+                    <select id="m-place"></select>
                 </div>
                 <div class="form-group">
                     <label>Fecha</label>
@@ -205,8 +417,8 @@
                             <div class="split-btn" onclick="setSplit('custom', this)">Personalizado</div>
                         </div>
                         <div id="custom-split" style="display:none; margin-top:10px; display:flex; gap:10px;">
-                            <input type="number" id="split-p" placeholder="% Pipe" value="50">
-                            <input type="number" id="split-l" placeholder="% Luu" value="50">
+                            <input type="number" id="split-p" placeholder="% Pipe" value="50" inputmode="numeric" pattern="[0-9]*">
+                            <input type="number" id="split-l" placeholder="% Luu" value="50" inputmode="numeric" pattern="[0-9]*">
                         </div>
                     </div>
                 </div>
@@ -232,15 +444,15 @@
                 </div>
                 <div class="form-group">
                     <label>Monto Total Inicial ($)</label>
-                    <input type="number" id="c-total" required>
+                    <input type="number" id="c-total" required inputmode="numeric" pattern="[0-9]*">
                 </div>
                 <div class="form-group">
                     <label>Tasa Interés Mensual (%)</label>
-                    <input type="number" id="c-rate" step="0.01" value="0">
+                    <input type="number" id="c-rate" step="0.01" value="0" inputmode="decimal" pattern="[0-9]*">
                 </div>
                 <div class="form-group">
                     <label>Plazo (Meses)</label>
-                    <input type="number" id="c-term" required placeholder="Ej: 12">
+                    <input type="number" id="c-term" required placeholder="Ej: 12" inputmode="numeric" pattern="[0-9]*">
                 </div>
                 <div class="form-group">
                     <label>Fecha de Inicio</label>
@@ -248,7 +460,7 @@
                 </div>
                 <div class="form-group">
                     <label>Día de Pago (Día del mes)</label>
-                    <input type="number" id="c-day" min="1" max="31" value="5" required>
+                    <input type="number" id="c-day" min="1" max="31" value="5" required inputmode="numeric" pattern="[0-9]*">
                 </div>
                 <div class="form-group">
                     <label>Responsable</label>
@@ -260,7 +472,7 @@
                 </div>
                 <div class="form-group">
                     <label>¿Cuántos meses YA has pagado? (Para histórico)</label>
-                    <input type="number" id="c-paid-months" value="0" min="0">
+                    <input type="number" id="c-paid-months" value="0" min="0" inputmode="numeric" pattern="[0-9]*">
                     <small style="color:var(--text-light)">Si es un crédito nuevo, deja en 0.</small>
                 </div>
                 <button type="submit" class="btn">Crear Crédito</button>
@@ -280,11 +492,11 @@
                 </div>
                 <div class="form-group">
                     <label>Meta ($)</label>
-                    <input type="number" id="p-goal" required>
+                    <input type="number" id="p-goal" required inputmode="numeric" pattern="[0-9]*">
                 </div>
                 <div class="form-group">
                     <label>Ahorro Inicial ($)</label>
-                    <input type="number" id="p-current" value="0">
+                    <input type="number" id="p-current" value="0" inputmode="numeric" pattern="[0-9]*">
                 </div>
                 <div class="form-group">
                     <label>Fecha Límite</label>
@@ -305,6 +517,23 @@
                 <button onclick="addCategory()" class="btn btn-sm" style="width:auto;">Añadir</button>
             </div>
             <div id="config-categories-list"></div>
+        </div>
+
+        <div class="card">
+            <h2>💳 Lugares / Cuentas</h2>
+            <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:10px;">¿De dónde sale o entra el dinero? (Ej: Efectivo, Nequi, Cuenta Ahorros)</p>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <input type="text" id="new-place-name" placeholder="Nuevo lugar">
+                <button onclick="addPlace()" class="btn btn-sm" style="width:auto;">Añadir</button>
+            </div>
+            <div id="config-places-list"></div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Presupuestos Mensuales</h2>
+            <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:10px;">Define cuánto quieres gastar máximo por categoría cada mes.</p>
+            <div id="config-budgets-list"></div>
+            <button onclick="openBudgetModal()" class="btn btn-secondary" style="margin-top:10px;">➕ Añadir Presupuesto</button>
         </div>
 
         <div class="card">
@@ -334,14 +563,47 @@
         </div>
         <p style="text-align:center; margin:10px 0;" id="modal-p-stats"></p>
         
+        <div id="modal-p-locations-container"></div>
+        
+        <button onclick="openAddLocationModal()" class="btn btn-secondary" style="margin-top:15px;">➕ Añadir Ubicación de Ahorro</button>
+        
+        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+        
+        <h3>Añadir Ahorro Rápido</h3>
         <div class="form-group">
-            <label>Añadir Ahorro ($)</label>
-            <input type="number" id="modal-p-amount" placeholder="Monto">
+            <label>Seleccionar Ubicación</label>
+            <select id="modal-p-location-select"></select>
+        </div>
+        <div class="form-group">
+            <label>Monto ($)</label>
+            <input type="number" id="modal-p-amount" placeholder="Monto" inputmode="numeric" pattern="[0-9]*">
         </div>
         <button onclick="saveProjectFund()" class="btn">Registrar Ahorro</button>
         <p style="font-size:0.8rem; color:var(--text-light); margin-top:10px; text-align:center;">Esto creará un movimiento de gasto asociado.</p>
         
         <button onclick="deleteCurrentProject()" class="btn btn-danger" style="margin-top:20px;">Eliminar Proyecto</button>
+    </div>
+</div>
+
+<!-- Modal Añadir Ubicación -->
+<div id="modal-add-location" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('modal-add-location')">&times;</span>
+        <h2>Nueva Ubicación de Ahorro</h2>
+        <div class="form-group">
+            <label>Nombre del Lugar (Ej: CDT Bancolombia, Cajita Nu)</label>
+            <input type="text" id="loc-name" required placeholder="Ej: CDT Bancolombia">
+        </div>
+        <div class="form-group">
+            <label>Monto Actual ($)</label>
+            <input type="number" id="loc-amount" required placeholder="0" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div class="form-group">
+            <label>Rendimiento Anual (%)</label>
+            <input type="number" id="loc-yield" step="0.01" value="0" placeholder="0" inputmode="decimal" pattern="[0-9]*">
+            <small style="color:var(--text-light)">Deja en 0 si no genera rendimientos</small>
+        </div>
+        <button onclick="saveLocation()" class="btn">Guardar Ubicación</button>
     </div>
 </div>
 
@@ -362,13 +624,55 @@
     </div>
 </div>
 
+<!-- Modal Pago Crédito -->
+<div id="modal-pay-credit" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('modal-pay-credit')">&times;</span>
+        <h2 id="modal-pay-title">Pagar Cuota</h2>
+        <div class="form-group">
+            <label>Monto a Pagar ($)</label>
+            <input type="number" id="pay-amount" placeholder="0" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div class="form-group">
+            <label>¿De dónde sale el dinero?</label>
+            <select id="pay-place"></select>
+        </div>
+        <button onclick="confirmPayCredit()" class="btn">Confirmar Pago</button>
+    </div>
+</div>
+
+<!-- Modal para añadir presupuesto -->
+<div id="modal-budget" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('modal-budget')">&times;</span>
+        <h2>Configurar Presupuesto</h2>
+        <div class="form-group">
+            <label>Categoría</label>
+            <select id="budget-category"></select>
+        </div>
+        <div class="form-group">
+            <label>Límite Mensual ($)</label>
+            <input type="number" id="budget-amount" placeholder="0" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <button onclick="saveBudget()" class="btn">Guardar Presupuesto</button>
+    </div>
+</div>
+
+<!-- Contenedor para los Toasts -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Botón Flotante (FAB) para agregar movimiento rápido -->
+<button id="fabAdd" class="fab-add" aria-label="Agregar Movimiento">+</button>
+
 <script>
     // --- ESTADO GLOBAL ---
     let dbData = {
         movimientos: [],
         creditos: [],
         proyectos: [],
-        categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Deudas', 'Otros']
+        categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Deudas', 'Otros'],
+        lugares: ['Efectivo', 'Cuenta Ahorros', 'Nequi', 'Daviplata', 'Tarjeta Pipe', 'Tarjeta Luu'],
+        presupuestos: {}
     };
     
     let currentMonthOffset = 0;
@@ -376,11 +680,14 @@
     let currentCreditId = null;
     let splitMode = '5050';
     let isCapitalAbonoMode = false;
+    let currentPayCreditId = null;
 
     // --- INICIALIZACIÓN ---
     window.addEventListener('DOMContentLoaded', () => {
         loadLocalData();
         renderCategories();
+        renderPlaces();
+        renderBudgetsConfig();
         document.getElementById('m-date').valueAsDate = new Date();
         document.getElementById('c-start').valueAsDate = new Date();
         
@@ -390,12 +697,68 @@
         renderProyectos();
         
         setTimeout(() => {
-            document.getElementById('connection-status').innerHTML = '<i class="fas fa-wifi"></i> Nube (Sync)';
-            document.getElementById('connection-status').style.background = 'rgba(16, 185, 129, 0.2)';
+            updateConnectionStatus(true);
         }, 1000);
+
+        setupConnectionListener();
+        setupFAB();
     });
 
-    // --- GESTIÓN DE DATOS ---
+    function mostrarToast(mensaje, tipo = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast-msg ${tipo}`;
+        toast.textContent = mensaje;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => container.removeChild(toast), 300);
+        }, 3000);
+    }
+
+    function updateConnectionStatus(isOnline) {
+        const badge = document.getElementById('connection-status');
+        if (isOnline) {
+            badge.innerHTML = '<i class="fas fa-wifi"></i> Nube (Sync)';
+            badge.className = 'status-badge online';
+        } else {
+            badge.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline (Local)';
+            badge.className = 'status-badge offline';
+            mostrarToast('📴 Sin conexión. Guardando en local...', 'warning');
+        }
+    }
+
+    function setupConnectionListener() {
+        window.addEventListener('online', () => updateConnectionStatus(true));
+        window.addEventListener('offline', () => updateConnectionStatus(false));
+    }
+
+    function setupFAB() {
+        const fab = document.getElementById('fabAdd');
+        fab.addEventListener('click', () => {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(30);
+            }
+            
+            navTo('movimientos');
+            
+            setTimeout(() => {
+                const form = document.getElementById('form-movimiento');
+                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                setTimeout(() => {
+                    document.getElementById('m-desc').focus();
+                }, 300);
+            }, 100);
+            
+            mostrarToast('✨ ¿Qué vamos a registrar?', 'success');
+        });
+    }
+
     function saveData() {
         localStorage.setItem('pipeLuuData_v2', JSON.stringify(dbData));
         updateDashboard();
@@ -405,6 +768,21 @@
         const saved = localStorage.getItem('pipeLuuData_v2');
         if (saved) {
             dbData = JSON.parse(saved);
+            if (!dbData.lugares) dbData.lugares = ['Efectivo', 'Cuenta Ahorros', 'Nequi', 'Daviplata', 'Tarjeta Pipe', 'Tarjeta Luu'];
+            if (!dbData.presupuestos) dbData.presupuestos = {};
+            
+            // Migración de proyectos antiguos
+            if (dbData.proyectos) {
+                dbData.proyectos.forEach(p => {
+                    if (!p.locations) {
+                        p.locations = [{
+                            name: 'General',
+                            amount: p.current || 0,
+                            yield: 0
+                        }];
+                    }
+                });
+            }
         }
     }
 
@@ -416,7 +794,6 @@
         setTimeout(() => div.remove(), 3000);
     }
 
-    // --- NAVEGACIÓN ---
     function navTo(sectionId) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -428,10 +805,13 @@
         if(sectionId === 'movimientos') renderMovimientos();
         if(sectionId === 'creditos') renderCreditos();
         if(sectionId === 'proyectos') renderProyectos();
-        if(sectionId === 'config') renderCategories();
+        if(sectionId === 'config') {
+            renderCategories();
+            renderPlaces();
+            renderBudgetsConfig();
+        }
     }
 
-    // --- DASHBOARD & MES ---
     function getTargetDate(offset) {
         const d = new Date();
         d.setMonth(d.getMonth() + offset);
@@ -460,19 +840,23 @@
 
         let income = 0;
         let expense = 0;
-        let pipeNet = 0; // Lo que Luu le debe a Pipe (si es positivo)
-        let luuNet = 0;  // Lo que Pipe le debe a Luu (si es positivo)
+        let pipeNet = 0;
+        let luuNet = 0;
+        let gastosPorCategoria = {};
 
         monthMovs.forEach(m => {
             const amount = parseFloat(m.amount);
             if (m.type === 'ingreso') {
                 income += amount;
-                // Los ingresos no generan deuda entre ellos, solo suman al balance personal
                 if (m.payer === 'pipe') pipeNet += amount;
                 else if (m.payer === 'luu') luuNet += amount;
             } else {
                 expense += amount;
                 if (m.type === 'gasto') {
+                    if (m.category && m.category !== 'Deudas' && m.category !== 'Ahorro/Proyecto') {
+                        gastosPorCategoria[m.category] = (gastosPorCategoria[m.category] || 0) + amount;
+                    }
+
                     let pipeShare = 0;
                     let luuShare = 0;
                     
@@ -487,11 +871,9 @@
                     }
 
                     if (m.payer === 'pipe') {
-                        // Pipe pagó todo. Luu le debe su parte.
                         pipeNet += luuShare; 
                         luuNet -= luuShare;
                     } else if (m.payer === 'luu') {
-                        // Luu pagó todo. Pipe le debe su parte.
                         luuNet += pipeShare;
                         pipeNet -= pipeShare;
                     }
@@ -499,49 +881,53 @@
             }
         });
 
-        // Render Balance
         document.getElementById('dash-income').textContent = `$ ${income.toLocaleString()}`;
         document.getElementById('dash-expense').textContent = `$ ${expense.toLocaleString()}`;
         document.getElementById('dash-balance').textContent = `$ ${(income - expense).toLocaleString()}`;
 
-        // Render Settlement (Liquidación)
-        // pipeNet > 0 significa que Luu le debe a Pipe esa cantidad
-        // luuNet > 0 significa que Pipe le debe a Luu esa cantidad
-        // En realidad son espejos. Si pipeNet = 100, luuNet debería ser -100 en mi lógica anterior, pero los inicialicé en 0.
-        // Corregimos: La suma neta entre ellos debe ser 0.
-        const netDiff = pipeNet + luuNet; // Esto debería ser 0 si la lógica es perfecta, pero usaremos pipeNet como referencia de "cuánto tiene Pipe a favor"
-        
-        // Re-cálculo simple de deuda neta:
-        // Si pipeNet es positivo, Luu le debe. Si es negativo, Pipe debe (porque luuNet sería el positivo).
         let debtAmount = 0;
         let debtText = "";
-        let showLiquidateBtn = false;
+        let showLiquidateForm = false;
 
         if (pipeNet > 1) {
             debtAmount = pipeNet;
             debtText = `Luu le debe a Pipe: $${Math.abs(pipeNet).toLocaleString()}`;
-            showLiquidateBtn = true;
+            showLiquidateForm = true;
         } else if (pipeNet < -1) {
             debtAmount = Math.abs(pipeNet);
             debtText = `Pipe le debe a Luu: $${Math.abs(pipeNet).toLocaleString()}`;
-            showLiquidateBtn = true;
+            showLiquidateForm = true;
         } else {
             debtText = `¡Cuentas claras! 😎`;
         }
 
-        let htmlSettlement = `<div class="settlement-box"><strong>${debtText}</strong></div>`;
-        if(showLiquidateBtn) {
-            const payer = pipeNet > 0 ? 'luu' : 'pipe'; // Quien debe paga
+                let htmlSettlement = `<div class="settlement-box"><strong>${debtText}</strong>`;
+        if(showLiquidateForm) {
+            const payer = pipeNet > 0 ? 'luu' : 'pipe';
             const receiver = pipeNet > 0 ? 'pipe' : 'luu';
-            htmlSettlement += `<button onclick="liquidarDeuda('${payer}', '${receiver}', ${debtAmount})" class="btn btn-sm" style="margin-top:10px; width:100%;">💸 Liquidar Deuda Ahora</button>`;
+            
+            // Formulario vertical: Input arriba, Botón abajo, texto de ayuda al final
+            htmlSettlement += `
+                <div class="settlement-form">
+                    <input type="number" id="settlement-amount" value="${Math.round(debtAmount)}" placeholder="Monto a abonar" inputmode="numeric" pattern="[0-9]*">
+                    <button onclick="liquidarDeuda('${payer}', '${receiver}')" class="btn-liquidate" style="margin:0; width:100%;">💸 Abonar</button>
+                    <small style="color:var(--text-light); display:block; text-align:center; margin-top:2px;">Deuda total: $${Math.round(debtAmount).toLocaleString()} (Edita el monto si es un abono parcial)</small>
+                </div>
+            `;
         }
+        htmlSettlement += `</div>`;
         document.getElementById('dash-settlement-container').innerHTML = htmlSettlement;
 
-        // Total Proyectos
-        const totalProj = dbData.proyectos.reduce((sum, p) => sum + parseFloat(p.current), 0);
+        const totalProj = dbData.proyectos.reduce((sum, p) => {
+            if (p.locations) {
+                return sum + p.locations.reduce((s, loc) => s + parseFloat(loc.amount), 0);
+            }
+            return sum + parseFloat(p.current || 0);
+        }, 0);
         document.getElementById('dash-projects-total').textContent = `$ ${totalProj.toLocaleString()}`;
 
-        // Resumen Créditos
+        renderDashboardBudgets(gastosPorCategoria);
+
         let creditsHtml = '';
         dbData.creditos.forEach(c => {
             const startDate = new Date(c.startDate);
@@ -549,39 +935,111 @@
             const totalMonths = parseInt(c.term);
             const paidMonths = parseInt(c.paidMonths || 0);
             
-            if (monthsPassed >= paidMonths && monthsPassed < totalMonths) {
-                 // Hay cuota pendiente este mes
-                 creditsHtml += `<div class="list-item"><div class="item-info"><div class="item-title">${c.name}</div><div class="item-sub">Cuota: $${Math.round(c.cuota).toLocaleString()}</div></div><div class="badge bg-danger">Pendiente</div></div>`;
+            if (monthsPassed >= 0 && monthsPassed < totalMonths) {
+                const hayPagoEsteMes = monthMovs.some(m => 
+                    m.desc && m.desc.toLowerCase().includes(c.name.toLowerCase()) && 
+                    (m.desc.toLowerCase().includes('pago cuota') || m.desc.toLowerCase().includes('abono a capital'))
+                );
+
+                let statusBadge = '';
+                if (monthsPassed < paidMonths || hayPagoEsteMes) {
+                    statusBadge = `<div class="badge credit-status-paid">✅ Pagado</div>`;
+                } else {
+                    statusBadge = `<div class="badge bg-danger">Pendiente</div>`;
+                }
+
+                creditsHtml += `<div class="list-item"><div class="item-info"><div class="item-title">${c.name}</div><div class="item-sub">Cuota: $${Math.round(c.cuota).toLocaleString()}</div></div>${statusBadge}</div>`;
             }
         });
         document.getElementById('dash-credits-summary').innerHTML = creditsHtml || "<small>No hay cuotas activas este mes.</small>";
     }
 
-    // --- LIQUIDAR DEUDA ---
-    function liquidarDeuda(payer, receiver, amount) {
-        const confirmed = confirm(`¿Confirmar que ${payer.toUpperCase()} paga $${amount.toLocaleString()} a ${receiver.toUpperCase()} para saldar la cuenta?`);
+    function renderDashboardBudgets(gastosPorCategoria) {
+        const container = document.getElementById('dash-budgets-summary');
+        const presupuestos = dbData.presupuestos || {};
+        const cats = Object.keys(presupuestos);
+
+        if (cats.length === 0) {
+            container.innerHTML = '<small style="color:var(--text-light);">No hay presupuestos configurados. <a href="#" onclick="navTo(\'config\'); return false;" style="color:var(--accent-blue);">Configurar aquí</a></small>';
+            return;
+        }
+
+        let html = '';
+        cats.forEach(cat => {
+            const limite = presupuestos[cat];
+            const gastado = gastosPorCategoria[cat] || 0;
+            const pct = Math.min(100, (gastado / limite) * 100);
+            const pctReal = (gastado / limite) * 100;
+            
+            let barClass = 'ok';
+            if (pctReal >= 100) barClass = 'over';
+            else if (pctReal >= 80) barClass = 'warn';
+
+            let statusText = '';
+            if (pctReal >= 100) statusText = `<span style="color:var(--danger); font-weight:bold;">⚠️ Excedido</span>`;
+            else if (pctReal >= 80) statusText = `<span style="color:var(--warning); font-weight:bold;">⚡ Cerca del límite</span>`;
+            else statusText = `<span style="color:var(--success);">✓ En rango</span>`;
+
+            html += `
+                <div class="budget-item">
+                    <div class="budget-header">
+                        <strong>${cat}</strong>
+                        ${statusText}
+                    </div>
+                    <div class="budget-bar-bg">
+                        <div class="budget-bar-fill ${barClass}" style="width:${pct}%"></div>
+                    </div>
+                    <div class="budget-values">
+                        <span>Gastado: $${Math.round(gastado).toLocaleString()}</span>
+                        <span>Límite: $${limite.toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function liquidarDeuda(payer, receiver) {
+        const amountInput = document.getElementById('settlement-amount');
+        const amount = parseFloat(amountInput.value);
+
+        if (!amount || amount <= 0) {
+            mostrarToast('❌ Ingresa un monto válido', 'error');
+            return;
+        }
+
+        const confirmed = confirm(`¿Confirmar que ${payer.toUpperCase()} abona $${amount.toLocaleString()} a ${receiver.toUpperCase()}?`);
         if(!confirmed) return;
+
+        // Lógica de Splitwise para abonos de deuda:
+        // Si Pipe paga (payer='pipe'), el gasto se asigna 100% a Luu (0100) para reducir la deuda de Luu.
+        // Si Luu paga (payer='luu'), el gasto se asigna 100% a Pipe (1000) para reducir la deuda de Pipe.
+        const isPipePaying = payer === 'pipe';
 
         const mov = {
             id: Date.now(),
             date: new Date().toISOString().split('T')[0],
-            desc: `Liquidación de deuda a ${receiver}`,
+            desc: `Abono de deuda a ${receiver}`,
             amount: amount,
             category: 'Otros',
             type: 'gasto',
             payer: payer,
-            splitType: '1000', // El que paga asume el 100% de este gasto de "saldir deuda"
-            splitP: payer === 'pipe' ? 100 : 0,
-            splitL: payer === 'luu' ? 100 : 0,
-            nota: 'Liquidación manual'
+            splitType: isPipePaying ? '0100' : '1000', 
+            splitP: isPipePaying ? 0 : 100,
+            splitL: isPipePaying ? 100 : 0,
+            lugar: 'Efectivo',
+            nota: 'Abono a deuda'
         };
+        
         dbData.movimientos.unshift(mov);
         saveData();
-        updateDashboard();
-        showAlert('Deuda liquidada correctamente');
+        updateDashboard(); // Esto recalculará el saldo y actualizará el input con la nueva deuda restante
+        
+        if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
+        mostrarToast('✅ Abono registrado correctamente', 'success');
     }
 
-    // --- MOVIMIENTOS ---
     function toggleSplitOptions() {
         const type = document.getElementById('m-type').value;
         const section = document.getElementById('split-section');
@@ -608,7 +1066,8 @@
             payer: type === 'gasto' ? document.getElementById('m-payer').value : 'pipe',
             splitType: type === 'gasto' ? splitMode : null,
             splitP: type === 'gasto' ? document.getElementById('split-p').value : null,
-            splitL: type === 'gasto' ? document.getElementById('split-l').value : null
+            splitL: type === 'gasto' ? document.getElementById('split-l').value : null,
+            lugar: document.getElementById('m-place').value || 'Efectivo'
         };
         
         dbData.movimientos.unshift(mov);
@@ -617,7 +1076,9 @@
         e.target.reset();
         document.getElementById('m-date').valueAsDate = new Date();
         toggleSplitOptions();
-        showAlert('Movimiento guardado');
+        
+        if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
+        mostrarToast('✅ Movimiento guardado', 'success');
     });
 
     function renderMovimientos() {
@@ -650,9 +1111,11 @@
             else if(m.payer === 'luu') payerIcon = '<i class="fas fa-female" style="color:#EC4899"></i>';
             else payerIcon = '<i class="fas fa-paw" style="color:#F59E0B"></i>';
 
+            const lugarBadge = m.lugar ? `<span class="badge" style="background:#e0e7ff; color:#3730a3; margin-left:5px;">${m.lugar}</span>` : '';
+
             div.innerHTML = `
                 <div class="item-info">
-                    <div class="item-title">${m.desc} <span class="badge" style="background:#eee; color:#333; margin-left:5px;">${m.category}</span></div>
+                    <div class="item-title">${m.desc} <span class="badge" style="background:#eee; color:#333; margin-left:5px;">${m.category}</span>${lugarBadge}</div>
                     <div class="item-sub">${m.date} ${payerIcon}</div>
                 </div>
                 <div style="text-align:right">
@@ -670,10 +1133,10 @@
             saveData();
             renderMovimientos();
             updateDashboard();
+            mostrarToast('🗑️ Movimiento eliminado', 'warning');
         }
     }
 
-    // --- CREDITOS ---
     document.getElementById('form-credito').addEventListener('submit', (e) => {
         e.preventDefault();
         const total = parseFloat(document.getElementById('c-total').value);
@@ -718,7 +1181,8 @@
                         payer: owner,
                         splitType: '1000',
                         splitP: owner==='pipe'?100:0,
-                        splitL: owner==='luu'?100:0
+                        splitL: owner==='luu'?100:0,
+                        lugar: 'Efectivo'
                     });
                 }
             }
@@ -742,7 +1206,9 @@
         saveData();
         renderCreditos();
         e.target.reset();
-        showAlert('Crédito creado y histórico generado');
+        
+        if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
+        mostrarToast('✅ Crédito creado y histórico generado', 'success');
     });
 
     function renderCreditos() {
@@ -794,57 +1260,60 @@
 
     function openPayModal(isAbono) {
         isCapitalAbonoMode = isAbono;
-        closeModal('modal-credito'); // Cerramos el de detalles para usar prompt simple o podríamos abrir otro modal
+        closeModal('modal-credito');
         
         const c = dbData.creditos.find(x => x.id === currentCreditId);
-        let msg = "";
-        let defaultVal = "";
-
-        if(isAbono) {
-            msg = `INGRESA EL MONTO DEL ABONO A CAPITAL PARA: ${c.name}\n(Saldo actual: $${Math.round(c.currentBalance).toLocaleString()})`;
-            defaultVal = "";
+        currentPayCreditId = currentCreditId;
+        
+        document.getElementById('modal-pay-title').textContent = isAbono ? 'Abono a Capital' : 'Pagar Cuota Mensual';
+        
+        const payAmountInput = document.getElementById('pay-amount');
+        if (isAbono) {
+            payAmountInput.value = '';
+            payAmountInput.placeholder = 'Monto del abono';
         } else {
-            msg = `INGRESA EL VALOR REAL PAGADO DE LA CUOTA PARA: ${c.name}\n(Cuota calculada: $${Math.round(c.cuota).toLocaleString()})\n\n(Incluye seguros si el banco cobró más)`;
-            defaultVal = Math.round(c.cuota);
+            payAmountInput.value = Math.round(c.cuota);
         }
-
-        const valStr = prompt(msg, defaultVal);
-        if(valStr === null) {
-            openCreditoModal(currentCreditId); // Reabrir si cancela
-            return;
-        }
-
-        const valReal = parseFloat(valStr);
-        if(isNaN(valReal) || valReal <= 0) {
-            alert("Monto inválido");
-            openCreditoModal(currentCreditId);
-            return;
-        }
-
-        procesarPagoCredito(c, valReal, isAbono);
+        
+        // Llenar selector de lugares
+        const placeSelect = document.getElementById('pay-place');
+        placeSelect.innerHTML = '';
+        dbData.lugares.forEach(lugar => {
+            const opt = document.createElement('option');
+            opt.value = lugar;
+            opt.textContent = lugar;
+            placeSelect.appendChild(opt);
+        });
+        
+        document.getElementById('modal-pay-credit').style.display = 'flex';
     }
 
-    function procesarPagoCredito(c, valReal, isAbono) {
+    function confirmPayCredit() {
+        const valReal = parseFloat(document.getElementById('pay-amount').value);
+        const lugar = document.getElementById('pay-place').value;
+        
+        if (isNaN(valReal) || valReal <= 0) {
+            mostrarToast('❌ Monto inválido', 'error');
+            return;
+        }
+        
+        const c = dbData.creditos.find(x => x.id === currentPayCreditId);
+        closeModal('modal-pay-credit');
+        procesarPagoCredito(c, valReal, isCapitalAbonoMode, lugar);
+    }
+
+    function procesarPagoCredito(c, valReal, isAbono, lugar) {
         const today = new Date().toISOString().split('T')[0];
         let desc = "";
         let amountToRecord = valReal;
 
         if(isAbono) {
             desc = `Abono a capital: ${c.name}`;
-            // En abono a capital, todo reduce saldo
             c.currentBalance -= valReal;
-            // No aumentamos paidMonths necesariamente, o sí, depende si cuenta como cuota completa. 
-            // Para simplificar, no contamos como "mes pagado" oficial si es parcial, pero reducimos saldo.
-            // Opcional: Si el abono >= cuota, contar como mes.
         } else {
             desc = `Pago cuota: ${c.name}`;
-            // Calculamos interés del mes sobre saldo actual
             const interest = c.currentBalance * c.rate;
-            const principal = valReal - interest; // Lo que realmente baja deuda
-            
-            // Si el usuario pagó más (seguros), el extra no baja deuda, es gasto extra.
-            // Pero para simplificar la proyección: restamos la parte proporcional a la cuota fija.
-            // Mejor: Restamos (valReal - interes) si valReal > interes.
+            const principal = valReal - interest;
             
             if(principal > 0) {
                 c.currentBalance -= principal;
@@ -854,7 +1323,6 @@
 
         if(c.currentBalance < 0) c.currentBalance = 0;
 
-        // Crear movimiento
         dbData.movimientos.unshift({
             id: Date.now(),
             date: today,
@@ -862,16 +1330,19 @@
             amount: amountToRecord,
             category: 'Deudas',
             type: 'gasto',
-            payer: c.owner, // CLAVE: Usa el dueño del crédito
+            payer: c.owner,
             splitType: '1000',
             splitP: c.owner === 'pipe' ? 100 : 0,
-            splitL: c.owner === 'luu' ? 100 : 0
+            splitL: c.owner === 'luu' ? 100 : 0,
+            lugar: lugar || 'Efectivo'
         });
 
         saveData();
         renderCreditos();
         renderMovimientos();
-        showAlert(isAbono ? 'Abono registrado' : 'Pago registrado');
+        
+        if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
+        mostrarToast(isAbono ? '✅ Abono registrado' : '✅ Pago registrado', 'success');
     }
 
     function deleteCredito(id) {
@@ -879,6 +1350,7 @@
             dbData.creditos = dbData.creditos.filter(c => c.id !== id);
             saveData();
             renderCreditos();
+            mostrarToast('🗑️ Crédito eliminado', 'warning');
         }
     }
 
@@ -889,7 +1361,6 @@
         }
     }
 
-    // --- PROYECTOS ---
     document.getElementById('form-proyecto').addEventListener('submit', (e) => {
         e.preventDefault();
         const proj = {
@@ -897,10 +1368,17 @@
             name: document.getElementById('p-name').value,
             goal: parseFloat(document.getElementById('p-goal').value),
             current: parseFloat(document.getElementById('p-current').value),
-            deadline: document.getElementById('p-deadline').value
+            deadline: document.getElementById('p-deadline').value,
+            locations: []
         };
         
         if(proj.current > 0) {
+            proj.locations.push({
+                name: 'General',
+                amount: proj.current,
+                yield: 0
+            });
+            
             dbData.movimientos.unshift({
                 id: Date.now(),
                 date: new Date().toISOString().split('T')[0],
@@ -910,7 +1388,8 @@
                 type: 'gasto',
                 payer: 'pipe', 
                 splitType: '1000',
-                splitP: 100, splitL: 0
+                splitP: 100, splitL: 0,
+                lugar: 'Efectivo'
             });
         }
 
@@ -918,14 +1397,17 @@
         saveData();
         renderProyectos();
         e.target.reset();
-        showAlert('Proyecto creado');
+        
+        if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
+        mostrarToast('✅ Proyecto creado', 'success');
     });
 
     function renderProyectos() {
         const list = document.getElementById('proyectos-list');
         list.innerHTML = '';
         dbData.proyectos.forEach(p => {
-            const pct = Math.min(100, (p.current / p.goal) * 100);
+            const totalCurrent = p.locations ? p.locations.reduce((sum, loc) => sum + parseFloat(loc.amount), 0) : parseFloat(p.current || 0);
+            const pct = Math.min(100, (totalCurrent / p.goal) * 100);
             const div = document.createElement('div');
             div.className = 'card';
             div.onclick = () => openProjectModal(p.id);
@@ -937,9 +1419,10 @@
                 </div>
                 <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
                 <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-                    <span>$${p.current.toLocaleString()}</span>
+                    <span>$${totalCurrent.toLocaleString()}</span>
                     <span>Meta: $${p.goal.toLocaleString()}</span>
                 </div>
+                ${p.locations && p.locations.length > 0 ? `<div style="font-size:0.75rem; color:var(--text-light); margin-top:5px;">${p.locations.length} ubicación(es) de ahorro</div>` : ''}
             `;
             list.appendChild(div);
         });
@@ -949,19 +1432,121 @@
         currentProjectId = id;
         const p = dbData.proyectos.find(x => x.id === id);
         document.getElementById('modal-p-title').textContent = p.name;
-        const pct = Math.min(100, (p.current / p.goal) * 100);
+        
+        const totalCurrent = p.locations ? p.locations.reduce((sum, loc) => sum + parseFloat(loc.amount), 0) : parseFloat(p.current || 0);
+        const pct = Math.min(100, (totalCurrent / p.goal) * 100);
         document.getElementById('modal-p-progress').style.width = pct + '%';
-        document.getElementById('modal-p-stats').textContent = `${pct.toFixed(1)}% completado`;
+        document.getElementById('modal-p-stats').textContent = `${pct.toFixed(1)}% completado - $${totalCurrent.toLocaleString()} de $${p.goal.toLocaleString()}`;
+        
+        // Renderizar ubicaciones
+        renderProjectLocations(p);
+        
+        // Llenar selector de ubicaciones para ahorro rápido
+        const select = document.getElementById('modal-p-location-select');
+        select.innerHTML = '';
+        if (p.locations && p.locations.length > 0) {
+            p.locations.forEach((loc, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = `${loc.name} ($${parseFloat(loc.amount).toLocaleString()})`;
+                select.appendChild(opt);
+            });
+        }
+        
         document.getElementById('modal-p-amount').value = '';
         document.getElementById('modal-proyecto').style.display = 'flex';
     }
 
+    function renderProjectLocations(p) {
+        const container = document.getElementById('modal-p-locations-container');
+        if (!p.locations || p.locations.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-light); font-size:0.85rem; text-align:center; padding:10px;">No hay ubicaciones de ahorro aún.</p>';
+            return;
+        }
+        
+        let html = '<div class="project-locations"><h4 style="margin-bottom:10px; font-size:0.95rem;">Ubicaciones de Ahorro</h4>';
+        p.locations.forEach((loc, idx) => {
+            const yieldBadge = loc.yield > 0 ? `<span class="yield-badge">${loc.yield}% anual</span>` : '';
+            html += `
+                <div class="location-item">
+                    <div class="location-info">
+                        <div class="location-name">${loc.name} ${yieldBadge}</div>
+                        <div class="location-details">Rendimiento anual: ${loc.yield || 0}%</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="location-amount">$${parseFloat(loc.amount).toLocaleString()}</div>
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteLocation(${idx})"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function openAddLocationModal() {
+        document.getElementById('loc-name').value = '';
+        document.getElementById('loc-amount').value = '';
+        document.getElementById('loc-yield').value = '0';
+        document.getElementById('modal-add-location').style.display = 'flex';
+    }
+
+    function saveLocation() {
+        const name = document.getElementById('loc-name').value.trim();
+        const amount = parseFloat(document.getElementById('loc-amount').value);
+        const yieldPct = parseFloat(document.getElementById('loc-yield').value) || 0;
+        
+        if (!name || isNaN(amount) || amount < 0) {
+            mostrarToast('❌ Datos inválidos', 'error');
+            return;
+        }
+        
+        const p = dbData.proyectos.find(x => x.id === currentProjectId);
+        if (!p.locations) p.locations = [];
+        
+        p.locations.push({
+            name: name,
+            amount: amount,
+            yield: yieldPct
+        });
+        
+        saveData();
+        renderProjectLocations(p);
+        closeModal('modal-add-location');
+        mostrarToast('✅ Ubicación añadida', 'success');
+    }
+
+    function deleteLocation(idx) {
+        if(confirm('¿Eliminar esta ubicación de ahorro?')) {
+            const p = dbData.proyectos.find(x => x.id === currentProjectId);
+            p.locations.splice(idx, 1);
+            saveData();
+            renderProjectLocations(p);
+            mostrarToast('🗑️ Ubicación eliminada', 'warning');
+        }
+    }
+
     function saveProjectFund() {
+        const locationIdx = parseInt(document.getElementById('modal-p-location-select').value);
         const amount = parseFloat(document.getElementById('modal-p-amount').value);
-        if(!amount || amount <= 0) return;
+        
+        if(!amount || amount <= 0) {
+            mostrarToast('❌ Ingresa un monto válido', 'error');
+            return;
+        }
 
         const p = dbData.proyectos.find(x => x.id === currentProjectId);
-        p.current += amount;
+        
+        if (p.locations && p.locations[locationIdx]) {
+            p.locations[locationIdx].amount += amount;
+        } else {
+            if (!p.locations) p.locations = [];
+            p.locations.push({
+                name: 'General',
+                amount: amount,
+                yield: 0
+            });
+        }
 
         dbData.movimientos.unshift({
             id: Date.now(),
@@ -972,13 +1557,16 @@
             type: 'gasto',
             payer: 'pipe', 
             splitType: '1000',
-            splitP: 100, splitL: 0
+            splitP: 100, splitL: 0,
+            lugar: 'Efectivo'
         });
 
         saveData();
         renderProyectos();
-        closeModal('modal-proyecto');
-        showAlert('Ahorro añadido y movimiento registrado');
+        openProjectModal(currentProjectId);
+        
+        if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
+        mostrarToast('✅ Ahorro añadido y movimiento registrado', 'success');
     }
 
     function deleteCurrentProject() {
@@ -987,6 +1575,7 @@
             saveData();
             renderProyectos();
             closeModal('modal-proyecto');
+            mostrarToast('🗑️ Proyecto eliminado', 'warning');
         }
     }
     
@@ -995,10 +1584,10 @@
             dbData.proyectos = dbData.proyectos.filter(p => p.id !== id);
             saveData();
             renderProyectos();
+            mostrarToast('🗑️ Proyecto eliminado', 'warning');
         }
     }
 
-    // --- CONFIG & UTILS ---
     function renderCategories() {
         const select = document.getElementById('m-category');
         const list = document.getElementById('config-categories-list');
@@ -1025,6 +1614,7 @@
             saveData();
             renderCategories();
             document.getElementById('new-cat-name').value = '';
+            mostrarToast('✅ Categoría añadida', 'success');
         }
     }
 
@@ -1033,6 +1623,116 @@
             dbData.categorias = dbData.categorias.filter(c => c !== name);
             saveData();
             renderCategories();
+            mostrarToast('🗑️ Categoría eliminada', 'warning');
+        }
+    }
+
+    function renderPlaces() {
+        const select = document.getElementById('m-place');
+        const list = document.getElementById('config-places-list');
+        if (!select || !list) return;
+        
+        select.innerHTML = '';
+        list.innerHTML = '';
+        
+        dbData.lugares.forEach(lugar => {
+            const opt = document.createElement('option');
+            opt.value = lugar;
+            opt.textContent = lugar;
+            select.appendChild(opt);
+
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `<span><i class="fas fa-wallet" style="color:var(--accent-blue); margin-right:8px;"></i>${lugar}</span> <button class="delete-btn" onclick="removePlace('${lugar.replace(/'/g, "\\'")}')"><i class="fas fa-times"></i></button>`;
+            list.appendChild(item);
+        });
+    }
+
+    function addPlace() {
+        const name = document.getElementById('new-place-name').value.trim();
+        if(name && !dbData.lugares.includes(name)) {
+            dbData.lugares.push(name);
+            saveData();
+            renderPlaces();
+            document.getElementById('new-place-name').value = '';
+            mostrarToast('✅ Lugar añadido', 'success');
+        }
+    }
+
+    function removePlace(name) {
+        if(confirm(`¿Quitar "${name}" de la lista?`)) {
+            dbData.lugares = dbData.lugares.filter(l => l !== name);
+            saveData();
+            renderPlaces();
+            mostrarToast('🗑️ Lugar eliminado', 'warning');
+        }
+    }
+
+    function renderBudgetsConfig() {
+        const list = document.getElementById('config-budgets-list');
+        if (!list) return;
+        list.innerHTML = '';
+        
+        const presupuestos = dbData.presupuestos || {};
+        const cats = Object.keys(presupuestos);
+
+        if (cats.length === 0) {
+            list.innerHTML = '<p style="color:var(--text-light); font-size:0.9rem; text-align:center; padding:10px;">No hay presupuestos configurados aún.</p>';
+            return;
+        }
+
+        cats.forEach(cat => {
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `
+                <div class="item-info">
+                    <div class="item-title">${cat}</div>
+                    <div class="item-sub">Límite: $${presupuestos[cat].toLocaleString()}/mes</div>
+                </div>
+                <button class="delete-btn" onclick="removeBudget('${cat.replace(/'/g, "\\'")}')"><i class="fas fa-times"></i></button>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    function openBudgetModal() {
+        const select = document.getElementById('budget-category');
+        select.innerHTML = '';
+        dbData.categorias.forEach(cat => {
+            if (cat !== 'Deudas' && cat !== 'Ahorro/Proyecto') {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
+            }
+        });
+        document.getElementById('budget-amount').value = '';
+        document.getElementById('modal-budget').style.display = 'flex';
+    }
+
+    function saveBudget() {
+        const cat = document.getElementById('budget-category').value;
+        const amount = parseFloat(document.getElementById('budget-amount').value);
+        
+        if (!cat || !amount || amount <= 0) {
+            mostrarToast('❌ Ingresa datos válidos', 'error');
+            return;
+        }
+
+        if (!dbData.presupuestos) dbData.presupuestos = {};
+        dbData.presupuestos[cat] = amount;
+        saveData();
+        renderBudgetsConfig();
+        closeModal('modal-budget');
+        mostrarToast('✅ Presupuesto guardado', 'success');
+    }
+
+    function removeBudget(cat) {
+        if(confirm(`¿Eliminar presupuesto de "${cat}"?`)) {
+            delete dbData.presupuestos[cat];
+            saveData();
+            renderBudgetsConfig();
+            mostrarToast('🗑️ Presupuesto eliminado', 'warning');
         }
     }
 
@@ -1044,9 +1744,9 @@
     }
 
     function exportCSV() {
-        let csv = "fecha,tipo,descripcion,monto,categoria,payer\n";
+        let csv = "fecha,tipo,descripcion,monto,categoria,lugar,payer,splitType,splitP,splitL\n";
         dbData.movimientos.forEach(m => {
-            csv += `${m.date},${m.type},"${m.desc}",${m.amount},${m.category},${m.payer}\n`;
+            csv += `${m.date},${m.type},"${m.desc}",${m.amount},${m.category},${m.lugar || ''},${m.payer},${m.splitType || ''},${m.splitP || ''},${m.splitL || ''}\n`;
         });
         const blob = new Blob([csv], {type: 'text/csv'});
         const url = URL.createObjectURL(blob);
@@ -1054,6 +1754,7 @@
         a.href = url;
         a.download = 'finanzas_pipe_luu.csv';
         a.click();
+        mostrarToast('📥 CSV descargado', 'success');
     }
 
     function importCSV() {
@@ -1075,16 +1776,18 @@
                         desc: cols[2].replace(/"/g, ''),
                         amount: parseFloat(cols[3]),
                         category: cols[4],
-                        payer: cols[5] || 'pipe',
-                        splitType: '1000',
-                        splitP: 100, splitL: 0
+                        lugar: cols[5] || 'Efectivo',
+                        payer: cols[6] || 'pipe',
+                        splitType: cols[7] || '1000',
+                        splitP: cols[8] || 100,
+                        splitL: cols[9] || 0
                     });
                     count++;
                 }
             });
             saveData();
             renderMovimientos();
-            alert(`${count} movimientos importados.`);
+            mostrarToast(`✅ ${count} movimientos importados`, 'success');
         };
         reader.readAsText(file);
     }
