@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -367,6 +367,8 @@
         <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
         <h3>Pagar Cuota</h3>
         <p style="font-size:0.9rem; color:var(--text-light); margin-bottom:10px;">Al pagar, se generará un movimiento de egreso a nombre del responsable.</p>
+        <!-- Agrega esto dentro de #modal-credito, antes del botón de pagar mes -->
+<button id="btn-abono-capital" class="btn btn-secondary" style="margin-top:10px; background:var(--primary-medium);">💰 Abono a Capital</button>
         <button id="btn-pay-month" class="btn">Pagar Mes Siguiente</button>
     </div>
 </div>
@@ -589,16 +591,23 @@
         document.getElementById('dash-balance').textContent = `$ ${(income - expense).toLocaleString()}`;
 
         // Settlement
-        const diff = pipeNet + luuNet; // Debería ser 0 si sumamos ambos lados de la ecuación correctamente
-        // Usamos la lógica de "LuNet" que representa lo que Luu debe (negativo) o le deben (positivo)
-        // Si pipeNet > 0, Luu le debe a Pipe.
-        if (pipeNet > 1) {
-            document.getElementById('dash-settlement').innerHTML = `<span style="color:var(--success)">Luu le debe a Pipe: $${Math.abs(pipeNet).toLocaleString()}</span>`;
-        } else if (pipeNet < -1) {
-            document.getElementById('dash-settlement').innerHTML = `<span style="color:var(--danger)">Pipe le debe a Luu: $${Math.abs(pipeNet).toLocaleString()}</span>`;
-        } else {
-            document.getElementById('dash-settlement').innerHTML = `<span style="color:var(--text-light)">¡Cuentas claras! 😎</span>`;
-        }
+const settlementEl = document.getElementById('dash-settlement');
+
+if (pipeNet > 1) {
+    settlementEl.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:5px; align-items:center;">
+            <span style="color:var(--success)">Luu le debe a Pipe: $${Math.abs(pipeNet).toLocaleString()}</span>
+            <button onclick="liquidarDeuda('luu', ${Math.abs(pipeNet)})" class="btn btn-sm" style="background:var(--success); width:auto; font-size:0.7rem; padding:4px 8px;">💰 Liquidar</button>
+        </div>`;
+} else if (pipeNet < -1) {
+    settlementEl.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:5px; align-items:center;">
+            <span style="color:var(--danger)">Pipe le debe a Luu: $${Math.abs(pipeNet).toLocaleString()}</span>
+            <button onclick="liquidarDeuda('pipe', ${Math.abs(pipeNet)})" class="btn btn-sm" style="background:var(--danger); width:auto; font-size:0.7rem; padding:4px 8px;">💰 Liquidar</button>
+        </div>`;
+} else {
+    settlementEl.innerHTML = `<span style="color:var(--text-light)">¡Cuentas claras! 😎</span>`;
+}
 
         // Total Proyectos
         const totalProj = dbData.proyectos.reduce((sum, p) => sum + parseFloat(p.current), 0);
@@ -825,44 +834,60 @@
         
         const btn = document.getElementById('btn-pay-month');
         btn.onclick = () => payCreditMonth(c);
-        
+        const btnAbono = document.getElementById('btn-abono-capital');
+        btnAbono.onclick = () => hacerAbonoCapital(c);
+
+        document.getElementById('modal-credito').style.display = 'flex';
+}
         document.getElementById('modal-credito').style.display = 'flex';
     }
 
-    function payCreditMonth(c) {
-        // 1. Crear movimiento
-        const today = new Date().toISOString().split('T')[0];
-        dbData.movimientos.unshift({
-            id: Date.now(),
-            date: today,
-            desc: `Pago cuota: ${c.name}`,
-            amount: c.cuota,
-            category: 'Deudas',
-            type: 'gasto',
-            payer: c.owner, // Importante: Usa el dueño del crédito
-            splitType: '1000', // El dueño paga el 100% de su deuda
-            splitP: c.owner === 'pipe' ? 100 : 0,
-            splitL: c.owner === 'luu' ? 100 : 0
-        });
-
-        // 2. Actualizar crédito
-        // Recalcular saldo simple (resta cuota) - Para precisión financiera real se debería recalculaar tabla amortización, 
-        // pero para esta app, restar cuota es suficiente aproximación si la cuota es fija precalculada.
-        // Mejora: Recalcular interés del mes sobre el saldo actual.
-        const interest = c.currentBalance * c.rate;
-        const principal = c.cuota - interest;
-        
-        c.currentBalance -= principal;
-        c.paidMonths++;
-
-        if(c.currentBalance < 0) c.currentBalance = 0;
-
-        saveData();
-        closeModal('modal-credito');
-        renderCreditos();
-        renderMovimientos();
-        showAlert('Pago registrado correctamente');
+function payCreditMonth(c) {
+    // 1. Pedir el valor REAL pagado (para incluir seguros si los hay)
+    const valorCalculado = Math.round(c.cuota);
+    let valorRealInput = prompt(`Cuota calculada: $${valorCalculado}\nIngresa el VALOR REAL PAGADO (incluye seguros si aplica):`, valorCalculado);
+    
+    if (valorRealInput === null) return; // Cancelado
+    let valorReal = parseFloat(valorRealInput);
+    if (isNaN(valorReal) || valorReal <= 0) {
+        alert("Valor inválido");
+        return;
     }
+
+    // 2. Calcular diferencia para seguros
+    let descripcion = `Pago cuota: ${c.name}`;
+    if (valorReal > valorCalculado) {
+        descripcion += ` (+$${(valorReal - valorCalculado).toLocaleString()} seguros/gastos)`;
+    }
+
+    // 3. Crear movimiento a nombre del DUEÑO del crédito (c.owner)
+    dbData.movimientos.unshift({
+        id: Date.now(),
+        date: new Date().toISOString().split('T')[0],
+        desc: descripcion,
+        amount: valorReal,
+        category: 'Deudas',
+        type: 'gasto',
+        payer: c.owner, // AQUÍ ESTABA EL ERROR: Ahora usa c.owner dinámicamente
+        splitType: '1000', 
+        splitP: c.owner === 'pipe' ? 100 : 0,
+        splitL: c.owner === 'luu' ? 100 : 0
+    });
+
+    // 4. Actualizar saldo (restamos la parte de capital de la cuota base)
+    const interest = c.currentBalance * c.rate;
+    const principal = c.cuota - interest;
+    
+    c.currentBalance -= principal;
+    c.paidMonths++;
+    if(c.currentBalance < 0) c.currentBalance = 0;
+
+    saveData();
+    closeModal('modal-credito');
+    renderCreditos();
+    renderMovimientos();
+    showAlert('Pago registrado correctamente');
+}
 
     function deleteCredito(id) {
         if(confirm('¿Eliminar crédito?')) {
@@ -1077,11 +1102,65 @@
     function closeModal(id) {
         document.getElementById(id).style.display = 'none';
     }
+    function liquidarDeuda(deudor, monto) {
+    const confirmacion = confirm(`¿${deudor === 'pipe' ? 'Pipe' : 'Luu'} va a pagar $${monto.toLocaleString()} para saldar la deuda?`);
+    if (!confirmacion) return;
 
+    dbData.movimientos.unshift({
+        id: Date.now(),
+        date: new Date().toISOString().split('T')[0],
+        desc: `Liquidación de deuda entre pareja`,
+        amount: monto,
+        category: 'Otros',
+        type: 'gasto',
+        payer: deudor,
+        splitType: '1000', // El deudor paga
+        splitP: deudor === 'pipe' ? 100 : 0,
+        splitL: deudor === 'luu' ? 100 : 0,
+        nota: 'Ajuste directo'
+    });
+    
+    saveData();
+    updateDashboard();
+    renderMovimientos();
+    showAlert('Deuda liquidada correctamente');
+}
     // Cerrar modales al hacer click fuera
     window.onclick = (e) => {
         if(e.target.classList.contains('modal')) e.target.style.display = 'none';
     }
+    function hacerAbonoCapital(c) {
+    const monto = prompt(`Saldo actual: $${Math.round(c.currentBalance).toLocaleString()}\nIngresa el monto del ABONO A CAPITAL:`);
+    if (!monto) return;
+    const val = parseFloat(monto);
+    if (isNaN(val) || val <= 0) return alert("Monto inválido");
+    if (val > c.currentBalance) return alert("El abono no puede ser mayor al saldo");
+
+    // Registrar movimiento
+    dbData.movimientos.unshift({
+        id: Date.now(),
+        date: new Date().toISOString().split('T')[0],
+        desc: `Abono a capital: ${c.name}`,
+        amount: val,
+        category: 'Deudas',
+        type: 'gasto',
+        payer: c.owner,
+        splitType: '1000',
+        splitP: c.owner === 'pipe' ? 100 : 0,
+        splitL: c.owner === 'luu' ? 100 : 0
+    });
+
+    // Reducir saldo directamente
+    c.currentBalance -= val;
+    // Opcional: aumentar meses pagados proporcionalmente o dejarlo igual para mantener fecha
+    // Lo más lógico es reducir saldo y recalcular fecha, pero para simplificar solo reducimos saldo.
+    
+    saveData();
+    closeModal('modal-credito');
+    renderCreditos();
+    renderMovimientos();
+    showAlert('Abono a capital registrado');
+}
 </script>
 </body>
 </html>
