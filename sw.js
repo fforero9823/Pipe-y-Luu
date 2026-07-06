@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-luu-v1';
+const CACHE_NAME = 'pipe-luu-v2'; // CAMBIA LA VERSIÓN CADA VEZ QUE ACTUALICES
 const urlsToCache = [
   './',
   './index.html',
@@ -7,7 +7,7 @@ const urlsToCache = [
   './icon-512.png'
 ];
 
-// Instalación: Guarda los archivos en la caché
+// Instalación
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -16,30 +16,42 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
   );
+  self.skipWaiting(); // Fuerza activación inmediata
 });
 
-// Activación: Limpia cachés viejas si las hay
+// Activación: Limpia cachés viejas
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(thisCacheName => {
           if (thisCacheName !== CACHE_NAME) {
+            console.log('Borrando caché vieja:', thisCacheName);
             return caches.delete(thisCacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Toma control de todas las pestañas
   );
 });
 
-// Fetch: Sirve desde la caché, si no está, va a la red
+// Fetch: Siempre intenta red primero, si falla usa caché
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // Si está en caché, lo devuelve. Si no, lo descarga.
-        return response || fetch(event.request);
+        // Si la respuesta es válida, actualiza la caché
+        if (response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Si no hay internet, usa la caché
+        return caches.match(event.request);
       })
   );
 });
