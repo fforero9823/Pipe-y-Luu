@@ -6,6 +6,10 @@
     <title>Finanzas Pipe & Luu</title>
     <!-- Chart.js para gráficas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --bg-color: #F5F5F0;
@@ -28,129 +32,84 @@
 
         /* Header */
         header { background-color: var(--primary-dark); color: white; padding: 1.5rem 1rem; text-align: center; position: relative; }
-        header h1 { font-size: 1.8rem; font-weight: 700; }
-        header p { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
-        .cats-badge { display: inline-block; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin-top: 10px; }
-        
-        /* Status Indicator */
-        #cloud-status { position: absolute; top: 10px; right: 10px; font-size: 0.7rem; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 10px; }
-        .status-ok { color: #4ade80; }
-        .status-error { color: #f87171; }
-        .status-sync { color: #60a5fa; }
+        header h1 { font-size: 1.5rem; font-weight: 700; }
+        .status-indicator { position: absolute; top: 15px; right: 15px; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 12px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: gray; }
+        .dot.online { background: var(--success); box-shadow: 0 0 5px var(--success); }
+        .dot.local { background: var(--warning); }
 
-        /* Navigation - Scrollable for Mobile */
-        nav {
-            background: var(--card-bg);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            overflow-x: auto;
-            white-space: nowrap;
-            padding: 0.5rem 10px;
-            -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
-            scrollbar-width: none; /* Hide scrollbar Firefox */
-        }
-        nav::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
-
-        nav button {
-            background: none; border: none; padding: 10px 16px;
-            font-size: 0.95rem; color: var(--text-light); cursor: pointer;
-            border-radius: 20px; transition: all 0.3s ease; font-weight: 600;
-            margin-right: 8px; display: inline-block;
-        }
-        nav button.active { background-color: var(--primary-dark); color: white; }
+        /* Nav Scrollable */
+        nav { background: var(--card-bg); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; white-space: nowrap; padding: 10px 5px; -webkit-overflow-scrolling: touch; }
+        nav::-webkit-scrollbar { display: none; }
+        nav button { background: none; border: none; padding: 10px 16px; font-size: 0.95rem; color: var(--text-light); cursor: pointer; border-radius: 20px; transition: all 0.2s; font-weight: 600; margin: 0 4px; display: inline-block; }
+        nav button.active { background-color: var(--primary-dark); color: white; transform: scale(1.05); }
         nav button:hover:not(.active) { background-color: #f1f5f9; }
 
-        /* Container */
         .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
         .section { display: none; animation: fadeIn 0.3s ease; }
         .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Cards */
+        /* Cards & Layout */
         .card { background: var(--card-bg); border-radius: var(--border-radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
         .card h2 { color: var(--primary-dark); margin-bottom: 15px; font-size: 1.3rem; border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Dashboard Stats */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--primary-dark); color: white; padding: 15px; border-radius: var(--border-radius); text-align: center; }
         .stat-card.light { background: white; color: var(--primary-dark); border: 1px solid #e2e8f0; }
         .stat-value { font-size: 1.4rem; font-weight: bold; margin: 8px 0; word-break: break-word; }
         .stat-label { font-size: 0.8rem; opacity: 0.9; }
-        .stat-sub { font-size: 0.75rem; opacity: 0.7; margin-top: 4px; }
-
-        /* Month Selector */
-        .month-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: var(--border-radius); }
-        .month-btn { background: none; border: 1px solid #cbd5e1; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; color: var(--primary-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; }
-        .month-btn:hover { background: #f1f5f9; }
-        .current-month { font-weight: bold; color: var(--primary-dark); text-transform: capitalize; }
 
         /* Forms */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; color: var(--primary-medium); font-weight: 600; font-size: 0.9rem; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background-color: #fafafa; transition: border-color 0.3s; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background-color: #fafafa; }
         input:focus, select:focus { outline: none; border-color: var(--accent-blue); background-color: white; }
         
-        .btn { display: inline-block; background-color: var(--accent-blue); color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: background 0.3s; text-align: center; }
+        .btn { display: inline-block; background-color: var(--accent-blue); color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: background 0.2s; text-align: center; }
         .btn:hover { background-color: #2563EB; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; width: auto; }
         .btn-danger { background-color: var(--danger); }
         .btn-secondary { background-color: var(--primary-medium); }
-        .btn-sm { padding: 6px 12px; font-size: 0.85rem; width: auto; }
 
         /* Split Buttons */
         .split-options { display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
-        .split-btn { flex: 1; min-width: 70px; padding: 8px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 0.85rem; text-align: center; transition: all 0.2s; }
-        .split-btn.selected { background: var(--primary-dark); color: white; border-color: var(--primary-dark); transform: scale(1.05); }
-        .split-btn:hover:not(.selected) { background: #f1f5f9; }
+        .split-btn { flex: 1; padding: 8px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 0.85rem; text-align: center; min-width: 60px; }
+        .split-btn.selected { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
 
-        /* Tables */
+        /* Tables & Lists */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f8fafc; color: var(--primary-medium); font-weight: 600; white-space: nowrap; }
-        tr:last-child td { border-bottom: none; }
-
-        /* Badges */
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; display: inline-block; }
+        th { background-color: #f8fafc; color: var(--primary-medium); font-weight: 600; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
         .badge-ingreso { background-color: #D1FAE5; color: #065F46; }
         .badge-egreso { background-color: #FEE2E2; color: #991B1B; }
         .badge-pipe { background-color: #DBEAFE; color: #1E40AF; }
         .badge-luu { background-color: #FCE7F3; color: #9D174D; }
-        .badge-gatos { background-color: #FFEDD5; color: #C2410C; }
 
-        /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: white; padding: 25px; border-radius: var(--border-radius); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
-        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
-
-        /* Alerts */
-        #alertContainer { position: fixed; top: 20px; right: 20px; z-index: 2000; max-width: 300px; }
-        .alert { padding: 15px; margin-bottom: 10px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease; font-size: 0.9rem; }
+        /* Modal & Alerts */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .close-modal { float: right; font-size: 1.5rem; cursor: pointer; }
+        
+        #alertContainer { position: fixed; top: 20px; right: 20px; z-index: 2000; }
+        .alert { padding: 15px 20px; margin-bottom: 10px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease; }
         .alert-success { background-color: var(--success); }
         .alert-error { background-color: var(--danger); }
-        .alert-warning { background-color: var(--warning); color: #333; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        /* Progress */
-        .progress-container { background-color: #e2e8f0; border-radius: 10px; height: 12px; width: 100%; margin-top: 8px; overflow: hidden; }
-        .progress-bar { background-color: var(--accent-blue); height: 100%; width: 0%; transition: width 0.5s ease; }
-
-        /* Charts */
-        .chart-container { position: relative; height: 250px; width: 100%; margin-top: 20px; }
-
-        /* Category Tags */
-        .category-tag { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; margin: 2px; cursor: pointer; }
-        .category-tag:hover { background: #bae6fd; }
-        .category-tag span { margin-left: 5px; cursor: pointer; font-weight: bold; }
-
+        /* Utilities */
+        .flex-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+        .month-nav { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
+        .month-nav button { background: none; border: 1px solid #cbd5e1; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .hidden { display: none; }
+        
         /* Loading Overlay */
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--accent-blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-text { font-weight: 600; color: var(--primary-dark); }
-        .loading-sub { font-size: 0.85rem; color: var(--text-light); margin-top: 5px; }
-
     </style>
 </head>
 <body>
@@ -158,15 +117,18 @@
 <!-- Loading Screen -->
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <div class="loading-text">Cargando Finanzas...</div>
-    <div class="loading-sub" id="loading-msg">Conectando con la nube</div>
+    <h3>Cargando Finanzas...</h3>
+    <p id="loading-status" style="color: var(--text-light); font-size: 0.9rem; margin-top: 10px;">Conectando con la nube</p>
 </div>
 
 <header>
-    <div id="cloud-status"><span class="status-sync">●</span> Nube</div>
+    <div class="status-indicator" id="connection-status">
+        <div class="dot" id="status-dot"></div>
+        <span id="status-text">Local</span>
+    </div>
     <h1>Pipe & Luu 💙</h1>
-    <p>Control Financiero Familiar</p>
-    <div class="cats-badge">🐱 Lua & Patacon Approved</div>
+    <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;">Control Financiero Familiar</p>
+    <div style="display:inline-block; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; margin-top: 8px;">🐱 Lua & Patacon</div>
 </header>
 
 <nav>
@@ -175,7 +137,7 @@
     <button onclick="showSection('deudas')" id="btn-deudas">💵 Créditos</button>
     <button onclick="showSection('presupuestos')" id="btn-presupuestos">📉 Budgets</button>
     <button onclick="showSection('proyectos')" id="btn-proyectos">🎯 Proyectos</button>
-    <button onclick="showSection('datos')" id="btn-datos">⚙️ Datos</button>
+    <button onclick="showSection('config')" id="btn-config">⚙️ Datos</button>
 </nav>
 
 <div class="container">
@@ -183,51 +145,58 @@
 
     <!-- DASHBOARD -->
     <div id="dashboard" class="section active">
-        <div class="month-selector">
-            <button class="month-btn" onclick="changeMonth(-1)">‹</button>
-            <span class="current-month" id="dash-month-display">Octubre 2023</span>
-            <button class="month-btn" onclick="changeMonth(1)">›</button>
+        <div class="month-nav">
+            <button onclick="changeMonth(-1)">❮</button>
+            <span id="current-month-display" style="font-weight: bold; font-size: 1.1rem; min-width: 150px; text-align: center;">Octubre 2023</span>
+            <button onclick="changeMonth(1)">❯</button>
         </div>
 
         <div class="dashboard-grid">
             <div class="stat-card">
                 <div class="stat-label">Balance Mes</div>
                 <div class="stat-value" id="dash-balance">$0</div>
-                <div class="stat-sub" id="dash-balance-sub">Ingresos - Egresos</div>
             </div>
             <div class="stat-card light">
-                <div class="stat-label">Desbalance Pareja</div>
-                <div class="stat-value" id="dash-diff" style="font-size: 1.1rem;">$0</div>
-                <div class="stat-sub" id="dash-diff-text">Están a paz</div>
+                <div class="stat-label">Deuda Entre Ustedes</div>
+                <div class="stat-value" id="dash-debt-between" style="color: var(--danger); font-size: 1.1rem;">$0</div>
+                <small id="dash-debt-text" style="font-size: 0.7rem;">Están a paz</small>
+                <button id="btn-settle" onclick="openSettleModal()" class="btn btn-danger btn-sm" style="margin-top:5px; display:none;">Liquidar</button>
             </div>
             <div class="stat-card light">
-                <div class="stat-label">Deuda Total</div>
-                <div class="stat-value" id="dash-debt-total" style="color: var(--danger)">$0</div>
+                <div class="stat-label">Deudas Bancos</div>
+                <div class="stat-value" id="dash-bank-debts" style="color: var(--warning)">$0</div>
             </div>
-        </div>
-
-        <!-- Gráfica Principal -->
-        <div class="card">
-            <h2>Resumen Mensual</h2>
-            <div class="chart-container">
-                <canvas id="mainChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Botón Liquidar (Solo si hay deuda entre ellos) -->
-        <div id="settle-section" style="display:none;" class="card" style="border: 2px solid var(--success);">
-            <h2 style="color: var(--success);">💰 Oportunidad de Liquidación</h2>
-            <p id="settle-msg" style="margin-bottom: 10px;"></p>
-            <button onclick="openSettleModal()" class="btn btn-success" style="background-color: var(--success);">Registrar Pago entre Pareja</button>
         </div>
 
         <div class="card">
-            <h2>Movimientos Recientes</h2>
+            <h2>Resumen Personal <small style="font-size:0.8rem; font-weight:normal; color:var(--text-light)">(Este mes)</small></h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div style="background:#f8fafc; padding:10px; border-radius:8px;">
+                    <div style="font-size:0.8rem; color:var(--text-light)">Pipe Ingresos</div>
+                    <div style="font-weight:bold; color:var(--success)" id="pipe-income">$0</div>
+                    <div style="font-size:0.8rem; color:var(--text-light); margin-top:5px;">Pipe Gastos</div>
+                    <div style="font-weight:bold; color:var(--danger)" id="pipe-expense">$0</div>
+                    <div style="font-size:0.8rem; margin-top:5px;">Neto: <span id="pipe-net">$0</span></div>
+                </div>
+                <div style="background:#f8fafc; padding:10px; border-radius:8px;">
+                    <div style="font-size:0.8rem; color:var(--text-light)">Luu Ingresos</div>
+                    <div style="font-weight:bold; color:var(--success)" id="luu-income">$0</div>
+                    <div style="font-size:0.8rem; color:var(--text-light); margin-top:5px;">Luu Gastos</div>
+                    <div style="font-weight:bold; color:var(--danger)" id="luu-expense">$0</div>
+                    <div style="font-size:0.8rem; margin-top:5px;">Neto: <span id="luu-net">$0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Gráfica Mensual</h2>
+            <canvas id="mainChart" height="100"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>Últimos Movimientos</h2>
             <div class="table-responsive">
-                <table id="dash-table">
-                    <thead><tr><th>Concepto</th><th>Monto</th><th>Quién</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <table id="dash-table"><tbody></tbody></table>
             </div>
         </div>
     </div>
@@ -253,37 +222,56 @@
                     <input type="number" id="t-amount" placeholder="0" required min="0">
                 </div>
                 
-                <div class="form-group">
-                    <label>¿Quién pagó / recibe?</label>
-                    <select id="t-payer" required>
-                        <option value="pipe">Pipe</option>
-                        <option value="luu">Luu</option>
-                        <option value="gatos">Lua y Patacon 🐱</option>
-                        <option value="conjunto">Conjunto (Caja común)</option>
-                    </select>
+                <!-- Solo para gastos -->
+                <div id="expense-details">
+                    <div class="form-group">
+                        <label>¿Quién pagó?</label>
+                        <select id="t-payer" required>
+                            <option value="pipe">Pipe</option>
+                            <option value="luu">Luu</option>
+                            <option value="gatos">Lua y Patacon (Fondo Gatos)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>¿Cómo se divide el gasto?</label>
+                        <div class="split-options">
+                            <button type="button" class="split-btn selected" onclick="setSplit('5050', this)">50/50</button>
+                            <button type="button" class="split-btn" onclick="setSplit('1000', this)">100% Pipe</button>
+                            <button type="button" class="split-btn" onclick="setSplit('0100', this)">100% Luu</button>
+                            <button type="button" class="split-btn" onclick="setSplit('custom', this)">Personalizado</button>
+                        </div>
+                        <div id="custom-split-inputs" style="display:none; margin-top:10px; gap:10px; display:flex;">
+                            <input type="number" id="split-pipe" placeholder="% Pipe" value="50">
+                            <input type="number" id="split-luu" placeholder="% Luu" value="50">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <div style="display:flex; gap:5px;">
+                            <select id="t-category" style="flex:1;">
+                                <option value="hogar">Hogar</option>
+                                <option value="comida">Comida</option>
+                                <option value="gatos">🐱 Gatos</option>
+                                <option value="transporte">Transporte</option>
+                                <option value="ocio">Ocio</option>
+                                <option value="salud">Salud</option>
+                                <option value="servicios">Servicios</option>
+                                <option value="otros">Otros</option>
+                            </select>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addNewCategory()" style="width:auto;">+</button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Opciones de División (Solo para Gastos) -->
-                <div class="form-group" id="split-group">
-                    <label>¿Cómo se divide el gasto?</label>
-                    <div class="split-options">
-                        <button type="button" class="split-btn selected" onclick="setSplit('5050', this)">50% / 50%</button>
-                        <button type="button" class="split-btn" onclick="setSplit('1000', this)">100% Pipe</button>
-                        <button type="button" class="split-btn" onclick="setSplit('0100', this)">100% Luu</button>
-                        <button type="button" class="split-btn" onclick="setSplit('custom', this)">Personalizado</button>
+                <!-- Solo para ingresos -->
+                <div id="income-details" style="display:none;">
+                    <div class="form-group">
+                        <label>¿De quién es este ingreso?</label>
+                        <select id="t-owner" required>
+                            <option value="pipe">Pipe</option>
+                            <option value="luu">Luu</option>
+                        </select>
                     </div>
-                    <div id="custom-split-inputs" style="display:none; margin-top:10px; display:flex; gap:10px;">
-                        <input type="number" id="split-pipe" placeholder="% Pipe" value="50">
-                        <input type="number" id="split-luu" placeholder="% Luu" value="50">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <select id="t-category">
-                        <!-- Se llena dinámicamente -->
-                    </select>
-                    <small style="color:var(--text-light); font-size:0.75rem;">¿No está tu categoría? Ve a "Budgets" para crearla.</small>
                 </div>
 
                 <div class="form-group">
@@ -293,58 +281,70 @@
                 <button type="submit" class="btn">Guardar Movimiento</button>
             </form>
         </div>
-
+        
         <div class="card">
             <h2>Historial</h2>
             <div class="table-responsive">
-                <table id="transactions-table">
-                    <thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th><th>Acción</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <table id="transactions-table"><tbody></tbody></table>
             </div>
         </div>
     </div>
 
-    <!-- DEUDAS / CRÉDITOS -->
+    <!-- DEUDAS / CREDITOS -->
     <div id="deudas" class="section">
         <div class="card">
             <h2>Nuevo Crédito / Deuda</h2>
             <form id="form-deuda">
-                <div class="form-group"><label>Nombre</label><input type="text" id="d-name" placeholder="Ej: Visa Nu, Préstamo" required></div>
-                <div class="form-group"><label>Monto Inicial ($)</label><input type="number" id="d-total" required></div>
-                <div class="form-group"><label>Tasa Interés Mensual (%)</label><input type="number" id="d-rate" step="0.01" value="0"></div>
-                <div class="form-group"><label>Cuota Base ($)</label><input type="number" id="d-payment" required></div>
-                <div class="form-group"><label>Ajuste Manual (Seguros/Variaciones $)</label><input type="number" id="d-adjustment" value="0" placeholder="Opcional"><small>Suma/resta a la cuota proyectada</small></div>
-                <div class="form-group"><label>Fecha Inicio</label><input type="date" id="d-start" required></div>
-                <div class="form-group"><label>Responsable</label><select id="d-owner"><option value="pipe">Pipe</option><option value="luu">Luu</option><option value="conjunto">Conjunto</option></select></div>
-                <button type="submit" class="btn">Agregar Deuda</button>
+                <div class="form-group">
+                    <label>Nombre (Ej: Visa Nu)</label>
+                    <input type="text" id="d-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Monto Total Inicial ($)</label>
+                    <input type="number" id="d-total" required>
+                </div>
+                <div class="form-group">
+                    <label>Tasa Interés Mensual (%)</label>
+                    <input type="number" id="d-rate" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Cuota Fija Estimada ($)</label>
+                    <input type="number" id="d-payment" required>
+                </div>
+                <div class="form-group">
+                    <label>Ajuste Manual (Seguros/Variaciones $)</label>
+                    <input type="number" id="d-adjustment" value="0" placeholder="0 si no hay">
+                    <small style="color:var(--text-light)">Suma o resta este valor a la cuota proyectada.</small>
+                </div>
+                <div class="form-group">
+                    <label>Fecha Inicio</label>
+                    <input type="date" id="d-start" required>
+                </div>
+                <div class="form-group">
+                    <label>Responsable</label>
+                    <select id="d-owner">
+                        <option value="pipe">Pipe</option>
+                        <option value="luu">Luu</option>
+                        <option value="conjunto">Conjunto</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Agregar Crédito</button>
             </form>
         </div>
         <div id="debts-list"></div>
     </div>
 
-    <!-- PRESUPUESTOS & CATEGORÍAS -->
+    <!-- PRESUPUESTOS -->
     <div id="presupuestos" class="section">
         <div class="card">
-            <h2>Gestión de Categorías</h2>
-            <p style="margin-bottom:10px; font-size:0.9rem;">Crea nuevas categorías para organizar tus budgets.</p>
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <input type="text" id="new-cat-name" placeholder="Nueva Categoría (Ej: Mascotas)">
-                <button onclick="addCategory()" class="btn btn-sm" style="width:auto;">+</button>
-            </div>
-            <div id="categories-list" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:20px;"></div>
-            
-            <hr style="border:0; border-top:1px solid #e2e8f0; margin:15px 0;">
-            
-            <h3>Presupuesto Mensual por Categoría</h3>
-            <div id="budgets-forms"></div>
+            <h2>Configurar Budget Mensual</h2>
+            <p style="font-size:0.9rem; color:var(--text-light); margin-bottom:10px;">Define cuánto quieres gastar máximo por categoría este mes.</p>
+            <div id="budget-forms-container"></div>
+            <button onclick="saveBudgets()" class="btn" style="margin-top:15px;">Guardar Presupuestos</button>
         </div>
-        
         <div class="card">
-            <h2>Ejecución vs Presupuesto</h2>
-            <div class="chart-container">
-                <canvas id="budgetChart"></canvas>
-            </div>
+            <h2>Estado Actual (Este Mes)</h2>
+            <div id="budget-progress-container"></div>
         </div>
     </div>
 
@@ -356,21 +356,21 @@
                 <div class="form-group"><label>Nombre</label><input type="text" id="p-name" required></div>
                 <div class="form-group"><label>Meta ($)</label><input type="number" id="p-goal" required></div>
                 <div class="form-group"><label>Ahorro Actual ($)</label><input type="number" id="p-current" value="0"></div>
-                <button type="submit" class="btn">Crear Proyecto</button>
+                <button type="submit" class="btn">Crear</button>
             </form>
         </div>
         <div id="projects-list"></div>
     </div>
 
-    <!-- DATOS -->
-    <div id="datos" class="section">
+    <!-- CONFIG / DATOS -->
+    <div id="config" class="section">
         <div class="card">
             <h2>Gestión de Datos</h2>
             <button onclick="exportDataJSON()" class="btn btn-secondary" style="margin-bottom:10px;">Descargar Backup JSON</button>
             <button onclick="document.getElementById('file-import').click()" class="btn" style="margin-bottom:10px;">Importar Backup JSON</button>
             <input type="file" id="file-import" style="display:none" accept=".json" onchange="importDataJSON(this)">
             <hr style="margin:15px 0; border:0; border-top:1px solid #e2e8f0;">
-            <button onclick="resetAllData()" class="btn btn-danger">⚠️ Borrar Todo (Nube y Local)</button>
+            <button onclick="resetAllData()" class="btn btn-danger">⚠️ Borrar Todo</button>
         </div>
     </div>
 </div>
@@ -379,11 +379,17 @@
 <div id="modal-settle" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeModal('modal-settle')">&times;</span>
-        <h2>Liquidar Deuda entre Pareja</h2>
-        <p id="settle-detail"></p>
-        <div class="form-group"><label>Monto a Pagar ($)</label><input type="number" id="settle-amount"></div>
-        <div class="form-group"><label>Concepto (Opcional)</label><input type="text" id="settle-desc" value="Pago de cuenta pendiente"></div>
-        <button onclick="confirmSettle()" class="btn">Confirmar Pago</button>
+        <h2>Liquidar Deuda</h2>
+        <p id="settle-desc"></p>
+        <div class="form-group">
+            <label>Monto a Pagar ($)</label>
+            <input type="number" id="settle-amount">
+        </div>
+        <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="settle-date">
+        </div>
+        <button onclick="confirmSettle()" class="btn">Registrar Pago</button>
     </div>
 </div>
 
@@ -400,9 +406,6 @@
 
 <script>
     // --- CONFIGURACIÓN FIREBASE ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
     const firebaseConfig = {
         apiKey: "AIzaSyB5GHHomIJc2JLzKyfnUntxL_brSiU9gVU",
         authDomain: "pipe-y-luu-finanzas.firebaseapp.com",
@@ -412,194 +415,141 @@
         appId: "1:1008646227450:web:070091ff8b542d3a621043"
     };
 
-    let db;
-    let isCloudConnected = false;
-    let unsubscribeTransactions = null;
-    let unsubscribeDebts = null;
-    let unsubscribeProjects = null;
-
+    // Inicializar Firebase
+    let db = null;
+    let isCloud = false;
     try {
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        updateStatus('sync', 'Conectando...');
-        
-        // Intentar conectar con timeout
-        const connectionPromise = new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error("Timeout")), 4000);
-            // Prueba de lectura simple
-            getDocs(collection(db, "test")).then(() => {
-                clearTimeout(timeout);
-                resolve();
-            }).catch(e => {
-                // Si falla por permisos pero existe, es buena señal. Si es network, mal.
-                if(e.code === 'permission-denied' || e.code === 'not-found') {
-                     clearTimeout(timeout);
-                     resolve(); // La DB existe, solo faltan reglas o docs
-                } else {
-                    clearTimeout(timeout);
-                    reject(e);
-                }
-            });
-        });
-
-        connectionPromise.then(() => {
-            isCloudConnected = true;
-            updateStatus('ok', 'En Línea');
-            initRealtimeListeners();
-            loadLocalFallback(); // Carga inicial rápida mientras llega la nube
-        }).catch(err => {
-            console.warn("Firebase no disponible o lento, usando modo local:", err);
-            updateStatus('error', 'Modo Local');
-            loadLocalFallback();
-            showNotification('Sin conexión a la nube. Usando memoria del dispositivo.', 'warning');
-        });
-
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        // Intentar habilitar persistencia (puede fallar en algunos navegadores si ya se llamó antes)
+        db.enablePersistence().catch(err => console.log("Persistencia offline no disponible", err.code));
     } catch (e) {
         console.error("Error iniciando Firebase", e);
-        updateStatus('error', 'Error Config');
-        loadLocalFallback();
     }
 
-    function updateStatus(state, text) {
-        const el = document.getElementById('cloud-status');
-        const dot = el.querySelector('span');
-        if(state === 'ok') { dot.className = 'status-ok'; dot.textContent = '●'; }
-        else if(state === 'error') { dot.className = 'status-error'; dot.textContent = '●'; }
-        else { dot.className = 'status-sync'; dot.textContent = '●'; }
-        el.title = text;
-    }
+    // --- ESTADO GLOBAL ---
+    let appData = { transactions: [], debts: [], projects: [], budgets: {} };
+    let currentSplit = '5050';
+    let currentDate = new Date();
+    let settleTarget = null; // 'pipe' owes 'luu' or vice versa
 
-    // --- ESTADO LOCAL (FALLBACK & CACHE) ---
-    let appData = { transactions: [], debts: [], projects: [], categories: ['hogar','comida','gatos','transporte','ocio','salud','otros'], budgets: {} };
-    let currentMonthOffset = 0; // 0 = este mes
-    let mainChartInstance = null;
-    let budgetChartInstance = null;
-    let currentSettleTarget = ''; // 'pipe' or 'luu'
-
-    // --- INICIALIZACIÓN ---
-    window.onload = function() {
+    // --- INICIALIZACIÓN ROBUSTA ---
+    window.onload = async function() {
         document.getElementById('t-date').valueAsDate = new Date();
         document.getElementById('d-start').valueAsDate = new Date();
         document.getElementById('abono-fecha').valueAsDate = new Date();
+        document.getElementById('settle-date').valueAsDate = new Date();
+
+        // Estrategia de carga: Cargar local primero para mostrar algo rápido, luego sincronizar con nube
+        loadLocalData(); 
+        renderAll();
+        updateDashboard();
         
-        renderCategoriesSelect();
-        renderCategoriesList();
-        renderBudgetForms();
-        
-        // Ocultar loading después de un tiempo máximo si no ha cargado antes
-        setTimeout(() => {
-            document.getElementById('loading-overlay').style.display = 'none';
-        }, 5000);
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const statusText = document.getElementById('loading-status');
+        const statusDot = document.getElementById('status-dot');
+        const statusLabel = document.getElementById('status-text');
+
+        if (db) {
+            statusText.textContent = "Sincronizando con la nube...";
+            try {
+                // Timeout de seguridad: si tarda más de 2.5s, dejamos cargar la app con datos locales
+                const syncPromise = syncWithCloud();
+                await Promise.race([
+                    syncPromise,
+                    new Promise(resolve => setTimeout(resolve, 2500))
+                ]);
+                
+                // Verificar si realmente tenemos datos de la nube después del intento
+                const snapshot = await db.collection('data').doc('main').get();
+                if (snapshot.exists) {
+                    appData = snapshot.data();
+                    saveLocalData(); // Guardar copia local actualizada
+                    isCloud = true;
+                    statusDot.className = "dot online";
+                    statusLabel.textContent = "Nube";
+                    statusText.textContent = "Sincronizado";
+                    renderAll();
+                    updateDashboard();
+                    showNotification("Datos actualizados desde la nube");
+                } else {
+                    // No hay datos en la nube, usamos los locales (quizás es la primera vez)
+                    // Subir los locales a la nube
+                    if(appData.transactions.length > 0) uploadToCloud();
+                    throw new Error("No data in cloud");
+                }
+            } catch (error) {
+                console.warn("Usando modo local o error de sync:", error);
+                statusDot.className = "dot local";
+                statusLabel.textContent = "Local";
+                statusText.textContent = "Sin conexión a nube";
+                // La app ya se cargó con datos locales al inicio
+            } finally {
+                setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500);
+            }
+        } else {
+            statusDot.className = "dot local";
+            statusLabel.textContent = "Offline";
+            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500);
+        }
     };
 
-    function initRealtimeListeners() {
-        if(!db) return;
-        
-        // Transactions
-        const qTrans = query(collection(db, "transactions"), orderBy("date", "desc"));
-        unsubscribeTransactions = onSnapshot(qTrans, (snapshot) => {
-            const docs = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-            // Convertir timestamp a string si es necesario
-            appData.transactions = docs.map(t => ({
-                ...t,
-                date: t.date?.toDate ? t.date.toDate().toISOString().split('T')[0] : t.date
-            }));
-            saveLocal();
-            refreshUI();
-            hideLoading();
-        }, (err) => {
-            console.error("Error listening transactions", err);
-            updateStatus('error', 'Error Sync');
-        });
-
-        // Debts
-        const qDebts = query(collection(db, "debts"));
-        unsubscribeDebts = onSnapshot(qDebts, (snapshot) => {
-            appData.debts = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-            saveLocal();
-            renderDebts();
-            updateDashboard(); // Para actualizar total deuda
-            hideLoading();
-        });
-
-        // Projects
-        const qProj = query(collection(db, "projects"));
-        unsubscribeProjects = onSnapshot(qProj, (snapshot) => {
-            appData.projects = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-            saveLocal();
-            renderProjects();
-            hideLoading();
-        });
-        
-        // Categories/Budgets (Usaremos un doc único de config para esto para simplificar)
-        // Por simplicidad en este ejemplo, las categorías y budgets se guardan en localStorage principalmente 
-        // o se podrían poner en un doc 'config'. Asumiremos localStorage para configs estructurales para evitar complejidad extra.
-    }
-
-    function hideLoading() {
-        document.getElementById('loading-overlay').style.display = 'none';
-    }
-
-    function loadLocalFallback() {
+    // --- FUNCIONES DE DATOS ---
+    function loadLocalData() {
         const saved = localStorage.getItem('pipeLuuFinanzas_v2');
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            // Merge inteligente: si viene de la nube ya, no sobreescribir con viejo local a menos que la nube esté vacía
-            if(!isCloudConnected || appData.transactions.length === 0) {
-                appData = { ...appData, ...parsed };
-            }
-        }
-        refreshUI();
-        hideLoading();
+        if (saved) appData = JSON.parse(saved);
     }
 
-    function saveLocal() {
+    function saveLocalData() {
         localStorage.setItem('pipeLuuFinanzas_v2', JSON.stringify(appData));
     }
 
-    async function saveToCloud(colName, data) {
-        if(!db || !isCloudConnected) {
-            saveLocal();
-            refreshUI();
-            return;
-        }
+    async function uploadToCloud() {
+        if (!db) return;
         try {
-            // Convertir fechas a Timestamp de Firebase si existen
-            const payload = { ...data };
-            if(payload.date) payload.date = new Date(payload.date); 
-            
-            await addDoc(collection(db, colName), payload);
-            // onSnapshot actualizará el estado local automáticamente
-        } catch (e) {
-            console.error("Error guardando en nube: ", e);
-            saveLocal(); // Guardar en local como respaldo
-            showNotification('Error de sincronización. Guardado localmente.', 'error');
+            await db.collection('data').doc('main').set(appData);
+            isCloud = true;
+            document.getElementById('status-dot').className = "dot online";
+            document.getElementById('status-text').textContent = "Nube";
+        } catch (e) { console.error("Error subiendo:", e); }
+    }
+
+    async function syncWithCloud() {
+        if (!db) return;
+        const doc = await db.collection('data').doc('main').get();
+        if (doc.exists) {
+            appData = doc.data();
+            saveLocalData();
+            isCloud = true;
         }
     }
 
-    async function deleteFromCloud(colName, id) {
-        if(!db || !isCloudConnected) {
-            // Eliminar localmente
-            if(colName === 'transactions') appData.transactions = appData.transactions.filter(i => i.id !== id);
-            // ... otros tipos
-            saveLocal();
-            refreshUI();
-            return;
+    function saveData() {
+        saveLocalData();
+        if (isCloud && db) {
+            db.collection('data').doc('main').set(appData).catch(e => {
+                console.error("Error guardando en nube", e);
+                showNotification("Error guardando en nube. Se guardó local.", "error");
+            });
         }
-        try {
-            await deleteDoc(doc(db, colName, id));
-        } catch(e) {
-            console.error("Error borrando en nube", e);
-            showNotification('Error al eliminar en la nube', 'error');
-        }
+        renderAll();
+        updateDashboard();
     }
 
-    function refreshUI() {
+    function renderAll() {
         renderTransactions();
         renderDebts();
         renderProjects();
-        updateDashboard();
-        renderBudgetForms(); // Actualizar gráficos de budget
+        renderBudgetsUI();
+    }
+
+    function showNotification(msg, type = 'success') {
+        const container = document.getElementById('alertContainer');
+        const div = document.createElement('div');
+        div.className = `alert alert-${type}`;
+        div.textContent = msg;
+        container.appendChild(div);
+        setTimeout(() => div.remove(), 3000);
     }
 
     // --- NAVEGACIÓN ---
@@ -608,36 +558,28 @@
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         document.getElementById('btn-' + id).classList.add('active');
-        
-        // Scroll suave al top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
+        window.scrollTo(0,0);
         if(id === 'dashboard') updateDashboard();
-        if(id === 'presupuestos') renderBudgetForms();
+        if(id === 'presupuestos') renderBudgetsUI();
     }
 
     function changeMonth(delta) {
-        currentMonthOffset += delta;
+        currentDate.setMonth(currentDate.getMonth() + delta);
         updateDashboard();
-        renderBudgetForms();
+        renderBudgetsUI();
     }
 
-    function getCurrentMonthDate() {
-        const d = new Date();
-        d.setMonth(d.getMonth() + currentMonthOffset);
-        return d;
-    }
-
-    // --- LÓGICA TRANSACCIONES ---
-    let currentSplit = '5050';
-
+    // --- TRANSACCIONES ---
     function toggleSplitOptions() {
         const type = document.getElementById('t-type').value;
-        const group = document.getElementById('split-group');
-        if(type === 'ingreso') {
-            group.style.display = 'none';
+        const expDiv = document.getElementById('expense-details');
+        const incDiv = document.getElementById('income-details');
+        if (type === 'gasto') {
+            expDiv.style.display = 'block';
+            incDiv.style.display = 'none';
         } else {
-            group.style.display = 'block';
+            expDiv.style.display = 'none';
+            incDiv.style.display = 'block';
         }
     }
 
@@ -657,34 +599,46 @@
         }
     }
 
+    function addNewCategory() {
+        const cat = prompt("Nombre de la nueva categoría:");
+        if(cat) {
+            const select = document.getElementById('t-category');
+            const option = document.createElement('option');
+            option.value = cat.toLowerCase().replace(/ /g,'_');
+            option.text = cat;
+            select.add(option);
+            select.value = option.value;
+        }
+    }
+
     document.getElementById('form-transaccion').addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const type = document.getElementById('t-type').value;
-        let pipePct = 0, luuPct = 0;
+        let transaction = {
+            id: Date.now(),
+            date: document.getElementById('t-date').value,
+            type: type,
+            desc: document.getElementById('t-desc').value,
+            amount: parseFloat(document.getElementById('t-amount').value),
+            category: type === 'gasto' ? document.getElementById('t-category').value : 'ingreso',
+            monthKey: document.getElementById('t-date').value.substring(0, 7) // YYYY-MM
+        };
 
         if (type === 'gasto') {
+            transaction.payer = document.getElementById('t-payer').value;
+            let pipePct = 50, luuPct = 50;
             if (currentSplit === 'custom') {
                 pipePct = parseFloat(document.getElementById('split-pipe').value) || 0;
                 luuPct = parseFloat(document.getElementById('split-luu').value) || 0;
             } else if (currentSplit === '1000') { pipePct = 100; luuPct = 0; }
             else if (currentSplit === '0100') { pipePct = 0; luuPct = 100; }
-            else { pipePct = 50; luuPct = 50; }
+            transaction.split = { pipe: pipePct, luu: luuPct };
+        } else {
+            transaction.owner = document.getElementById('t-owner').value;
         }
 
-        const transaction = {
-            date: document.getElementById('t-date').value,
-            type: type,
-            desc: document.getElementById('t-desc').value,
-            amount: parseFloat(document.getElementById('t-amount').value),
-            payer: document.getElementById('t-payer').value,
-            category: document.getElementById('t-category').value,
-            split: { pipe: pipePct, luu: luuPct },
-            createdAt: serverTimestamp()
-        };
-
-        saveToCloud('transactions', transaction);
-        
+        appData.transactions.unshift(transaction);
+        saveData();
         this.reset();
         document.getElementById('t-date').valueAsDate = new Date();
         toggleSplitOptions();
@@ -695,20 +649,31 @@
     function renderTransactions() {
         const tbody = document.querySelector('#transactions-table tbody');
         tbody.innerHTML = '';
-        // Filtrar por mes actual si estamos en dashboard? No, en historial mostramos todo o paginado. Mostraremos últimos 50.
-        const list = appData.transactions.slice(0, 50);
-        
-        list.forEach(t => {
+        // Mostrar últimos 50
+        appData.transactions.slice(0, 50).forEach(t => {
             const tr = document.createElement('tr');
             const isExpense = t.type === 'gasto';
+            const sign = isExpense ? '-' : '+';
+            const colorClass = isExpense ? 'badge-egreso' : 'badge-ingreso';
+            
+            let payerBadge = '';
+            if(t.payer === 'pipe') payerBadge = '<span class="badge badge-pipe">Pipe</span>';
+            else if(t.payer === 'luu') payerBadge = '<span class="badge badge-luu">Luu</span>';
+            else if(t.owner === 'pipe') payerBadge = '<span class="badge badge-pipe">Pipe</span>';
+            else if(t.owner === 'luu') payerBadge = '<span class="badge badge-luu">Luu</span>';
+            else payerBadge = '<span class="badge badge-gatos">🐱</span>';
+
             tr.innerHTML = `
-                <td>${t.date}<br><small style="color:#64748B">${t.desc}</small></td>
+                <td>${t.date}</td>
+                <td>
+                    <strong>${t.desc}</strong><br>
+                    <small style="color:#64748B">${t.category}</small>
+                </td>
+                <td>${payerBadge}</td>
                 <td style="font-weight:bold; color:${isExpense ? 'var(--danger)' : 'var(--success)'}">
-                    ${isExpense?'-':'+'}$ ${t.amount.toLocaleString()}
+                    ${sign}$ ${t.amount.toLocaleString()}
                 </td>
-                <td style="text-align:right;">
-                    <button onclick="deleteTransaction('${t.id}')" style="color:red; background:none; border:none; cursor:pointer;">🗑️</button>
-                </td>
+                <td><button onclick="deleteTransaction(${t.id})" style="color:red; background:none; border:none; cursor:pointer;">🗑️</button></td>
             `;
             tbody.appendChild(tr);
         });
@@ -716,191 +681,216 @@
 
     function deleteTransaction(id) {
         if(confirm('¿Borrar movimiento?')) {
-            deleteFromCloud('transactions', id);
-            // La actualización vendrá por onSnapshot, pero si falla, limpiamos local manual
             appData.transactions = appData.transactions.filter(t => t.id !== id);
-            saveLocal();
-            refreshUI();
+            saveData();
         }
     }
 
-    // --- DASHBOARD & CÁLCULOS ---
+    // --- LÓGICA DASHBOARD ---
     function updateDashboard() {
-        const currentD = getCurrentMonthDate();
-        const year = currentD.getFullYear();
-        const month = currentD.getMonth(); // 0-11
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const monthKey = `${year}-${String(month+1).padStart(2,'0')}`;
         
         // Nombre del mes
-        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        document.getElementById('dash-month-display').textContent = `${monthNames[month]} ${year}`;
+        const options = { year: 'numeric', month: 'long' };
+        document.getElementById('current-month-display').textContent = currentDate.toLocaleDateString('es-ES', options).charAt(0).toUpperCase() + currentDate.toLocaleDateString('es-ES', options).slice(1);
 
         // Filtrar transacciones del mes
-        const monthTrans = appData.transactions.filter(t => {
-            const d = new Date(t.date);
-            // Ajuste de zona horaria simple
-            return d.getFullYear() === year && d.getMonth() === month;
-        });
-
-        let income = 0, expense = 0;
-        let pipeNet = 0, luuNet = 0; // Balance real entre ellos
-
-        // Datos para gráfica
-        const catExpenses = {};
+        const monthTrans = appData.transactions.filter(t => t.date.startsWith(monthKey));
+        
+        let pipeIncome = 0, pipeExpense = 0, luuIncome = 0, luuExpense = 0;
+        let pipeNetFlow = 0, luuNetFlow = 0; // Para cálculo de deuda entre ellos
 
         monthTrans.forEach(t => {
-            if(t.type === 'ingreso') {
-                income += t.amount;
-                // Ingresos no se dividen, son de quien los recibe
-                if(t.payer === 'pipe') pipeNet += t.amount;
-                else if(t.payer === 'luu') luuNet += t.amount;
+            if (t.type === 'ingreso') {
+                if (t.owner === 'pipe') { pipeIncome += t.amount; pipeNetFlow += t.amount; }
+                else { luuIncome += t.amount; luuNetFlow += t.amount; }
             } else {
-                expense += t.amount;
-                
-                // Registrar por categoría
-                catExpenses[t.category] = (catExpenses[t.category] || 0) + t.amount;
-
-                // Lógica Splitwise
+                // Gastos
                 const pipeShare = (t.split.pipe / 100) * t.amount;
                 const luuShare = (t.split.luu / 100) * t.amount;
 
-                if(t.payer === 'pipe') {
-                    // Pipe pagó todo. Luu le debe su parte.
-                    pipeNet += luuShare; // Pipe recuperará esto
-                    luuNet -= luuShare;  // Luu debe esto
+                // Contabilizar gasto personal
+                pipeExpense += pipeShare;
+                luuExpense += luuShare;
+
+                // Flujo de caja real (quién pagó)
+                if (t.payer === 'pipe') {
+                    pipeNetFlow -= t.amount; // Sale todo de su bolsillo
+                    pipeNetFlow += luuShare; // Luu le devuelve su parte (virtualmente)
+                    luuNetFlow -= luuShare;  // Luu asume su deuda
                 } else if (t.payer === 'luu') {
-                    luuNet += pipeShare;
-                    pipeNet -= pipeShare;
+                    luuNetFlow -= t.amount;
+                    luuNetFlow += pipeShare;
+                    pipeNetFlow -= pipeShare;
                 }
-                // Si pagan gatos o conjunto, no afecta el balance interpersonal directo asumimos fondo común o externo
+                // Si pagan gatos, no afecta el balance entre pipe y luu directamente
             }
         });
 
-        const balance = income - expense;
-        const diff = pipeNet + luuNet; // Debería ser 0 matemáticamente si sumamos ambos lados, pero pipeNet representa lo que Luu le debe.
-        // Corrección: pipeNet es el balance de Pipe. Si es positivo, Luu le debe. Si es negativo, Pipe debe.
-        // En mi lógica anterior: 
-        // Pipe pagó 100 (50/50). PipeNet += 50. LuuNet -= 50. Suma = 0. Correcto.
-        // El valor absoluto de pipeNet es la deuda.
-        
-        const debtAmount = Math.abs(pipeNet);
-        const whoOwes = pipeNet > 0 ? "Luu le debe a Pipe" : (pipeNet < 0 ? "Pipe le debe a Luu" : "Cuentas claras");
+        // Deudas bancarias del mes (cuotas proyectadas)
+        let bankDebtTotal = 0;
+        appData.debts.forEach(d => {
+            // Simplificación: mostramos el saldo total pendiente como deuda bancaria
+            bankDebtTotal += d.currentBalance;
+        });
+
+        const totalBalance = (pipeIncome + luuIncome) - (pipeExpense + luuExpense);
 
         // Render Stats
-        document.getElementById('dash-balance').textContent = `$ ${balance.toLocaleString()}`;
-        document.getElementById('dash-balance-sub').textContent = `Ing: $${income.toLocaleString()} | Eg: $${expense.toLocaleString()}`;
+        document.getElementById('dash-balance').textContent = `$ ${totalBalance.toLocaleString()}`;
+        document.getElementById('dash-bank-debts').textContent = `$ ${bankDebtTotal.toLocaleString()}`;
         
-        const diffEl = document.getElementById('dash-diff');
-        const diffText = document.getElementById('dash-diff-text');
-        diffEl.textContent = `$ ${Math.round(debtAmount).toLocaleString()}`;
-        diffText.textContent = whoOwes;
-        diffEl.style.color = debtAmount > 0 ? 'var(--warning)' : 'var(--success)';
+        document.getElementById('pipe-income').textContent = `$ ${pipeIncome.toLocaleString()}`;
+        document.getElementById('pipe-expense').textContent = `$ ${pipeExpense.toLocaleString()}`;
+        document.getElementById('pipe-net').textContent = `$ ${(pipeIncome - pipeExpense).toLocaleString()}`;
+        
+        document.getElementById('luu-income').textContent = `$ ${luuIncome.toLocaleString()}`;
+        document.getElementById('luu-expense').textContent = `$ ${luuExpense.toLocaleString()}`;
+        document.getElementById('luu-net').textContent = `$ ${(luuIncome - luuExpense).toLocaleString()}`;
 
-        // Mostrar botón liquidar
-        const settleSec = document.getElementById('settle-section');
-        if(debtAmount > 1000) { // Umbral mínimo
-            settleSec.style.display = 'block';
-            document.getElementById('settle-msg').textContent = `${whoOwes}. ¿Quieres registrar un pago para saldar esta cuenta?`;
-            currentSettleTarget = pipeNet > 0 ? 'luu' : 'pipe'; // Quien debe paga
+        // Cálculo deuda entre ellos (Acumulado histórico o solo mes? Usually splitwise es global, pero podemos filtrar)
+        // Para este dashboard, hagámoslo global para saber quién debe pagarle a quién HOY.
+        let globalPipeNet = 0;
+        appData.transactions.forEach(t => {
+            if(t.type === 'gasto') {
+                const pShare = (t.split.pipe/100)*t.amount;
+                const lShare = (t.split.luu/100)*t.amount;
+                if(t.payer === 'pipe') { globalPipeNet += lShare; }
+                else if(t.payer === 'luu') { globalPipeNet -= pShare; }
+            }
+        });
+
+        const elDebtVal = document.getElementById('dash-debt-between');
+        const elDebtText = document.getElementById('dash-debt-text');
+        const btnSettle = document.getElementById('btn-settle');
+        
+        if (Math.abs(globalPipeNet) < 100) { // Margen de error
+            elDebtVal.textContent = "$0";
+            elDebtText.textContent = "¡Cuentas claras!";
+            btnSettle.style.display = 'none';
+            settleTarget = null;
+        } else if (globalPipeNet > 0) {
+            // Pipe pagó de más. Luu le debe a Pipe.
+            elDebtVal.textContent = `$ ${Math.round(globalPipeNet).toLocaleString()}`;
+            elDebtText.textContent = "Luu le debe a Pipe";
+            btnSettle.style.display = 'inline-block';
+            settleTarget = { debtor: 'luu', creditor: 'pipe', amount: globalPipeNet };
         } else {
-            settleSec.style.display = 'none';
+            // Luu pagó de más. Pipe le debe a Luu.
+            elDebtVal.textContent = `$ ${Math.abs(Math.round(globalPipeNet)).toLocaleString()}`;
+            elDebtText.textContent = "Pipe le debe a Luu";
+            btnSettle.style.display = 'inline-block';
+            settleTarget = { debtor: 'pipe', creditor: 'luu', amount: Math.abs(globalPipeNet) };
         }
 
-        // Total Deudas
-        const totalDebt = appData.debts.reduce((sum, d) => sum + (d.currentBalance || 0), 0);
-        document.getElementById('dash-debt-total').textContent = `$ ${totalDebt.toLocaleString()}`;
-
-        // Tabla recientes
+        // Tabla últimos
         const dashTbody = document.querySelector('#dash-table tbody');
         dashTbody.innerHTML = '';
         monthTrans.slice(0, 5).forEach(t => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${t.desc}</td><td style="color:${t.type==='gasto'?'var(--danger)':'var(--success)'}">${t.type==='gasto'?'-':'+'}$${t.amount.toLocaleString()}</td><td>${t.payer}</td>`;
+            tr.innerHTML = `<td>${t.desc}</td><td style="color:${t.type==='gasto'?'var(--danger)':'var(--success)'}">${t.type==='gasto'?'-':'+'}$${t.amount.toLocaleString()}</td>`;
             dashTbody.appendChild(tr);
         });
 
-        // Gráfica Principal
-        renderMainChart(income, expense, totalDebt); // Simplificado para demo
+        // Gráfica
+        renderChart(monthTrans);
     }
 
-    function renderMainChart(inc, exp, debt) {
+    let mainChartInstance = null;
+    function renderChart(transactions) {
         const ctx = document.getElementById('mainChart').getContext('2d');
-        if(mainChartInstance) mainChartInstance.destroy();
         
+        // Agrupar gastos por categoría
+        const cats = {};
+        let totalInc = 0, totalExp = 0;
+        transactions.forEach(t => {
+            if(t.type === 'ingreso') totalInc += t.amount;
+            else {
+                totalExp += t.amount;
+                cats[t.category] = (cats[t.category] || 0) + t.amount;
+            }
+        });
+
+        if(mainChartInstance) mainChartInstance.destroy();
+
         mainChartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Ingresos', 'Gastos', 'Deudas Pend.'],
+                labels: ['Ingresos', 'Gastos', ...Object.keys(cats)],
                 datasets: [{
-                    label: 'Mes Actual',
-                    data: [inc, exp, debt],
-                    backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
-                    borderRadius: 5
+                    label: 'Valores ($)',
+                    data: [totalInc, totalExp, ...Object.values(cats)],
+                    backgroundColor: ['var(--success)', 'var(--danger)', 'var(--primary-medium)', 'var(--accent-blue)', '#F59E0B', '#10B981']
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: { responsive: true, maintainAspectRatio: false }
         });
     }
 
-    // --- LIQUIDACIÓN ---
+    // --- LIQUIDAR DEUDA ---
     function openSettleModal() {
+        if(!settleTarget) return;
+        document.getElementById('settle-desc').textContent = `${settleTarget.debtor.toUpperCase()} le debe $${Math.round(settleTarget.amount)} a ${settleTarget.creditor.toUpperCase()}. Registra el pago aquí.`;
+        document.getElementById('settle-amount').value = Math.round(settleTarget.amount);
         document.getElementById('modal-settle').style.display = 'flex';
-        const isLuuOwes = currentSettleTarget === 'luu';
-        document.getElementById('settle-detail').textContent = isLuuOwes ? "Luu paga a Pipe" : "Pipe paga a Luu";
-        document.getElementById('settle-amount').value = '';
     }
 
     function confirmSettle() {
         const amount = parseFloat(document.getElementById('settle-amount').value);
-        const desc = document.getElementById('settle-desc').value;
-        if(!amount) return;
+        const date = document.getElementById('settle-date').value;
+        if(!amount || !date) return;
 
         // Crear transacción especial de ajuste
-        // Si Luu paga a Pipe: Luu "gasta" (sale de su bolsillo) dinero para pagar deuda. Pipe "recibe".
-        // Pero para no ensuciar stats de gastos reales, usamos tipo 'ajuste' o 'transferencia'.
-        // Aquí lo haremos como un Gasto de quien paga con categoría 'Ajuste Cuenta' y 100% a favor del otro.
-        
-        const payer = currentSettleTarget; // Quien paga
-        const receiver = payer === 'pipe' ? 'luu' : 'pipe';
-
-        const transaction = {
-            date: new Date().toISOString().split('T')[0],
-            type: 'gasto', // Técnicamente es salida de dinero de uno
-            desc: desc || `Liquidación a ${receiver}`,
+        const t = {
+            id: Date.now(),
+            date: date,
+            type: 'gasto',
+            desc: `Liquidación deuda (${settleTarget.debtor} paga a ${settleTarget.creditor})`,
             amount: amount,
-            payer: payer,
-            category: 'ajuste_cuenta', // Categoría especial
-            // El 100% de este "gasto" beneficia al otro (reduce la deuda interpersonal)
-            // Lógica: Payer pone dinero. ¿Cómo se divide? 
-            // En realidad esto no es un gasto compartido, es una transferencia.
-            // Para que el cálculo de Splitwise funcione:
-            // Si Luu paga 100 a Pipe. Luu puso 100. 
-            // Queremos que el balance de Luu suba (porque estaba negativo) y el de Pipe baje.
-            // Mi lógica anterior: Gasto -> Payer pierde, Share gana.
-            // Si Luu paga 100 (Gasto). Split: 0% Luu, 100% Pipe.
-            // LuuNet -= 0 (no asume costo). PipeNet -= 100 (asume costo?? No).
-            // Revisemos: 
-            // Gasto 100. Payer: Luu. Split: 100% Pipe.
-            // Luu pagó 100. Pipe debía asumir 100.
-            // Luu recupera 100 de Pipe. 
-            // Balance Luu: -100 (pagó) + 100 (Pipe le debe) = 0 cambio neto en caja, pero ajusta la deuda.
-            // Exacto. Esto funciona.
-            split: { pipe: payer === 'pipe' ? 0 : 100, luu: payer === 'luu' ? 0 : 100 },
-            createdAt: serverTimestamp()
+            payer: settleTarget.debtor,
+            category: 'ajuste_liquidacion',
+            split: { pipe: 0, luu: 0 }, // Este gasto no se divide, es transferencia directa
+            isSettlement: true
         };
+        
+        // Lógica especial: Si Luu le paga a Pipe, Luu "paga" un gasto que es 100% beneficio de Pipe.
+        // En nuestra lógica de split:
+        // Si payer=Luu, y queremos que Pipe asuma el "gasto" (reciba el dinero), el split debería ser Pipe:100%, Luu:0%.
+        // Así: Luu paga $100. Split: Pipe asume $100.
+        // Calc: LuuNetFlow -= 100 (pagó). LuuNetFlow += 0 (su parte). PipeNetFlow -= 100 (su parte).
+        // Espera, la lógica de liquidación es: Luu le da plata a Pipe.
+        // El balance de "quién debe a quién" se reduce.
+        // La forma más fácil es registrar un ingreso para el acreedor y un gasto para el deudor que no cuenta como gasto compartido.
+        // Pero para mantenerlo simple en el modelo de datos actual:
+        // Registramos como: Payer = Deudor. Split = 100% Acreedor.
+        // Ej: Luu debe a Pipe. Luu paga $100.
+        // Transacción: Payer=Luu, Amount=100. Split: Pipe=100, Luu=0.
+        // Resultado: Luu puso 100. Le tocaba 0. Pipe debía poner 100 pero no puso nada.
+        // Balance: Luu tiene +100 a favor (porque puso 100 y le tocaba 0). Pipe tiene -100 (porque le tocaba 100 y no puso).
+        // Esto reduce la deuda de Luu hacia Pipe. Correcto.
+        
+        if(settleTarget.debtor === 'luu') {
+            t.split = { pipe: 100, luu: 0 };
+        } else {
+            t.split = { pipe: 0, luu: 100 };
+        }
 
-        saveToCloud('transactions', transaction);
+        appData.transactions.unshift(t);
+        saveData();
         closeModal('modal-settle');
-        showNotification('Liquidación registrada');
+        showNotification('Deuda liquidada parcialmente o totalmente');
     }
 
-    // --- DEUDAS ---
+    // --- DEUDAS / CRÉDITOS ---
     document.getElementById('form-deuda').addEventListener('submit', function(e) {
         e.preventDefault();
-        const total = parseFloat(document.getElementById('d-total').value);
         const debt = {
+            id: Date.now(),
             name: document.getElementById('d-name').value,
-            originalAmount: total,
-            currentBalance: total,
+            originalAmount: parseFloat(document.getElementById('d-total').value),
+            currentBalance: parseFloat(document.getElementById('d-total').value),
             rate: parseFloat(document.getElementById('d-rate').value) / 100,
             basePayment: parseFloat(document.getElementById('d-payment').value),
             adjustment: parseFloat(document.getElementById('d-adjustment').value) || 0,
@@ -909,29 +899,34 @@
             payments: []
         };
         calculateProjection(debt);
-        saveToCloud('debts', debt);
+        appData.debts.push(debt);
+        saveData();
         this.reset();
         document.getElementById('d-start').valueAsDate = new Date();
-        showNotification('Deuda agregada');
+        showNotification('Crédito agregado');
     });
 
     function calculateProjection(debt) {
         let balance = debt.currentBalance;
         let date = new Date(debt.startDate);
         let months = 0;
-        const effectivePayment = debt.basePayment + debt.adjustment; // Cuota real estimada
+        let totalInterest = 0;
+        const effectivePayment = debt.basePayment + debt.adjustment;
 
         while (balance > 0 && months < 360) {
             const interest = balance * debt.rate;
             const principal = effectivePayment - interest;
             if (principal <= 0) { debt.status = "La cuota no cubre intereses"; break; }
             balance -= principal;
+            totalInterest += interest;
             months++;
             date.setMonth(date.getMonth() + 1);
         }
         debt.monthsRemaining = months;
         debt.endDate = date.toISOString().split('T')[0];
-        debt.status = balance <= 0 ? "Al día" : "En curso";
+        debt.totalInterest = totalInterest;
+        debt.status = balance <= 0 ? "Pagado" : "Al día";
+        if(balance < 0) debt.currentBalance = 0; // Corrección por exceso de pago
     }
 
     function renderDebts() {
@@ -942,16 +937,26 @@
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <h3>${d.name} <small style="font-size:0.8rem; color:#64748B">(${d.owner})</small></h3>
-                <div style="display:flex; justify-content:space-between; margin:5px 0;">
-                    <span>Pendiente: <strong>$${Math.round(d.currentBalance).toLocaleString()}</strong></span>
-                    <span>Cuota Est.: $${(d.basePayment + d.adjustment).toLocaleString()}</span>
+                <div class="flex-row">
+                    <h3>${d.name} <small style="font-size:0.8rem; color:var(--text-light)">(${d.owner})</small></h3>
+                    <span class="badge ${d.status==='Al día'?'badge-ingreso':'badge-egreso'}">${d.status}</span>
                 </div>
-                <div class="progress-container"><div class="progress-bar" style="width:${pct}%"></div></div>
-                <div style="font-size:0.8rem; color:var(--text-light); margin-top:5px;">Fin proy: ${d.endDate}</div>
-                <div style="margin-top:10px; display:flex; gap:10px;">
-                    <button onclick="openAbonoModal('${d.id}')" class="btn btn-sm btn-secondary">Abonar</button>
-                    <button onclick="deleteDebt('${d.id}')" class="btn btn-sm btn-danger">Borrar</button>
+                <div style="margin:10px 0">
+                    <div class="flex-row" style="font-size:0.9rem; margin-bottom:5px;">
+                        <span>Pendiente: <strong>$${Math.round(d.currentBalance).toLocaleString()}</strong></span>
+                        <span>Cuota Real: $${(d.basePayment + d.adjustment).toLocaleString()}</span>
+                    </div>
+                    <div class="progress-container" style="background:#e2e8f0; height:10px; border-radius:5px; overflow:hidden;">
+                        <div style="background:var(--accent-blue); height:100%; width:${pct}%"></div>
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--text-light); margin-top:5px; display:flex; justify-content:space-between;">
+                        <span>Fin proy: ${d.endDate}</span>
+                        <span>Intereses: $${Math.round(d.totalInterest||0).toLocaleString()}</span>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="openAbonoModal(${d.id})" class="btn btn-secondary btn-sm">💰 Abono Capital</button>
+                    <button onclick="deleteDebt(${d.id})" class="btn btn-danger btn-sm">Eliminar</button>
                 </div>
             `;
             container.appendChild(card);
@@ -964,165 +969,107 @@
     }
 
     function confirmarAbono() {
-        const id = document.getElementById('abono-id').value;
+        const id = parseInt(document.getElementById('abono-id').value);
         const amount = parseFloat(document.getElementById('abono-monto').value);
+        const date = document.getElementById('abono-fecha').value;
+        if(!amount) return;
+
         const debt = appData.debts.find(d => d.id === id);
-        if(debt && amount > 0) {
+        if(debt) {
             debt.currentBalance -= amount;
-            debt.payments.push({date: new Date().toISOString(), amount});
+            debt.payments.push({date, amount});
             calculateProjection(debt);
-            
-            if(db && isCloudConnected) {
-                updateDoc(doc(db, "debts", id), { currentBalance: debt.currentBalance, payments: debt.payments });
-            } else {
-                saveLocal();
-                renderDebts();
-                updateDashboard();
-            }
+            saveData();
             closeModal('modal-abono');
-            showNotification('Abono aplicado');
+            showNotification('Abono aplicado. Proyección actualizada.');
         }
     }
 
     function deleteDebt(id) {
         if(confirm("¿Eliminar deuda?")) {
-            deleteFromCloud('debts', id);
             appData.debts = appData.debts.filter(d => d.id !== id);
-            saveLocal();
-            renderDebts();
-            updateDashboard();
+            saveData();
         }
     }
 
-    // --- PRESUPUESTOS & CATEGORÍAS ---
-    function renderCategoriesSelect() {
-        const sel = document.getElementById('t-category');
-        sel.innerHTML = '';
-        appData.categories.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c;
-            opt.textContent = c.charAt(0).toUpperCase() + c.slice(1);
-            sel.appendChild(opt);
-        });
-    }
-
-    function renderCategoriesList() {
-        const div = document.getElementById('categories-list');
-        div.innerHTML = '';
-        appData.categories.forEach(c => {
-            const tag = document.createElement('div');
-            tag.className = 'category-tag';
-            tag.innerHTML = `${c} <span onclick="removeCategory('${c}')">&times;</span>`;
-            div.appendChild(tag);
-        });
-    }
-
-    function addCategory() {
-        const name = document.getElementById('new-cat-name').value.toLowerCase().trim();
-        if(name && !appData.categories.includes(name)) {
-            appData.categories.push(name);
-            appData.budgets[name] = 0; // Init budget
-            saveLocal(); // Categorías se guardan local por simplicidad estructural
-            renderCategoriesSelect();
-            renderCategoriesList();
-            renderBudgetForms();
-            document.getElementById('new-cat-name').value = '';
-            showNotification('Categoría creada');
-        }
-    }
-
-    function removeCategory(name) {
-        if(confirm(`¿Eliminar categoría ${name}?`)) {
-            appData.categories = appData.categories.filter(c => c !== name);
-            delete appData.budgets[name];
-            saveLocal();
-            renderCategoriesSelect();
-            renderCategoriesList();
-            renderBudgetForms();
-        }
-    }
-
-    function renderBudgetForms() {
-        const container = document.getElementById('budgets-forms');
+    // --- PRESUPUESTOS ---
+    function renderBudgetsUI() {
+        const container = document.getElementById('budget-forms-container');
+        const progressContainer = document.getElementById('budget-progress-container');
         container.innerHTML = '';
-        appData.categories.forEach(cat => {
-            if(cat === 'ajuste_cuenta') return;
-            const currentBudget = appData.budgets[cat] || 0;
+        progressContainer.innerHTML = '';
+
+        const categories = ['hogar', 'comida', 'gatos', 'transporte', 'ocio', 'salud', 'servicios', 'otros'];
+        const monthKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2,'0')}`;
+        
+        // Calcular gastos reales del mes por categoría
+        const spent = {};
+        appData.transactions.filter(t => t.type === 'gasto' && t.date.startsWith(monthKey)).forEach(t => {
+            // Distribuir el gasto según quien lo asume (para presupuesto familiar sumamos todo)
+            const totalCatAmount = t.amount; 
+            spent[t.category] = (spent[t.category] || 0) + totalCatAmount;
+        });
+
+        categories.forEach(cat => {
+            const currentBudget = appData.budgets[monthKey]?.[cat] || 0;
+            const currentSpent = spent[cat] || 0;
+            const pct = currentBudget > 0 ? Math.min(100, (currentSpent/currentBudget)*100) : 0;
+            const isOver = currentSpent > currentBudget && currentBudget > 0;
+
+            // Formulario
             const div = document.createElement('div');
-            div.style.marginBottom = '10px';
+            div.className = 'form-group';
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.gap = '10px';
             div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label style="margin:0; text-transform:capitalize;">${cat}</label>
-                    <input type="number" value="${currentBudget}" onchange="updateBudget('${cat}', this.value)" 
-                           style="width:120px; padding:5px; text-align:right;" placeholder="Presupuesto">
-                </div>
+                <label style="width:100px; margin:0; text-transform:capitalize;">${cat}</label>
+                <input type="number" class="budget-input" data-cat="${cat}" value="${currentBudget}" placeholder="Limite $">
             `;
             container.appendChild(div);
+
+            // Progreso
+            if(currentBudget > 0 || currentSpent > 0) {
+                const pDiv = document.createElement('div');
+                pDiv.style.marginBottom = '15px';
+                pDiv.innerHTML = `
+                    <div class="flex-row" style="margin-bottom:5px; font-size:0.9rem;">
+                        <span style="text-transform:capitalize; font-weight:bold;">${cat}</span>
+                        <span style="color:${isOver?'var(--danger)':'var(--text-light)'}">$${currentSpent.toLocaleString()} / $${currentBudget.toLocaleString()}</span>
+                    </div>
+                    <div style="background:#e2e8f0; height:8px; border-radius:4px; overflow:hidden;">
+                        <div style="background:${isOver?'var(--danger)':'var(--success)'}; height:100%; width:${pct}%"></div>
+                    </div>
+                `;
+                progressContainer.appendChild(pDiv);
+            }
         });
-        renderBudgetChart();
     }
 
-    function updateBudget(cat, val) {
-        appData.budgets[cat] = parseFloat(val) || 0;
-        saveLocal();
-        renderBudgetChart();
-    }
-
-    function renderBudgetChart() {
-        const currentD = getCurrentMonthDate();
-        const year = currentD.getFullYear();
-        const month = currentD.getMonth();
+    function saveBudgets() {
+        const monthKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2,'0')}`;
+        if(!appData.budgets[monthKey]) appData.budgets[monthKey] = {};
         
-        const monthTrans = appData.transactions.filter(t => {
-            const d = new Date(t.date);
-            return d.getFullYear() === year && d.getMonth() === month && t.type === 'gasto';
+        document.querySelectorAll('.budget-input').forEach(input => {
+            const cat = input.getAttribute('data-cat');
+            const val = parseFloat(input.value);
+            if(val) appData.budgets[monthKey][cat] = val;
         });
-
-        const spent = {};
-        monthTrans.forEach(t => {
-            spent[t.category] = (spent[t.category] || 0) + t.amount;
-        });
-
-        const labels = [];
-        const dataBudget = [];
-        const dataSpent = [];
-
-        appData.categories.forEach(c => {
-            if(c === 'ajuste_cuenta') return;
-            labels.push(c);
-            dataBudget.push(appData.budgets[c] || 0);
-            dataSpent.push(spent[c] || 0);
-        });
-
-        const ctx = document.getElementById('budgetChart').getContext('2d');
-        if(budgetChartInstance) budgetChartInstance.destroy();
-
-        budgetChartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    { label: 'Presupuesto', data: dataBudget, backgroundColor: '#CBD5E1' },
-                    { label: 'Gastado', data: dataSpent, backgroundColor: (ctx) => {
-                        const val = ctx.raw;
-                        const idx = ctx.dataIndex;
-                        return val > dataBudget[idx] ? '#EF4444' : '#3B82F6';
-                    }}
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: false }, y: { beginAtZero: true } } }
-        });
+        saveData();
+        renderBudgetsUI();
+        showNotification('Presupuestos guardados');
     }
 
     // --- PROYECTOS ---
     document.getElementById('form-proyecto').addEventListener('submit', function(e) {
         e.preventDefault();
-        const proj = {
+        appData.projects.push({
+            id: Date.now(),
             name: document.getElementById('p-name').value,
             goal: parseFloat(document.getElementById('p-goal').value),
             current: parseFloat(document.getElementById('p-current').value)
-        };
-        saveToCloud('projects', proj);
+        });
+        saveData();
         this.reset();
         showNotification('Proyecto creado');
     });
@@ -1131,91 +1078,54 @@
         const container = document.getElementById('projects-list');
         container.innerHTML = '';
         appData.projects.forEach(p => {
-            const pct = Math.min(100, (p.current / p.goal) * 100);
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
+            const pct = Math.min(100, (p.current/p.goal)*100);
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
                 <h3>${p.name}</h3>
-                <div class="progress-container"><div class="progress-bar" style="width:${pct}%"></div></div>
-                <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                    <span>$${p.current.toLocaleString()}</span><span>$${p.goal.toLocaleString()}</span>
+                <div style="background:#e2e8f0; height:10px; border-radius:5px; margin:10px 0; overflow:hidden;">
+                    <div style="background:var(--success); height:100%; width:${pct}%"></div>
                 </div>
-                <div style="margin-top:10px; display:flex; gap:5px;">
-                    <input type="number" id="fund-${p.id}" placeholder "+" style="width:80px; padding:5px;">
-                    <button onclick="addFund('${p.id}')" class="btn btn-sm">Añadir</button>
+                <div class="flex-row">
+                    <span>$${p.current.toLocaleString()} / $${p.goal.toLocaleString()}</span>
+                    <button onclick="addProjectFund(${p.id})" class="btn btn-sm btn-secondary">+ Ahorrar</button>
                 </div>
             `;
-            container.appendChild(card);
+            container.appendChild(div);
         });
     }
 
-    function addFund(id) {
-        const val = parseFloat(document.getElementById(`fund-${id}`).value);
-        const p = appData.projects.find(x => x.id === id);
-        if(p && val) {
-            p.current += val;
-            if(db && isCloudConnected) updateDoc(doc(db, "projects", id), { current: p.current });
-            else saveLocal();
-            renderProjects();
-            document.getElementById(`fund-${id}`).value = '';
+    function addProjectFund(id) {
+        const amount = prompt("Monto a ahorrar:");
+        if(amount) {
+            const p = appData.projects.find(x => x.id === id);
+            p.current += parseFloat(amount);
+            saveData();
         }
     }
 
     // --- UTILS ---
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    
-    function showNotification(msg, type='success') {
-        const container = document.getElementById('alertContainer');
-        const div = document.createElement('div');
-        div.className = `alert alert-${type}`;
-        div.textContent = msg;
-        container.appendChild(div);
-        setTimeout(() => div.remove(), 3000);
-    }
-
+    function deleteTransaction(id) { if(confirm('¿Borrar?')) { appData.transactions = appData.transactions.filter(t=>t.id!==id); saveData(); } }
     function exportDataJSON() {
-        const blob = new Blob([JSON.stringify(appData)], {type: "application/json"});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = `backup_pipe_luu_${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
+        const blob = new Blob([JSON.stringify(appData)], {type:'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup_pipe_luu.json'; a.click();
     }
-
     function importDataJSON(input) {
         const file = input.files[0];
         if(!file) return;
         const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                if(data.transactions) {
-                    // Subir todo a la nube batch? O reemplazar local.
-                    // Por seguridad, reemplazamos local y avisamos que se synceará si hay conexión
-                    appData = data;
-                    saveLocal();
-                    refreshUI();
-                    showNotification('Datos importados. Se sincronizarán si hay conexión.');
-                }
-            } catch(err) { alert("Archivo inválido"); }
-        };
+        reader.onload = e => { appData = JSON.parse(e.target.result); saveData(); showNotification('Datos importados'); };
         reader.readAsText(file);
     }
-
     function resetAllData() {
-        if(confirm("¿BORRAR TODO? Esta acción es irreversible.")) {
-            localStorage.removeItem('pipeLuuFinanzas_v2');
-            appData = { transactions: [], debts: [], projects: [], categories: ['hogar','comida','gatos','transporte','ocio','salud','otros'], budgets: {} };
-            refreshUI();
-            showNotification('Datos reiniciados', 'warning');
-            // Nota: No borra de Firebase automáticamente para evitar accidentes masivos, 
-            // pero al recargar si hay conexión, Firebase volverá a llenar los datos.
-            // Para borrar Firebase se requiere script administrativo.
+        if(confirm("¿BORRAR TODO?")) {
+            appData = {transactions:[], debts:[], projects:[], budgets:{}};
+            saveData();
+            location.reload();
         }
     }
-
-    window.onclick = function(event) {
-        if (event.target.classList.contains('modal')) event.target.style.display = "none";
-    }
+    window.onclick = function(e) { if(e.target.classList.contains('modal')) e.target.style.display='none'; }
 </script>
 </body>
 </html>
