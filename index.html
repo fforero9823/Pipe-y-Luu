@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finanzas Pipe & Luu</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
     <style>
         :root {
             --bg-color: #F5F5F0; /* Blanco Hueso */
             --card-bg: #FFFFFF;
             --primary-dark: #0F172A; /* Azul Navy Oscuro */
             --primary-medium: #1E293B; /* Azul Slate */
-            --accent-blue: #3B82F6; /* Azul Brillante para acciones */
+            --accent-blue: #3B82F6; /* Azul Brillante */
             --text-main: #334155;
             --text-light: #64748B;
             --success: #10B981;
@@ -20,348 +24,91 @@
             --shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -1px rgba(15, 23, 42, 0.06);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.6;
-            padding-bottom: 80px; /* Espacio para nav móvil si fuera necesario */
-        }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; padding-bottom: 80px; }
 
-        /* Header */
-        header {
-            background-color: var(--primary-dark);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
+        header { background-color: var(--primary-dark); color: white; padding: 1.5rem; text-align: center; box-shadow: var(--shadow); }
+        header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: 0.5px; }
+        header p { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
+        .cats-badge { display: inline-block; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin-top: 10px; }
 
-        header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+        nav { background: var(--card-bg); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; white-space: nowrap; padding: 0.5rem; }
+        nav button { background: none; border: none; padding: 10px 20px; font-size: 1rem; color: var(--text-light); cursor: pointer; border-radius: var(--border-radius); transition: all 0.3s ease; font-weight: 600; margin: 0 5px; }
+        nav button.active { background-color: var(--primary-dark); color: white; }
+        nav button:hover:not(.active) { background-color: #e2e8f0; }
 
-        header p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-top: 5px;
-        }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 20px; }
+        .section { display: none; animation: fadeIn 0.4s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .cats-badge {
-            display: inline-block;
-            background: rgba(255,255,255,0.1);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-top: 10px;
-        }
+        .card { background: var(--card-bg); border-radius: var(--border-radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
+        .card h2 { color: var(--primary-dark); margin-bottom: 15px; font-size: 1.4rem; border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; }
 
-        /* Navigation */
-        nav {
-            background: var(--card-bg);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            overflow-x: auto;
-            white-space: nowrap;
-            padding: 0.5rem;
-        }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .stat-card { background: var(--primary-dark); color: white; padding: 20px; border-radius: var(--border-radius); text-align: center; }
+        .stat-card.light { background: white; color: var(--primary-dark); border: 1px solid #e2e8f0; }
+        .stat-value { font-size: 2rem; font-weight: bold; margin: 10px 0; }
+        .stat-label { font-size: 0.9rem; opacity: 0.9; }
 
-        nav button {
-            background: none;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1rem;
-            color: var(--text-light);
-            cursor: pointer;
-            border-radius: var(--border-radius);
-            transition: all 0.3s ease;
-            font-weight: 600;
-            margin: 0 5px;
-        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: var(--primary-medium); font-weight: 600; font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background-color: #fafafa; transition: border-color 0.3s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-blue); background-color: white; }
 
-        nav button.active {
-            background-color: var(--primary-dark);
-            color: white;
-        }
-
-        nav button:hover:not(.active) {
-            background-color: #e2e8f0;
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 1000px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-
-        .section {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Cards */
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid #e2e8f0;
-        }
-
-        .card h2 {
-            color: var(--primary-dark);
-            margin-bottom: 15px;
-            font-size: 1.4rem;
-            border-bottom: 2px solid var(--bg-color);
-            padding-bottom: 10px;
-        }
-
-        /* Dashboard Grid */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: var(--primary-dark);
-            color: white;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            text-align: center;
-        }
-
-        .stat-card.light {
-            background: white;
-            color: var(--primary-dark);
-            border: 1px solid #e2e8f0;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--primary-medium);
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 1rem;
-            background-color: #fafafa;
-            transition: border-color 0.3s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            background-color: white;
-        }
-
-        .btn {
-            display: inline-block;
-            background-color: var(--accent-blue);
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            width: 100%;
-            transition: background 0.3s;
-        }
-
-        .btn:hover {
-            background-color: #2563EB;
-        }
-
-        .btn-danger {
-            background-color: var(--danger);
-        }
+        .btn { display: inline-block; background-color: var(--accent-blue); color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: background 0.3s; }
+        .btn:hover { background-color: #2563EB; }
+        .btn-danger { background-color: var(--danger); }
         .btn-danger:hover { background-color: #DC2626; }
+        .btn-secondary { background-color: var(--primary-medium); }
+        .btn-success { background-color: var(--success); }
+        .btn-success:hover { background-color: #059669; }
 
-        .btn-secondary {
-            background-color: var(--primary-medium);
-        }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8fafc; color: var(--primary-medium); font-weight: 600; }
+        tr:hover { background-color: #f8fafc; }
 
-        /* Tables */
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        th {
-            background-color: #f8fafc;
-            color: var(--primary-medium);
-            font-weight: 600;
-        }
-
-        tr:hover {
-            background-color: #f8fafc;
-        }
-
-        /* Badges */
-        .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
         .badge-ingreso { background-color: #D1FAE5; color: #065F46; }
         .badge-egreso { background-color: #FEE2E2; color: #991B1B; }
         .badge-pipe { background-color: #DBEAFE; color: #1E40AF; }
         .badge-luu { background-color: #FCE7F3; color: #9D174D; }
         .badge-gatos { background-color: #FFEDD5; color: #C2410C; }
+        .badge-ajuste { background-color: #E0E7FF; color: #3730A3; }
 
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: var(--border-radius);
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .close-modal {
-            float: right;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-light);
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .close-modal { float: right; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
 
-        /* Alerts */
-        #alertContainer {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 2000;
-        }
-        .alert {
-            padding: 15px 20px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            animation: slideIn 0.3s ease;
-        }
+        #alertContainer { position: fixed; top: 20px; right: 20px; z-index: 2000; }
+        .alert { padding: 15px 20px; margin-bottom: 10px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease; }
         .alert-success { background-color: var(--success); }
         .alert-error { background-color: var(--danger); }
         .alert-warning { background-color: var(--warning); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .progress-container { background-color: #e2e8f0; border-radius: 10px; height: 20px; width: 100%; margin-top: 10px; overflow: hidden; }
+        .progress-bar { background-color: var(--accent-blue); height: 100%; width: 0%; text-align: center; color: white; font-size: 0.8rem; line-height: 20px; transition: width 0.5s ease; }
+
+        .split-options { display: flex; gap: 10px; margin-top: 5px; }
+        .split-btn { flex: 1; padding: 8px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .split-btn.selected { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
         
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        /* Progress Bar */
-        .progress-container {
-            background-color: #e2e8f0;
-            border-radius: 10px;
-            height: 20px;
-            width: 100%;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            background-color: var(--accent-blue);
-            height: 100%;
-            width: 0%;
-            text-align: center;
-            color: white;
-            font-size: 0.8rem;
-            line-height: 20px;
-            transition: width 0.5s ease;
-        }
-
-        .split-options {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-        }
-        .split-btn {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-        .split-btn.selected {
-            background: var(--primary-dark);
-            color: white;
-            border-color: var(--primary-dark);
-        }
-
+        .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:3000; display:none; justify-content:center; align-items:center; flex-direction:column; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
+<!-- Loading -->
+<div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p style="margin-top:10px; color:var(--primary-dark); font-weight:bold;">Sincronizando con la nube...</p>
+</div>
 
 <header>
     <h1>Pipe & Luu 💙</h1>
@@ -372,7 +119,7 @@
 <nav>
     <button onclick="showSection('dashboard')" class="active" id="btn-dashboard">📊 Dashboard</button>
     <button onclick="showSection('transacciones')" id="btn-transacciones">💳 Movimientos</button>
-    <button onclick="showSection('deudas')" id="btn-deudas">💵 Deudas & Créditos</button>
+    <button onclick="showSection('deudas')" id="btn-deudas">💵 Créditos</button>
     <button onclick="showSection('proyectos')" id="btn-proyectos">🎯 Proyectos</button>
     <button onclick="showSection('importar')" id="btn-importar">📁 Datos</button>
 </nav>
@@ -387,13 +134,14 @@
                 <div class="stat-label">Balance Total Familia</div>
                 <div class="stat-value" id="dash-balance">$0</div>
             </div>
-            <div class="stat-card light">
-                <div class="stat-label">Le debe Pipe a Luu</div>
+            <div class="stat-card light" id="card-deuda-personal">
+                <div class="stat-label">Estado de Cuentas</div>
                 <div class="stat-value" id="dash-pipe-debe" style="color: var(--danger)">$0</div>
-                <small id="dash-pipe-status">Están a paz y salvo</small>
+                <small id="dash-pipe-status">Cargando...</small>
+                <button id="btn-liquidar" onclick="openLiquidarModal()" style="display:none; margin-top:10px; width:100%; padding:8px; font-size:0.8rem;" class="btn btn-success">💸 Pagar / Liquidar</button>
             </div>
             <div class="stat-card light">
-                <div class="stat-label">Deudas Totales</div>
+                <div class="stat-label">Deudas Externas</div>
                 <div class="stat-value" id="dash-debts" style="color: var(--warning)">$0</div>
             </div>
             <div class="stat-card light">
@@ -410,7 +158,7 @@
                         <tr>
                             <th>Concepto</th>
                             <th>Monto</th>
-                            <th>Quién pagó</th>
+                            <th>Tipo</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -500,10 +248,10 @@
         </div>
     </div>
 
-    <!-- DEUDAS -->
+    <!-- DEUDAS EXTERNAS -->
     <div id="deudas" class="section">
         <div class="card">
-            <h2>Nueva Deuda / Crédito</h2>
+            <h2>Nueva Deuda / Crédito Externo</h2>
             <form id="form-deuda">
                 <div class="form-group">
                     <label>Nombre de la deuda / Tarjeta</label>
@@ -537,7 +285,6 @@
                 <button type="submit" class="btn">Agregar Deuda</button>
             </form>
         </div>
-
         <div id="debts-list"></div>
     </div>
 
@@ -571,8 +318,8 @@
     <!-- IMPORTAR / EXPORTAR -->
     <div id="importar" class="section">
         <div class="card">
-            <h2>Gestión de Datos</h2>
-            <p style="margin-bottom: 15px;">Guarda una copia de seguridad o carga datos históricos desde un CSV.</p>
+            <h2>Gestión de Datos Locales</h2>
+            <p style="margin-bottom: 15px;">Como usamos Firebase, tus datos están seguros en la nube. Estas opciones son solo para respaldos locales manuales.</p>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <button onclick="exportDataJSON()" class="btn btn-secondary">Descargar Backup (JSON)</button>
@@ -583,28 +330,50 @@
                 <button onclick="document.getElementById('csv-import').click()" class="btn">Importar Histórico (CSV)</button>
                 <input type="file" id="csv-import" style="display:none" accept=".csv" onchange="importDataCSV(this)">
             </div>
-            
-            <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                <button onclick="resetAllData()" class="btn btn-danger">⚠️ Borrar Todo y Reiniciar</button>
-            </div>
-        </div>
-        
-        <div class="card">
-            <h3>Formato CSV Esperado</h3>
-            <small>
-                Columnas: <code>fecha, tipo, descripcion, monto, payer, split_pipe_pct, categoria</code><br>
-                Ejemplo: <code>2023-10-01, gasto, Mercado, 150000, pipe, 50, hogar</code>
-            </small>
         </div>
     </div>
 </div>
 
-<!-- Modal Abono Capital -->
+<!-- Modal Liquidar Deuda -->
+<div id="modal-liquidar" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('modal-liquidar')">&times;</span>
+        <h2>💸 Liquidar Deuda Personal</h2>
+        <p id="liquidar-info-text" style="margin-bottom:15px; color:var(--text-light);"></p>
+        
+        <div class="form-group">
+            <label>¿Quién paga?</label>
+            <select id="li-payer">
+                <option value="pipe">Pipe</option>
+                <option value="luu">Luu</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>¿Quién recibe?</label>
+            <select id="li-receiver">
+                <option value="pipe">Pipe</option>
+                <option value="luu">Luu</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Monto a Pagar ($)</label>
+            <input type="number" id="li-amount" placeholder="0">
+            <small style="color:var(--text-light)">Puedes pagar el total o una parte.</small>
+        </div>
+        <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="li-date">
+        </div>
+        <button onclick="confirmarLiquidacion()" class="btn btn-success">Confirmar Pago</button>
+    </div>
+</div>
+
+<!-- Modal Abono Capital Externo -->
 <div id="modal-abono" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeModal('modal-abono')">&times;</span>
         <h2>Registrar Abono a Capital</h2>
-        <p>Este abono reducirá el saldo pendiente y recalcularemos las cuotas restantes o la fecha de fin.</p>
+        <p>Este abono reducirá el saldo pendiente de la deuda externa.</p>
         <input type="hidden" id="abono-id">
         <div class="form-group">
             <label>Monto del Abono ($)</label>
@@ -619,25 +388,62 @@
 </div>
 
 <script>
+    // --- CONFIGURACIÓN DE FIREBASE ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyB5GHHomIJc2JLzKyfnUntxL_brSiU9gVU",
+        authDomain: "pipe-y-luu-finanzas.firebaseapp.com",
+        projectId: "pipe-y-luu-finanzas",
+        storageBucket: "pipe-y-luu-finanzas.firebasestorage.app",
+        messagingSenderId: "1008646227450",
+        appId: "1:1008646227450:web:070091ff8b542d3a621043"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     // --- ESTADO INICIAL ---
     let appData = {
         transactions: [],
         debts: [],
         projects: []
     };
-
     let currentSplit = '5050';
+    let debtToSettle = { amount: 0, debtor: '', creditor: '' };
 
     // --- INICIALIZACIÓN ---
     window.onload = function() {
-        loadData();
+        document.getElementById('loading').style.display = 'flex';
+        
+        // Fechas por defecto
         document.getElementById('t-date').valueAsDate = new Date();
         document.getElementById('d-start').valueAsDate = new Date();
         document.getElementById('abono-fecha').valueAsDate = new Date();
-        updateDashboard();
-        renderTransactions();
-        renderDebts();
-        renderProjects();
+        document.getElementById('li-date').valueAsDate = new Date();
+
+        // Escuchar cambios en tiempo real desde Firebase
+        db.collection('transactions').onSnapshot(snapshot => {
+            appData.transactions = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+            updateDashboard();
+            renderTransactions();
+        });
+
+        db.collection('debts').onSnapshot(snapshot => {
+            appData.debts = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+            renderDebts();
+            updateDashboard(); // Por si cambia el total de deudas
+        });
+
+        db.collection('projects').onSnapshot(snapshot => {
+            appData.projects = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+            renderProjects();
+            updateDashboard();
+        });
+
+        // Cerrar loader cuando lleguen los primeros datos (o después de 2 seg)
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+        }, 1500);
     };
 
     // --- NAVEGACIÓN ---
@@ -665,19 +471,6 @@
         }
     }
 
-    // --- LÓGICA DE DATOS ---
-    function loadData() {
-        const saved = localStorage.getItem('pipeLuuFinanzas');
-        if (saved) {
-            appData = JSON.parse(saved);
-        }
-    }
-
-    function saveData() {
-        localStorage.setItem('pipeLuuFinanzas', JSON.stringify(appData));
-        updateDashboard();
-    }
-
     function showNotification(msg, type = 'success') {
         const container = document.getElementById('alertContainer');
         const div = document.createElement('div');
@@ -701,34 +494,40 @@
         else if (currentSplit === '0100') { pipePct = 0; luuPct = 100; }
 
         const transaction = {
-            id: Date.now(),
             date: document.getElementById('t-date').value,
             type: document.getElementById('t-type').value,
             desc: document.getElementById('t-desc').value,
             amount: parseFloat(document.getElementById('t-amount').value),
             payer: document.getElementById('t-payer').value,
             category: document.getElementById('t-category').value,
-            split: { pipe: pipePct, luu: luuPct }
+            split: { pipe: pipePct, luu: luuPct },
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        appData.transactions.unshift(transaction);
-        saveData();
-        renderTransactions();
-        this.reset();
-        document.getElementById('t-date').valueAsDate = new Date();
-        setSplit('5050'); // Reset split
-        showNotification('Movimiento guardado');
+        db.collection('transactions').add(transaction).then(() => {
+            this.reset();
+            document.getElementById('t-date').valueAsDate = new Date();
+            setSplit('5050');
+            showNotification('Movimiento guardado en la nube');
+        }).catch(err => {
+            showNotification('Error al guardar: ' + err.message, 'error');
+        });
     });
 
     function renderTransactions() {
         const tbody = document.querySelector('#transactions-table tbody');
         tbody.innerHTML = '';
         
-        appData.transactions.forEach(t => {
+        // Ordenar por fecha descendente
+        const sorted = [...appData.transactions].sort((a,b) => (a.date < b.date) ? 1 : -1);
+
+        sorted.forEach(t => {
             const tr = document.createElement('tr');
             const isExpense = t.type === 'gasto';
-            const sign = isExpense ? '-' : '+';
-            const colorClass = isExpense ? 'badge-egreso' : 'badge-ingreso';
+            const isAjuste = t.category === 'ajuste'; // Nueva categoría interna
+            
+            let colorClass = isExpense ? 'badge-egreso' : 'badge-ingreso';
+            if(isAjuste) colorClass = 'badge-ajuste';
             
             let payerBadge = '';
             if(t.payer === 'pipe') payerBadge = '<span class="badge badge-pipe">Pipe</span>';
@@ -739,15 +538,15 @@
                 <td>${t.date}</td>
                 <td>
                     <strong>${t.desc}</strong><br>
-                    <small style="color:#64748B">${t.category}</small>
+                    <small style="color:#64748B">${isAjuste ? 'Liquidación' : t.category}</small>
                 </td>
-                <td><span class="badge ${colorClass}">${t.type}</span></td>
+                <td><span class="badge ${colorClass}">${isAjuste ? 'Ajuste' : t.type}</span></td>
                 <td>${payerBadge}</td>
                 <td style="font-weight:bold; color:${isExpense ? 'var(--danger)' : 'var(--success)'}">
-                    ${sign}$ ${t.amount.toLocaleString()}
+                    ${isExpense?'-':'+'}$ ${t.amount.toLocaleString()}
                 </td>
                 <td>
-                    <button onclick="deleteTransaction(${t.id})" style="color:red; background:none; border:none; cursor:pointer;">🗑️</button>
+                    <button onclick="deleteTransaction('${t.id}')" style="color:red; background:none; border:none; cursor:pointer;">🗑️</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -756,170 +555,176 @@
 
     function deleteTransaction(id) {
         if(confirm('¿Borrar este movimiento?')) {
-            appData.transactions = appData.transactions.filter(t => t.id !== id);
-            saveData();
-            renderTransactions();
+            db.collection('transactions').doc(id).delete().then(() => {
+                showNotification('Movimiento eliminado');
+            });
         }
     }
 
-    // --- CÁLCULOS DASHBOARD (SPLITWISE LOGIC) ---
+    // --- CÁLCULOS DASHBOARD & LIQUIDACIÓN ---
     function updateDashboard() {
-        let pipeBalance = 0; // Positivo significa que le deben a Pipe, Negativo que Pipe debe
-        let luuBalance = 0;
         let totalIncome = 0;
         let totalExpense = 0;
-        let totalDebt = 0;
+        let totalDebtExternal = 0;
         let totalProjectSavings = 0;
 
-        // Calcular balance transaccional
+        // Variables para cálculo de deuda personal
+        let pipeNetFlow = 0; 
+
         appData.transactions.forEach(t => {
             const amount = t.amount;
+            
             if (t.type === 'ingreso') {
                 totalIncome += amount;
-                if (t.payer === 'pipe') pipeBalance += amount;
-                else if (t.payer === 'luu') luuBalance += amount;
-                // Si pagan los gatos, asumimos fondo común o lo ignoramos para el balance personal por ahora
             } else {
                 totalExpense += amount;
-                
-                // Quién puso la plata sale de su bolsillo
-                if (t.payer === 'pipe') pipeBalance -= amount;
-                else if (t.payer === 'luu') luuBalance -= amount;
+            }
 
-                // Cómo se reparte el gasto (quién debe asumir el costo)
-                const pipeShare = (t.split.pipe / 100) * amount;
-                const luuShare = (t.split.luu / 100) * amount;
+            // Lógica Splitwise para deuda personal
+            // Ignoramos ajustes previos en el cálculo de "quién debe a quién" para evitar bucles, 
+            // pero los ajustes SÍ modifican el flujo de caja.
+            
+            if (t.category === 'ajuste') {
+                // Si es ajuste, es dinero que cambió de mano directamente.
+                // Si Pipe pagó (dio dinero) a Luu: Pipe tiene -amount, Luu tiene +amount en términos de saldo personal.
+                if(t.payer === 'pipe') {
+                    pipeNetFlow -= amount; // Pipe dio dinero
+                } else {
+                    pipeNetFlow += amount; // Pipe recibió dinero (Luu pagó)
+                }
+                return; // Los ajustes no se "dividen", son transferencia directa.
+            }
 
-                // Ajuste: Si Pipe pagó todo pero el gasto era 50/50, Luu le debe a Pipe su parte
-                // Lógica simplificada: Balance Neto = (Lo que pagué) - (Lo que me toca pagar)
-                // Pero aquí lo estamos manejando como cuenta corriente.
-                // Mejor lógica: 
-                // Pipe Net = (Ingresos Pipe) - (Gastos Pagados por Pipe) + (Parte de gastos de otros que Pipe pagó) - (Parte de gastos propios que otros pagaron)
+            // Gastos/Ingresos normales
+            if (t.type === 'gasto') {
+                const pipePart = (t.split.pipe / 100) * amount;
+                const luuPart = (t.split.luu / 100) * amount;
                 
-                // Vamos a usar la lógica de "Quién debe a quién":
-                // Si Pipe pagó $100 y es 50/50: Pipe puso 100. Le toca 50. Luu le debe 50 a Pipe.
-                // Balance Pipe += 50 (derecho de cobro), Balance Luu -= 50 (deuda)
-                
-                if (t.payer === 'pipe') {
-                    // Pipe pagó. Luu debe su parte.
-                    pipeBalance += luuShare; 
-                    luuBalance -= luuShare;
+                if(t.payer === 'pipe') {
+                    // Pipe pagó todo. Luu le debe su parte.
+                    // Pipe net flow: -amount (salió de su bolsillo) + luuPart (derecho a cobrar)
+                    // Simplificación: Pipe cubrió la parte de Luu.
+                    pipeNetFlow += luuPart; 
                 } else if (t.payer === 'luu') {
-                    // Luu pagó. Pipe debe su parte.
-                    luuBalance += pipeShare;
-                    pipeBalance -= pipeShare;
+                    // Luu pagó todo. Pipe le debe su parte.
+                    pipeNetFlow -= pipePart;
                 }
             }
         });
 
-        // Deudas
         appData.debts.forEach(d => {
-            totalDebt += d.currentBalance;
-            // Si la deuda es conjunta, restamos mitad a cada uno del patrimonio neto familiar?
-            // Por simplicidad en el dashboard de "quién debe a quién", las deudas personales no afectan el balance entre ellos,
-            // a menos que sean conjuntas.
-            if (d.owner === 'conjunto') {
-                // Asumimos que ya se reflejó en gastos o es externo. 
-                // Para este dashboard, mostraremos la deuda total como alerta.
-            }
+            totalDebtExternal += d.currentBalance;
         });
 
-        // Proyectos
         appData.projects.forEach(p => {
             totalProjectSavings += p.current;
         });
 
         const familyBalance = totalIncome - totalExpense;
         
-        // Determinar quién debe a quién
-        let debtText = "";
-        let debtAmount = 0;
-        const diff = pipeBalance - luuBalance; // Si es positivo, Pipe tiene más saldo (Luu le debe). Si es negativo, Luu tiene más (Pipe le debe).
+        // Determinar deuda personal
+        // pipeNetFlow > 0 significa que Luu le debe a Pipe (Pipe tiene crédito neto)
+        // pipeNetFlow < 0 significa que Pipe le debe a Luu
         
-        // Espera, la lógica anterior de balance es acumulativa de "caja".
-        // La lógica correcta de Splitwise es: 
-        // Sumar lo que cada uno gastó POR EL OTRO.
-        // Re-hagamos el cálculo limpio de "Net Flow":
-        
-        let pipeNet = 0; 
-        let luuNet = 0;
+        let debtAmount = Math.abs(pipeNetFlow);
+        let debtor = '';
+        let creditor = '';
 
-        appData.transactions.forEach(t => {
-            if(t.type === 'gasto') {
-                const pipePart = (t.split.pipe / 100) * t.amount;
-                const luuPart = (t.split.luu / 100) * t.amount;
-                
-                if(t.payer === 'pipe') {
-                    // Pipe pagó todo. 
-                    // Pipe cubrió su parte (pipePart) y la de Luu (luuPart).
-                    // Luu le debe a Pipe: luuPart
-                    pipeNet += luuPart;
-                    luuNet -= luuPart;
-                } else if (t.payer === 'luu') {
-                    // Luu pagó todo.
-                    // Pipe le debe a Luu: pipePart
-                    luuNet += pipePart;
-                    pipeNet -= pipePart;
-                }
-            }
-        });
-
-        // El resultado neto entre ellos
-        const finalDiff = pipeNet + luuNet; // Debería ser 0 si sumamos ambos, pero son espejo.
-        // En realidad pipeNet es lo que Luu le debe a Pipe. luuNet es lo que Pipe le debe a Luu.
-        // Como son opuestos, miramos pipeNet.
-        
-        if (pipeNet > 1) {
-            debtText = "Luu le debe a Pipe";
-            debtAmount = pipeNet;
-        } else if (pipeNet < -1) {
-            debtText = "Pipe le debe a Luu";
-            debtAmount = Math.abs(pipeNet);
+        if (pipeNetFlow > 1) {
+            debtor = 'luu'; creditor = 'pipe';
+            document.getElementById('dash-pipe-status').textContent = "Luu le debe a Pipe";
+            document.getElementById('btn-liquidar').textContent = "💸 Luu paga a Pipe";
+        } else if (pipeNetFlow < -1) {
+            debtor = 'pipe'; creditor = 'luu';
+            document.getElementById('dash-pipe-status').textContent = "Pipe le debe a Luu";
+            document.getElementById('btn-liquidar').textContent = "💸 Pipe paga a Luu";
         } else {
-            debtText = "¡Cuentas claras!";
-            debtAmount = 0;
+            debtor = ''; creditor = '';
+            document.getElementById('dash-pipe-status').textContent = "✅ ¡Cuentas claras!";
+            document.getElementById('btn-liquidar').style.display = 'none';
         }
 
-        // Render Dashboard
+        if(debtor) {
+            document.getElementById('dash-pipe-debe').textContent = `$ ${Math.round(debtAmount).toLocaleString()}`;
+            document.getElementById('dash-pipe-debe').style.color = "var(--warning)";
+            document.getElementById('btn-liquidar').style.display = 'block';
+            
+            // Guardar estado global para el modal
+            debtToSettle = { amount: debtAmount, debtor, creditor };
+            
+            // Configurar selects del modal automáticamente
+            document.getElementById('li-payer').value = debtor;
+            document.getElementById('li-receiver').value = creditor;
+            document.getElementById('li-amount').placeholder = `Máx: $${Math.round(debtAmount)}`;
+            document.getElementById('liquidar-info-text').textContent = `${debtor.toUpperCase()} le debe $${Math.round(debtAmount).toLocaleString()} a ${creditor.toUpperCase()}. Realiza un pago para ajustar las cuentas.`;
+        } else {
+            document.getElementById('dash-pipe-debe').textContent = "$0";
+            document.getElementById('dash-pipe-debe').style.color = "var(--success)";
+            debtToSettle = { amount: 0, debtor: '', creditor: '' };
+        }
+
+        // Render Dashboard Text
         document.getElementById('dash-balance').textContent = `$ ${familyBalance.toLocaleString()}`;
-        document.getElementById('dash-debts').textContent = `$ ${totalDebt.toLocaleString()}`;
+        document.getElementById('dash-debts').textContent = `$ ${totalDebtExternal.toLocaleString()}`;
         document.getElementById('dash-projects').textContent = `$ ${totalProjectSavings.toLocaleString()}`;
-        
-        const elDebt = document.getElementById('dash-pipe-debe');
-        const elStatus = document.getElementById('dash-pipe-status');
-        
-        if(debtAmount === 0) {
-            elDebt.textContent = "$0";
-            elStatus.textContent = "✅ Están a paz y salvo";
-            elStatus.style.color = "var(--success)";
-        } else {
-            elDebt.textContent = `$ ${Math.round(debtAmount).toLocaleString()}`;
-            elStatus.textContent = debtText;
-            elStatus.style.color = "var(--warning)";
-        }
 
         // Tabla últimos movimientos
         const dashTbody = document.querySelector('#dash-table tbody');
         dashTbody.innerHTML = '';
-        appData.transactions.slice(0, 5).forEach(t => {
+        const recent = [...appData.transactions].sort((a,b) => (a.date < b.date) ? 1 : -1).slice(0, 5);
+        recent.forEach(t => {
             const tr = document.createElement('tr');
+            const isAdj = t.category === 'ajuste';
             tr.innerHTML = `
                 <td>${t.desc}</td>
-                <td style="color:${t.type==='gasto'?'var(--danger)':'var(--success)'}">
-                    ${t.type==='gasto'?'-':'+'}$ ${t.amount.toLocaleString()}
+                <td style="color:${t.type==='ingreso' || isAdj ? 'var(--success)' : 'var(--danger)'}">
+                    ${t.type==='gasto' && !isAdj ? '-':'+'}$ ${t.amount.toLocaleString()}
                 </td>
-                <td>${t.payer === 'pipe' ? 'Pipe' : (t.payer === 'luu' ? 'Luu' : 'Gatos')}</td>
+                <td><small>${isAdj ? 'Ajuste' : (t.payer==='pipe'?'Pipe':(t.payer==='luu'?'Luu':'Gatos'))}</small></td>
             `;
             dashTbody.appendChild(tr);
         });
     }
 
-    // --- DEUDAS ---
+    // --- LIQUIDAR DEUDA (NUEVA FUNCIÓN) ---
+    function openLiquidarModal() {
+        if(debtToSettle.amount <= 0) return;
+        document.getElementById('li-amount').value = ''; // Limpiar monto previo
+        document.getElementById('modal-liquidar').style.display = 'flex';
+    }
+
+    function confirmarLiquidacion() {
+        const amount = parseFloat(document.getElementById('li-amount').value);
+        const payer = document.getElementById('li-payer').value;
+        const receiver = document.getElementById('li-receiver').value;
+        const date = document.getElementById('li-date').value;
+
+        if(!amount || amount <= 0) return alert("Ingresa un monto válido");
+        if(payer === receiver) return alert("Quien paga y quien recibe deben ser diferentes");
+        if(amount > debtToSettle.amount + 1) return alert(`El monto no puede ser mayor a la deuda actual ($${Math.round(debtToSettle.amount)})`);
+
+        const transaction = {
+            date: date,
+            type: 'gasto', // Técnicamente es una salida de dinero de uno hacia otro
+            desc: `Pago de deuda personal (${payer} -> ${receiver})`,
+            amount: amount,
+            payer: payer,
+            category: 'ajuste', // Marca especial para no afectar splits
+            split: { pipe: 0, luu: 0 }, // No hay split, es transferencia directa
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        db.collection('transactions').add(transaction).then(() => {
+            closeModal('modal-liquidar');
+            showNotification(`Pago de $${amount} registrado. Cuentas actualizadas.`);
+        });
+    }
+
+    // --- DEUDAS EXTERNAS ---
     document.getElementById('form-deuda').addEventListener('submit', function(e) {
         e.preventDefault();
         const total = parseFloat(document.getElementById('d-total').value);
         const debt = {
-            id: Date.now(),
             name: document.getElementById('d-name').value,
             originalAmount: total,
             currentBalance: total,
@@ -927,18 +732,16 @@
             payment: parseFloat(document.getElementById('d-payment').value),
             startDate: document.getElementById('d-start').value,
             owner: document.getElementById('d-owner').value,
-            payments: [] // Historial de pagos/abonos
+            payments: []
         };
         
-        // Proyección inicial
         calculateProjection(debt);
         
-        appData.debts.push(debt);
-        saveData();
-        renderDebts();
-        this.reset();
-        document.getElementById('d-start').valueAsDate = new Date();
-        showNotification('Deuda agregada');
+        db.collection('debts').add(debt).then(() => {
+            this.reset();
+            document.getElementById('d-start').valueAsDate = new Date();
+            showNotification('Deuda agregada');
+        });
     });
 
     function calculateProjection(debt) {
@@ -947,20 +750,18 @@
         let months = 0;
         let totalInterest = 0;
 
-        while (balance > 0 && months < 360) { // Max 30 años
+        while (balance > 0 && months < 360) {
             const interest = balance * debt.rate;
             const principalPayment = debt.payment - interest;
             
             if (principalPayment <= 0) {
-                debt.status = "La cuota no cubre los intereses";
+                debt.status = "La cuota no cubre intereses";
                 break;
             }
 
             balance -= principalPayment;
             totalInterest += interest;
             months++;
-            
-            // Avanzar mes
             date.setMonth(date.getMonth() + 1);
         }
 
@@ -977,9 +778,7 @@
         appData.debts.forEach(d => {
             const card = document.createElement('div');
             card.className = 'card';
-            
-            const progressPct = ((d.originalAmount - d.currentBalance) / d.originalAmount) * 100;
-            
+            const progressPct = Math.max(0, Math.min(100, ((d.originalAmount - d.currentBalance) / d.originalAmount) * 100));
             let ownerLabel = d.owner === 'pipe' ? '(Pipe)' : (d.owner === 'luu' ? '(Luu)' : '(Conjunto)');
 
             card.innerHTML = `
@@ -989,7 +788,7 @@
                 </div>
                 <div style="margin: 10px 0;">
                     <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-                        <span>Pendiente: <strong>$ ${d.currentBalance.toLocaleString()}</strong></span>
+                        <span>Pendiente: <strong>$ ${Math.round(d.currentBalance).toLocaleString()}</strong></span>
                         <span>Cuota: $ ${d.payment.toLocaleString()}</span>
                     </div>
                     <div class="progress-container">
@@ -1000,11 +799,11 @@
                         <span>Fin proyectado: ${d.endDate || 'N/A'}</span>
                     </div>
                     <div style="font-size:0.8rem; color:var(--warning); margin-top:5px;">
-                        Intereses estimados totales: $ ${d.totalInterestPay ? Math.round(d.totalInterestPay).toLocaleString() : 0}
+                        Intereses estimados: $ ${d.totalInterestPay ? Math.round(d.totalInterestPay).toLocaleString() : 0}
                     </div>
                 </div>
-                <button onclick="openAbonoModal(${d.id})" class="btn btn-secondary" style="padding: 8px; font-size:0.9rem;">💰 Registrar Abono a Capital</button>
-                <button onclick="deleteDebt(${d.id})" class="btn btn-danger" style="padding: 8px; font-size:0.9rem; margin-top:5px;">Eliminar Deuda</button>
+                <button onclick="openAbonoModal('${d.id}')" class="btn btn-secondary" style="padding: 8px; font-size:0.9rem;">💰 Abono a Capital</button>
+                <button onclick="deleteDebt('${d.id}')" class="btn btn-danger" style="padding: 8px; font-size:0.9rem; margin-top:5px;">Eliminar</button>
             `;
             container.appendChild(card);
         });
@@ -1020,7 +819,7 @@
     }
 
     function confirmarAbono() {
-        const id = parseInt(document.getElementById('abono-id').value);
+        const id = document.getElementById('abono-id').value;
         const amount = parseFloat(document.getElementById('abono-monto').value);
         const date = document.getElementById('abono-fecha').value;
 
@@ -1032,21 +831,33 @@
                 alert("El abono no puede ser mayor a la deuda pendiente");
                 return;
             }
-            debt.currentBalance -= amount;
-            debt.payments.push({date, amount, type: 'abono'});
-            calculateProjection(debt); // Recalcular fechas
-            saveData();
-            renderDebts();
-            closeModal('modal-abono');
-            showNotification(`Abono de $${amount} registrado. Nueva fecha fin: ${debt.endDate}`);
+            
+            // Actualizar en Firebase
+            const newBalance = debt.currentBalance - amount;
+            const updatedPayments = [...(debt.payments || []), {date, amount, type: 'abono'}];
+            
+            // Recalcular proyección localmente primero para obtener nueva fecha
+            let tempDebt = {...debt, currentBalance: newBalance};
+            calculateProjection(tempDebt);
+
+            db.collection('debts').doc(id).update({
+                currentBalance: newBalance,
+                payments: updatedPayments,
+                endDate: tempDebt.endDate,
+                totalInterestPay: tempDebt.totalInterestPay,
+                status: tempDebt.status
+            }).then(() => {
+                closeModal('modal-abono');
+                showNotification(`Abono de $${amount} registrado. Nueva fecha: ${tempDebt.endDate}`);
+            });
         }
     }
 
     function deleteDebt(id) {
         if(confirm("¿Eliminar esta deuda?")) {
-            appData.debts = appData.debts.filter(d => d.id !== id);
-            saveData();
-            renderDebts();
+            db.collection('debts').doc(id).delete().then(() => {
+                showNotification('Deuda eliminada');
+            });
         }
     }
 
@@ -1054,17 +865,15 @@
     document.getElementById('form-proyecto').addEventListener('submit', function(e) {
         e.preventDefault();
         const project = {
-            id: Date.now(),
             name: document.getElementById('p-name').value,
             goal: parseFloat(document.getElementById('p-goal').value),
             current: parseFloat(document.getElementById('p-current').value),
             deadline: document.getElementById('p-date').value
         };
-        appData.projects.push(project);
-        saveData();
-        renderProjects();
-        this.reset();
-        showNotification('Proyecto creado');
+        db.collection('projects').add(project).then(() => {
+            this.reset();
+            showNotification('Proyecto creado');
+        });
     });
 
     function renderProjects() {
@@ -1089,8 +898,8 @@
                 </div>
                 <div style="margin-top:10px; display:flex; gap:10px;">
                     <input type="number" id="add-fund-${p.id}" placeholder="Monto" style="width:100px; padding:5px;">
-                    <button onclick="addFunds(${p.id})" class="btn" style="padding:5px 10px; font-size:0.8rem;">Añadir Ahorro</button>
-                    <button onclick="deleteProject(${p.id})" class="btn btn-danger" style="padding:5px 10px; font-size:0.8rem;">Borrar</button>
+                    <button onclick="addFunds('${p.id}')" class="btn" style="padding:5px 10px; font-size:0.8rem;">Añadir</button>
+                    <button onclick="deleteProject('${p.id}')" class="btn btn-danger" style="padding:5px 10px; font-size:0.8rem;">Borrar</button>
                 </div>
             `;
             container.appendChild(card);
@@ -1103,22 +912,25 @@
         if(!amount) return;
         
         const proj = appData.projects.find(p => p.id === id);
-        proj.current += amount;
-        saveData();
-        renderProjects();
-        input.value = '';
-        showNotification('Ahorro añadido');
+        const newTotal = proj.current + amount;
+        
+        db.collection('projects').doc(id).update({
+            current: newTotal
+        }).then(() => {
+            input.value = '';
+            showNotification('Ahorro añadido');
+        });
     }
 
     function deleteProject(id) {
         if(confirm("¿Borrar proyecto?")) {
-            appData.projects = appData.projects.filter(p => p.id !== id);
-            saveData();
-            renderProjects();
+            db.collection('projects').doc(id).delete().then(() => {
+                showNotification('Proyecto borrado');
+            });
         }
     }
 
-    // --- IMPORTAR / EXPORTAR ---
+    // --- IMPORTAR / EXPORTAR (LOCAL BACKUP) ---
     function exportDataJSON() {
         const dataStr = JSON.stringify(appData, null, 2);
         const blob = new Blob([dataStr], {type: "application/json"});
@@ -1136,28 +948,26 @@
         reader.onload = function(e) {
             try {
                 const json = JSON.parse(e.target.result);
-                if(json.transactions && json.debts) {
-                    appData = json;
-                    saveData();
-                    renderTransactions();
-                    renderDebts();
-                    renderProjects();
-                    updateDashboard();
-                    showNotification('Datos importados correctamente');
-                } else {
-                    throw new Error("Formato inválido");
+                if(json.transactions) {
+                    // Batch write could be better, but adding one by one for simplicity
+                    const batch = db.batch();
+                    json.transactions.forEach(t => {
+                        const ref = db.collection('transactions').doc();
+                        batch.set(ref, t);
+                    });
+                    batch.commit().then(() => showNotification('Datos importados correctamente'));
                 }
             } catch(err) {
-                alert("Error al importar: Archivo corrupto o formato incorrecto");
+                alert("Error al importar");
             }
         };
         reader.readAsText(file);
     }
 
     function exportDataCSV() {
-        let csv = "fecha,tipo,descripcion,monto,payer,split_pipe_pct,categoria\n";
+        let csv = "fecha,tipo,descripcion,monto,payer,categoria\n";
         appData.transactions.forEach(t => {
-            csv += `${t.date},${t.type},"${t.desc}",${t.amount},${t.payer},${t.split.pipe},${t.category}\n`;
+            csv += `${t.date},${t.type},"${t.desc}",${t.amount},${t.payer},${t.category}\n`;
         });
         const blob = new Blob([csv], {type: "text/csv"});
         const url = URL.createObjectURL(blob);
@@ -1173,46 +983,32 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             const text = e.target.result;
-            const rows = text.split('\n').slice(1); // Skip header
+            const rows = text.split('\n').slice(1);
+            const batch = db.batch();
             let count = 0;
             rows.forEach(row => {
                 if(row.trim() === '') return;
-                // Simple parse (assuming no commas inside quotes for simplicity in this demo)
                 const cols = row.split(',');
                 if(cols.length >= 5) {
-                    appData.transactions.push({
-                        id: Date.now() + Math.random(),
+                    const ref = db.collection('transactions').doc();
+                    batch.set(ref, {
                         date: cols[0],
                         type: cols[1],
                         desc: cols[2].replace(/"/g, ''),
                         amount: parseFloat(cols[3]),
                         payer: cols[4],
-                        split: { pipe: parseFloat(cols[5]) || 50, luu: 100 - (parseFloat(cols[5]) || 50) },
-                        category: cols[6] || 'otros'
+                        split: {pipe: 50, luu: 50},
+                        category: cols[5] || 'otros',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     count++;
                 }
             });
-            saveData();
-            renderTransactions();
-            showNotification(`${count} transacciones importadas.`);
+            batch.commit().then(() => showNotification(`${count} transacciones importadas.`));
         };
         reader.readAsText(file);
     }
 
-    function resetAllData() {
-        if(confirm("¿ESTÁS SEGURO? Esto borrará TODOS los datos permanentemente.")) {
-            localStorage.removeItem('pipeLuuFinanzas');
-            appData = { transactions: [], debts: [], projects: [] };
-            renderTransactions();
-            renderDebts();
-            renderProjects();
-            updateDashboard();
-            showNotification('Datos reiniciados', 'warning');
-        }
-    }
-
-    // Cerrar modal al hacer click fuera
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
             event.target.style.display = "none";
