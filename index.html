@@ -857,15 +857,11 @@
             const amount = parseFloat(m.amount);
             if (m.type === 'ingreso') {
                 income += amount;
-                if (m.payer === 'pipe') pipeNet += amount;
-                else if (m.payer === 'luu') luuNet += amount;
+                // LOS INGRESOS NO AFECTAN LA DEUDA ENTRE LA PAREJA
+                // Solo suman al balance general, pero no generan obligación
             } else {
                 expense += amount;
                 if (m.type === 'gasto') {
-                    if (m.category && m.category !== 'Deudas' && m.category !== 'Ahorro/Proyecto') {
-                        gastosPorCategoria[m.category] = (gastosPorCategoria[m.category] || 0) + amount;
-                    }
-
                     let pipeShare = 0;
                     let luuShare = 0;
                     
@@ -880,9 +876,11 @@
                     }
 
                     if (m.payer === 'pipe') {
+                        // Pipe pagó todo. Luu le debe su parte.
                         pipeNet += luuShare; 
                         luuNet -= luuShare;
                     } else if (m.payer === 'luu') {
+                        // Luu pagó todo. Pipe le debe su parte.
                         luuNet += pipeShare;
                         pipeNet -= pipeShare;
                     }
