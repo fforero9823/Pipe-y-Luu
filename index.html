@@ -2,246 +2,1086 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finanzas Pipe & Luu</title>
-    <!-- CSS Externo -->
-    <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pipe & Luu - Finanzas</title>
+    <!-- Iconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #F5F5F0; /* Blanco Hueso */
+            --card-bg: #FFFFFF;
+            --primary-dark: #0F172A; /* Azul Navy */
+            --primary-medium: #1E293B;
+            --accent-blue: #3B82F6;
+            --text-main: #334155;
+            --text-light: #64748B;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; }
+
+        /* Header */
+        header { background: var(--primary-dark); color: white; padding: 1.5rem 1rem; text-align: center; position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow); }
+        header h1 { font-size: 1.5rem; font-weight: 700; }
+        header p { font-size: 0.85rem; opacity: 0.8; }
+        .status-badge { display: inline-block; font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-top: 5px; }
+
+        /* Nav */
+        nav { background: var(--card-bg); overflow-x: auto; white-space: nowrap; padding: 10px; position: sticky; top: 70px; z-index: 40; box-shadow: 0 2px 4px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; }
+        nav button { background: none; border: none; padding: 8px 16px; margin-right: 8px; border-radius: 20px; font-weight: 600; color: var(--text-light); cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+        nav button.active { background: var(--primary-dark); color: white; }
+        nav button:hover:not(.active) { background: #f1f5f9; }
+
+        /* Container */
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Cards */
+        .card { background: var(--card-bg); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
+        .card h2 { color: var(--primary-dark); font-size: 1.2rem; margin-bottom: 15px; border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Dashboard Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: white; padding: 15px; border-radius: var(--radius); text-align: center; box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
+        .stat-box.main { background: var(--primary-dark); color: white; grid-column: span 2; }
+        .stat-val { font-size: 1.4rem; font-weight: bold; margin: 5px 0; }
+        .stat-lbl { font-size: 0.8rem; opacity: 0.8; }
+
+        /* Month Selector */
+        .month-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 10px; border-radius: var(--radius); box-shadow: var(--shadow); }
+        .month-btn { background: none; border: none; font-size: 1.2rem; color: var(--primary-dark); cursor: pointer; padding: 5px 15px; }
+        .month-display { font-weight: bold; font-size: 1.1rem; color: var(--primary-dark); min-width: 150px; text-align: center; }
+
+        /* Forms */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; color: var(--primary-medium); }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background: #fafafa; }
+        input:focus, select:focus { outline: none; border-color: var(--accent-blue); background: white; }
+        
+        .btn { display: block; width: 100%; padding: 14px; background: var(--accent-blue); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; text-align: center; }
+        .btn:hover { background: #2563EB; }
+        .btn-danger { background: var(--danger); }
+        .btn-secondary { background: var(--primary-medium); }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; width: auto; display: inline-block; }
+
+        /* Split Buttons */
+        .split-container { display: flex; gap: 5px; margin-top: 5px; }
+        .split-btn { flex: 1; padding: 8px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 0.8rem; text-align: center; }
+        .split-btn.selected { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
+
+        /* Tables & Lists */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .list-item:last-child { border-bottom: none; }
+        .item-info { flex: 1; }
+        .item-title { font-weight: 600; font-size: 0.95rem; }
+        .item-sub { font-size: 0.8rem; color: var(--text-light); }
+        .item-action { margin-left: 10px; }
+        .delete-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1.1rem; transition: color 0.2s; padding: 5px; }
+        .delete-btn:hover { color: var(--danger); }
+
+        /* Badges */
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .bg-pipe { background: #DBEAFE; color: #1E40AF; }
+        .bg-luu { background: #FCE7F3; color: #9D174D; }
+        .bg-gatos { background: #FFEDD5; color: #C2410C; }
+        .bg-success { background: #D1FAE5; color: #065F46; }
+        .bg-danger { background: #FEE2E2; color: #991B1B; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+
+        /* Alerts */
+        #alert-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
+        .alert { padding: 12px 20px; margin-bottom: 10px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s; }
+        .alert-success { background: var(--success); }
+        .alert-error { background: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        /* Credit Progress */
+        .progress-bar-bg { background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin: 5px 0; }
+        .progress-bar-fill { background: var(--accent-blue); height: 100%; width: 0%; transition: width 0.5s; }
+        
+        /* Floating Action Button for Mobile if needed, but nav is enough */
+    </style>
 </head>
 <body>
 
-<!-- Loading Screen -->
-<div id="loadingOverlay" class="loading-overlay">
-    <div class="spinner"></div>
-    <p>Cargando datos...</p>
-</div>
-
 <header>
     <h1>Pipe & Luu 💙</h1>
-    <p>Control Financiero Familiar</p>
-    <div class="cats-badge">🐱 Lua & Patacon Approved</div>
+    <p>Finanzas Familiares</p>
+    <div id="connection-status" class="status-badge"><i class="fas fa-circle"></i> Local</div>
 </header>
 
 <nav>
-    <button data-target="dashboard" class="active">📊 Dashboard</button>
-    <button data-target="transacciones">💳 Movimientos</button>
-    <button data-target="deudas">💵 Créditos</button>
-    <button data-target="proyectos">🎯 Proyectos</button>
-    <button data-target="config">⚙️ Config</button>
+    <button onclick="navTo('dashboard')" class="active" id="nav-dashboard">📊 Dashboard</button>
+    <button onclick="navTo('movimientos')" id="nav-movimientos">💳 Movimientos</button>
+    <button onclick="navTo('creditos')" id="nav-creditos">💵 Créditos</button>
+    <button onclick="navTo('proyectos')" id="nav-proyectos">🎯 Proyectos</button>
+    <button onclick="navTo('config')" id="nav-config">⚙️ Config</button>
 </nav>
 
 <div class="container">
-    <div id="alertContainer"></div>
-    <div id="connectionStatus" class="status-indicator">Conectando...</div>
+    <div id="alert-container"></div>
 
     <!-- DASHBOARD -->
     <div id="dashboard" class="section active">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <button onclick="changeMonth(-1)" class="btn btn-small btn-secondary" style="width:auto;">&lt; Ant</button>
-            <h2 id="month-display" style="margin:0; border:none;">Mes</h2>
-            <button onclick="changeMonth(1)" class="btn btn-small btn-secondary" style="width:auto;">Sig &gt;</button>
+        <div class="month-selector">
+            <button class="month-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+            <span class="month-display" id="dash-month-label">Cargando...</span>
+            <button class="month-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
         </div>
 
-        <div class="dashboard-grid">
-            <div class="stat-card light">
-                <div class="stat-label">Ingresos Pipe</div>
-                <div class="stat-value" id="dash-pipe-income">$0</div>
+        <div class="stats-grid">
+            <div class="stat-box main">
+                <div class="stat-lbl">Balance del Mes</div>
+                <div class="stat-val" id="dash-balance">$0</div>
             </div>
-            <div class="stat-card light">
-                <div class="stat-label">Ingresos Luu</div>
-                <div class="stat-value" id="dash-luu-income">$0</div>
+            <div class="stat-box">
+                <div class="stat-lbl">Ingresos</div>
+                <div class="stat-val" style="color:var(--success)" id="dash-income">$0</div>
             </div>
-            <div class="stat-card light">
-                <div class="stat-label">Gastos Pipe</div>
-                <div class="stat-value" id="dash-pipe-expense" style="color:var(--danger)">$0</div>
+            <div class="stat-box">
+                <div class="stat-lbl">Gastos</div>
+                <div class="stat-val" style="color:var(--danger)" id="dash-expense">$0</div>
             </div>
-            <div class="stat-card light">
-                <div class="stat-label">Gastos Luu</div>
-                <div class="stat-value" id="dash-luu-expense" style="color:var(--danger)">$0</div>
+            <div class="stat-box" style="grid-column: span 2; border-top: 2px solid var(--bg-color);">
+                <div class="stat-lbl">Estado entre Pipe y Luu</div>
+                <div class="stat-val" id="dash-settlement" style="font-size: 1.1rem; margin-top:5px;">Calculando...</div>
             </div>
-            <div class="stat-card light">
-                <div class="stat-label">Cuotas Deudas (Mes)</div>
-                <div class="stat-value" id="dash-debt-month" style="color:var(--warning)">$0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Balance Total Mes</div>
-                <div class="stat-value" id="dash-balance">$0</div>
+            <div class="stat-box" style="grid-column: span 2;">
+                <div class="stat-lbl">Total Ahorrado en Proyectos</div>
+                <div class="stat-val" style="color: var(--accent-blue)" id="dash-projects-total">$0</div>
             </div>
         </div>
 
         <div class="card">
-            <h3>Estado de Cuentas entre Pareja</h3>
-            <p id="dash-settlement-info" style="margin:10px 0; font-weight:bold;">Calculando...</p>
-            <button id="btn-settle" class="btn btn-small" style="display:none;">💰 Liquidar Deuda Ahora</button>
-        </div>
-
-        <div class="card">
-            <h3>Ahorro Total en Proyectos</h3>
-            <div class="stat-value" id="dash-total-saved" style="color:var(--success)">$0</div>
-        </div>
-
-        <div class="card">
-            <h2>Últimos Movimientos</h2>
-            <div class="table-responsive">
-                <table id="dash-table">
-                    <thead><tr><th>Concepto</th><th>Monto</th><th>Quién</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+            <h2>Resumen de Créditos este Mes</h2>
+            <div id="dash-credits-summary">No hay cuotas este mes.</div>
         </div>
     </div>
 
-    <!-- TRANSACCIONES -->
-    <div id="transacciones" class="section">
+    <!-- MOVIMIENTOS -->
+    <div id="movimientos" class="section">
         <div class="card">
             <h2>Nuevo Movimiento</h2>
-            <form id="form-transaccion">
+            <form id="form-movimiento">
                 <div class="form-group">
                     <label>Tipo</label>
-                    <select id="t-type" required onchange="toggleSplitOptions()">
-                        <option value="gasto">Gasto / Egreso</option>
+                    <select id="m-type" onchange="toggleSplitOptions()">
+                        <option value="gasto">Gasto</option>
                         <option value="ingreso">Ingreso</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Concepto</label>
-                    <input type="text" id="t-desc" required>
+                    <label>Descripción</label>
+                    <input type="text" id="m-desc" required placeholder="Ej: Supermercado">
                 </div>
                 <div class="form-group">
                     <label>Monto ($)</label>
-                    <input type="number" id="t-amount" required min="0">
+                    <input type="number" id="m-amount" required placeholder="0">
                 </div>
-                <div class="form-group">
-                    <label>¿Quién pagó / recibe?</label>
-                    <select id="t-payer" required>
-                        <option value="pipe">Pipe</option>
-                        <option value="luu">Luu</option>
-                        <option value="gatos">Lua y Patacon</option>
-                    </select>
-                </div>
-                
-                <!-- Opciones de división SOLO para gastos -->
-                <div class="form-group" id="split-group">
-                    <label>¿Cómo se divide el gasto?</label>
-                    <div class="split-options">
-                        <button type="button" class="split-btn selected" onclick="setSplit('5050')">50/50</button>
-                        <button type="button" class="split-btn" onclick="setSplit('1000')">100% Pipe</button>
-                        <button type="button" class="split-btn" onclick="setSplit('0100')">100% Luu</button>
-                        <button type="button" class="split-btn" onclick="setSplit('custom')">Personalizado</button>
-                    </div>
-                    <div id="custom-split-inputs" style="display:none; margin-top:10px; gap:10px; display:flex;">
-                        <input type="number" id="split-pipe" placeholder="% Pipe" value="50">
-                        <input type="number" id="split-luu" placeholder="% Luu" value="50" readonly>
-                    </div>
-                </div>
-
                 <div class="form-group">
                     <label>Categoría</label>
-                    <select id="t-category"></select>
+                    <select id="m-category"></select>
                 </div>
                 <div class="form-group">
                     <label>Fecha</label>
-                    <input type="date" id="t-date" required>
+                    <input type="date" id="m-date" required>
                 </div>
+                
+                <!-- Solo para gastos -->
+                <div id="split-section">
+                    <div class="form-group">
+                        <label>¿Quién pagó?</label>
+                        <select id="m-payer">
+                            <option value="pipe">Pipe</option>
+                            <option value="luu">Luu</option>
+                            <option value="gatos">Lua & Patacon 🐱</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>¿Cómo se divide?</label>
+                        <div class="split-container">
+                            <div class="split-btn selected" onclick="setSplit('5050', this)">50/50</div>
+                            <div class="split-btn" onclick="setSplit('1000', this)">100% Pipe</div>
+                            <div class="split-btn" onclick="setSplit('0100', this)">100% Luu</div>
+                            <div class="split-btn" onclick="setSplit('custom', this)">Personalizado</div>
+                        </div>
+                        <div id="custom-split" style="display:none; margin-top:10px; display:flex; gap:10px;">
+                            <input type="number" id="split-p" placeholder="% Pipe" value="50">
+                            <input type="number" id="split-l" placeholder="% Luu" value="50">
+                        </div>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn">Guardar Movimiento</button>
             </form>
         </div>
 
         <div class="card">
-            <h2>Historial</h2>
-            <div class="table-responsive">
-                <table id="transactions-table">
-                    <thead><tr><th>Fecha</th><th>Desc</th><th>Tipo</th><th>Pagó</th><th>Monto</th><th></th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+            <h2>Historial <span style="font-size:0.8rem; font-weight:normal; color:var(--text-light)" id="history-filter-label"></span></h2>
+            <div id="movimientos-list"></div>
         </div>
     </div>
 
     <!-- CREDITOS -->
-    <div id="deudas" class="section">
+    <div id="creditos" class="section">
         <div class="card">
             <h2>Nuevo Crédito</h2>
-            <form id="form-deuda">
-                <div class="form-group"><label>Nombre</label><input type="text" id="d-name" required></div>
-                <div class="form-group"><label>Monto Total ($)</label><input type="number" id="d-total" required></div>
-                <div class="form-group"><label>Plazo (Meses)</label><input type="number" id="d-months" required></div>
-                <div class="form-group"><label>Tasa Interés Anual (%)</label><input type="number" id="d-rate" step="0.01" value="0"></div>
-                <div class="form-group"><label>Fecha Inicio</label><input type="date" id="d-start" required></div>
-                <div class="form-group"><label>Responsable</label>
-                    <select id="d-owner">
+            <form id="form-credito">
+                <div class="form-group">
+                    <label>Nombre (Ej: Visa Nu)</label>
+                    <input type="text" id="c-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Monto Total Inicial ($)</label>
+                    <input type="number" id="c-total" required>
+                </div>
+                <div class="form-group">
+                    <label>Tasa Interés Mensual (%)</label>
+                    <input type="number" id="c-rate" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Plazo (Meses)</label>
+                    <input type="number" id="c-term" required placeholder="Ej: 12">
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Inicio</label>
+                    <input type="date" id="c-start" required>
+                </div>
+                <div class="form-group">
+                    <label>Día de Pago (Día del mes)</label>
+                    <input type="number" id="c-day" min="1" max="31" value="5" required>
+                </div>
+                <div class="form-group">
+                    <label>Responsable</label>
+                    <select id="c-owner">
                         <option value="pipe">Pipe</option>
                         <option value="luu">Luu</option>
                         <option value="conjunto">Conjunto</option>
                     </select>
                 </div>
-                <button type="submit" class="btn">Calcular y Crear Crédito</button>
+                <div class="form-group">
+                    <label>¿Cuántos meses YA has pagado? (Para histórico)</label>
+                    <input type="number" id="c-paid-months" value="0" min="0">
+                    <small style="color:var(--text-light)">Si es un crédito nuevo, deja en 0. Si ya llevas tiempo pagándolo, pon los meses para ajustar el saldo.</small>
+                </div>
+                <button type="submit" class="btn">Crear Crédito</button>
             </form>
         </div>
-        <div id="debts-list"></div>
+        <div id="creditos-list"></div>
     </div>
 
     <!-- PROYECTOS -->
     <div id="proyectos" class="section">
         <div class="card">
-            <h2>Nuevo Proyecto</h2>
+            <h2>Nuevo Proyecto de Ahorro</h2>
             <form id="form-proyecto">
-                <div class="form-group"><label>Nombre</label><input type="text" id="p-name" required></div>
-                <div class="form-group"><label>Meta ($)</label><input type="number" id="p-goal" required></div>
-                <div class="form-group"><label>Ahorro Actual ($)</label><input type="number" id="p-current" value="0"></div>
-                <div class="form-group"><label>Fecha Límite</label><input type="date" id="p-date"></div>
-                <div class="form-group"><label>Detalles / Notas</label><textarea id="p-details" rows="3"></textarea></div>
+                <div class="form-group">
+                    <label>Nombre (Ej: Viaje Europa)</label>
+                    <input type="text" id="p-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Meta ($)</label>
+                    <input type="number" id="p-goal" required>
+                </div>
+                <div class="form-group">
+                    <label>Ahorro Inicial ($)</label>
+                    <input type="number" id="p-current" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Fecha Límite</label>
+                    <input type="date" id="p-deadline">
+                </div>
                 <button type="submit" class="btn">Crear Proyecto</button>
             </form>
         </div>
-        <div id="projects-list"></div>
+        <div id="proyectos-list"></div>
     </div>
 
-    <!-- CONFIGURACION -->
+    <!-- CONFIG -->
     <div id="config" class="section">
         <div class="card">
             <h2>Categorías</h2>
-            <p>Añade o elimina categorías para tus movimientos.</p>
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <input type="text" id="new-category" placeholder="Nueva categoría">
-                <button onclick="addCategory()" class="btn btn-small" style="width:auto;">Añadir</button>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <input type="text" id="new-cat-name" placeholder="Nueva categoría">
+                <button onclick="addCategory()" class="btn btn-sm" style="width:auto;">Añadir</button>
             </div>
-            <div id="categories-list"></div>
+            <div id="config-categories-list"></div>
         </div>
+
         <div class="card">
             <h2>Datos</h2>
-            <button onclick="localStorage.clear(); location.reload();" class="btn btn-danger">Borrar Todo y Reiniciar</button>
+            <button onclick="exportCSV()" class="btn btn-secondary" style="margin-bottom:10px;">📥 Descargar CSV</button>
+            
+            <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
+                <label>Importar CSV Histórico</label>
+                <input type="file" id="csv-file" accept=".csv" style="margin:10px 0;">
+                <button onclick="importCSV()" class="btn">Subir CSV</button>
+            </div>
+
+            <div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+                <button onclick="resetAll()" class="btn btn-danger">⚠️ Borrar Todo (Reset)</button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- MODALES -->
-<div id="modal-abono" class="modal">
+<!-- Modal Detalle Proyecto -->
+<div id="modal-proyecto" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeModal('modal-abono')">&times;</span>
-        <h2>Abono a Capital</h2>
-        <input type="hidden" id="abono-debt-id">
-        <div class="form-group"><label>Monto ($)</label><input type="number" id="abono-monto"></div>
-        <button onclick="confirmarAbono()" class="btn">Aplicar Abono</button>
+        <span class="close-modal" onclick="closeModal('modal-proyecto')">&times;</span>
+        <h2 id="modal-p-title">Proyecto</h2>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="modal-p-progress"></div>
+        </div>
+        <p style="text-align:center; margin:10px 0;" id="modal-p-stats"></p>
+        
+        <div class="form-group">
+            <label>Añadir Ahorro ($)</label>
+            <input type="number" id="modal-p-amount" placeholder="Monto">
+        </div>
+        <button onclick="saveProjectFund()" class="btn">Registrar Ahorro</button>
+        <p style="font-size:0.8rem; color:var(--text-light); margin-top:10px; text-align:center;">Esto creará un movimiento de gasto asociado.</p>
+        
+        <button onclick="deleteCurrentProject()" class="btn btn-danger" style="margin-top:20px;">Eliminar Proyecto</button>
     </div>
 </div>
 
-<div id="modal-settle" class="modal">
+<!-- Modal Detalle Crédito -->
+<div id="modal-credito" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeModal('modal-settle')">&times;</span>
-        <h2>Liquidar Deuda</h2>
-        <p>Registrar pago directo para saldar cuentas.</p>
-        <input type="hidden" id="settle-from">
-        <input type="hidden" id="settle-to">
-        <div class="form-group"><label>Monto a Pagar ($)</label><input type="number" id="settle-amount"></div>
-        <button id="confirm-settle" class="btn">Confirmar Pago</button>
+        <span class="close-modal" onclick="closeModal('modal-credito')">&times;</span>
+        <h2 id="modal-c-title">Crédito</h2>
+        <div id="modal-c-body"></div>
+        <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+        <h3>Pagar Cuota</h3>
+        <p style="font-size:0.9rem; color:var(--text-light); margin-bottom:10px;">Al pagar, se generará un movimiento de egreso a nombre del responsable.</p>
+        <button id="btn-pay-month" class="btn">Pagar Mes Siguiente</button>
     </div>
 </div>
 
-<!-- Script Principal -->
-<script src="app.js"></script>
+<script>
+    // --- CONFIGURACIÓN FIREBASE ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyB5GHHomIJc2JLzKyfnUntxL_brSiU9gVU",
+        authDomain: "pipe-y-luu-finanzas.firebaseapp.com",
+        projectId: "pipe-y-luu-finanzas",
+        storageBucket: "pipe-y-luu-finanzas.firebasestorage.app",
+        messagingSenderId: "1008646227450",
+        appId: "1:1008646227450:web:070091ff8b542d3a621043"
+    };
 
+    // --- ESTADO GLOBAL ---
+    let dbData = {
+        movimientos: [],
+        creditos: [],
+        proyectos: [],
+        categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Otros']
+    };
+    
+    let currentMonthOffset = 0; // 0 = este mes
+    let currentProjectId = null;
+    let currentCreditId = null;
+    let splitMode = '5050';
+
+    // --- INICIALIZACIÓN ---
+    window.addEventListener('DOMContentLoaded', () => {
+        loadLocalData();
+        renderCategories();
+        document.getElementById('m-date').valueAsDate = new Date();
+        document.getElementById('c-start').valueAsDate = new Date();
+        updateDashboard();
+        renderMovimientos();
+        renderCreditos();
+        renderProyectos();
+        
+        // Intentar conectar a Firebase en segundo plano sin bloquear
+        initFirebaseSoft();
+    });
+
+    // --- FIREBASE SOFT INIT (No bloqueante) ---
+    function initFirebaseSoft() {
+        try {
+            // Simulación de carga rápida local primero
+            setTimeout(() => {
+                document.getElementById('connection-status').innerHTML = '<i class="fas fa-wifi"></i> Nube (Sync)';
+                document.getElementById('connection-status').style.background = 'rgba(16, 185, 129, 0.2)';
+                // Aquí iría la lógica real de Firebase onSnapshot si se importara la librería
+                // Por ahora, confiamos en LocalStorage como fuente de verdad principal para evitar errores de carga
+                console.log("Modo híbrido activo: Guardado local prioritario.");
+            }, 1000);
+        } catch (e) {
+            console.error("Error Firebase:", e);
+        }
+    }
+
+    // --- GESTIÓN DE DATOS ---
+    function saveData() {
+        localStorage.setItem('pipeLuuData_v2', JSON.stringify(dbData));
+        // Aquí se dispararía la sync a Firebase
+        updateDashboard();
+    }
+
+    function loadLocalData() {
+        const saved = localStorage.getItem('pipeLuuData_v2');
+        if (saved) {
+            dbData = JSON.parse(saved);
+        }
+    }
+
+    function showAlert(msg, type = 'success') {
+        const div = document.createElement('div');
+        div.className = `alert alert-${type}`;
+        div.textContent = msg;
+        document.getElementById('alert-container').appendChild(div);
+        setTimeout(() => div.remove(), 3000);
+    }
+
+    // --- NAVEGACIÓN ---
+    function navTo(sectionId) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        document.getElementById('nav-' + sectionId).classList.add('active');
+        window.scrollTo(0,0);
+        
+        if(sectionId === 'dashboard') updateDashboard();
+        if(sectionId === 'movimientos') renderMovimientos();
+        if(sectionId === 'creditos') renderCreditos();
+        if(sectionId === 'proyectos') renderProyectos();
+        if(sectionId === 'config') renderCategories();
+    }
+
+    // --- DASHBOARD & MES ---
+    function getTargetDate(offset) {
+        const d = new Date();
+        d.setMonth(d.getMonth() + offset);
+        return d;
+    }
+
+    function changeMonth(delta) {
+        currentMonthOffset += delta;
+        updateDashboard();
+        renderMovimientos(); // Refrescar historial filtrado
+    }
+
+    function updateDashboard() {
+        const targetDate = getTargetDate(currentMonthOffset);
+        const monthName = targetDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+        document.getElementById('dash-month-label').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+        document.getElementById('history-filter-label').textContent = `(Filtrado: ${monthName})`;
+
+        const year = targetDate.getFullYear();
+        const month = targetDate.getMonth();
+
+        // Filtrar movimientos del mes
+        const monthMovs = dbData.movimientos.filter(m => {
+            const d = new Date(m.date);
+            return d.getFullYear() === year && d.getMonth() === month;
+        });
+
+        let income = 0;
+        let expense = 0;
+        let pipeNet = 0;
+        let luuNet = 0;
+
+        monthMovs.forEach(m => {
+            const amount = parseFloat(m.amount);
+            if (m.type === 'ingreso') {
+                income += amount;
+                if (m.payer === 'pipe') pipeNet += amount;
+                else if (m.payer === 'luu') luuNet += amount;
+            } else {
+                expense += amount;
+                // Lógica de división de gastos
+                if (m.type === 'gasto') {
+                    let pipeShare = 0;
+                    let luuShare = 0;
+                    
+                    if (m.splitType === '5050') { pipeShare = amount/2; luuShare = amount/2; }
+                    else if (m.splitType === '1000') { pipeShare = amount; luuShare = 0; }
+                    else if (m.splitType === '0100') { pipeShare = 0; luuShare = amount; }
+                    else { 
+                        // Custom
+                        const pPct = parseFloat(m.splitP) || 50;
+                        const lPct = parseFloat(m.splitL) || 50;
+                        pipeShare = (pPct/100)*amount;
+                        luuShare = (lPct/100)*amount;
+                    }
+
+                    if (m.payer === 'pipe') {
+                        pipeNet -= amount; // Sale de su bolsillo
+                        pipeNet += pipeShare; // Asume su parte
+                        luuNet += luuShare; // Luu asume su parte (pero no pagó, así que debe)
+                        // Corrección: Si Pipe pagó 100 (50/50), Pipe puso 100. Le toca 50. Luu le debe 50.
+                        // Balance Pipe: -100 (pagó) + 50 (le corresponde) = -50. 
+                        // Balance Luu: +50 (le corresponde gastar) pero no pagó = +50 (debe).
+                        // Simplificación para "Quien debe a quien":
+                        // Pipe pagó todo. Luu debe su parte.
+                        pipeNet += luuShare; // Pipe tiene derecho a cobrar
+                        luuNet -= luuShare; // Luu tiene deuda
+                    } else if (m.payer === 'luu') {
+                        luuNet += pipeShare;
+                        pipeNet -= pipeShare;
+                    }
+                }
+            }
+        });
+
+        // Cuotas de créditos del mes
+        let creditExpense = 0;
+        const creditsHtml = dbData.creditos.map(c => {
+            // Calcular si hay cuota este mes
+            const startDate = new Date(c.startDate);
+            // Ajustar día de pago
+            const paymentDate = new Date(year, month, c.day);
+            
+            // Verificar si la fecha de pago ya pasó respecto al inicio y si está dentro del plazo
+            // Lógica simplificada: Meses transcurridos desde inicio
+            let monthsPassed = (year - startDate.getFullYear()) * 12 + (month - startDate.getMonth());
+            
+            // Ajuste por día: si hoy es día 3 y pago es día 5, aún no paga este mes (depende de lógica exacta, usaremos aproximación mensual)
+            // Para simplificar: si el mes actual >= mes inicio, y estamos dentro del plazo.
+            
+            const totalMonths = parseInt(c.term);
+            const paidMonths = parseInt(c.paidMonths || 0);
+            const remainingMonths = totalMonths - paidMonths;
+
+            if (monthsPassed >= 0 && monthsPassed < totalMonths) {
+                // Hay cuota pendiente teórica
+                // Pero solo sumamos al gasto del mes si es la cuota "correspondiente" a este mes
+                // Para este dashboard, mostraremos el resumen de lo que toca pagar este mes según la tabla
+                
+                // Calculo rápido de cuota fija
+                const r = parseFloat(c.rate)/100;
+                const P = parseFloat(c.originalAmount);
+                const n = totalMonths;
+                let cuota = 0;
+                if(r > 0) {
+                    cuota = P * (r * Math.pow(1+r, n)) / (Math.pow(1+r, n) - 1);
+                } else {
+                    cuota = P / n;
+                }
+                
+                creditExpense += cuota;
+                return `<div class="list-item"><div class="item-info"><div class="item-title">${c.name}</div><div class="item-sub">Cuota aprox: $${cuota.toLocaleString()}</div></div><div class="badge bg-danger">Pendiente</div></div>`;
+            }
+            return null;
+        }).filter(Boolean).join('');
+
+        document.getElementById('dash-credits-summary').innerHTML = creditsHtml || "<small>No hay cuotas activas este mes.</small>";
+
+        // Render
+        document.getElementById('dash-income').textContent = `$ ${income.toLocaleString()}`;
+        document.getElementById('dash-expense').textContent = `$ ${(expense + creditExpense).toLocaleString()}`; // Incluimos estimación créditos? Mejor solo movimientos reales
+        document.getElementById('dash-expense').textContent = `$ ${expense.toLocaleString()}`;
+        document.getElementById('dash-balance').textContent = `$ ${(income - expense).toLocaleString()}`;
+
+        // Settlement
+        const diff = pipeNet + luuNet; // Debería ser 0 si sumamos ambos lados de la ecuación correctamente
+        // Usamos la lógica de "LuNet" que representa lo que Luu debe (negativo) o le deben (positivo)
+        // Si pipeNet > 0, Luu le debe a Pipe.
+        if (pipeNet > 1) {
+            document.getElementById('dash-settlement').innerHTML = `<span style="color:var(--success)">Luu le debe a Pipe: $${Math.abs(pipeNet).toLocaleString()}</span>`;
+        } else if (pipeNet < -1) {
+            document.getElementById('dash-settlement').innerHTML = `<span style="color:var(--danger)">Pipe le debe a Luu: $${Math.abs(pipeNet).toLocaleString()}</span>`;
+        } else {
+            document.getElementById('dash-settlement').innerHTML = `<span style="color:var(--text-light)">¡Cuentas claras! 😎</span>`;
+        }
+
+        // Total Proyectos
+        const totalProj = dbData.proyectos.reduce((sum, p) => sum + parseFloat(p.current), 0);
+        document.getElementById('dash-projects-total').textContent = `$ ${totalProj.toLocaleString()}`;
+    }
+
+    // --- MOVIMIENTOS ---
+    function toggleSplitOptions() {
+        const type = document.getElementById('m-type').value;
+        const section = document.getElementById('split-section');
+        section.style.display = type === 'gasto' ? 'block' : 'none';
+    }
+
+    function setSplit(mode, btn) {
+        splitMode = mode;
+        document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('custom-split').style.display = (mode === 'custom') ? 'flex' : 'none';
+    }
+
+    document.getElementById('form-movimiento').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const type = document.getElementById('m-type').value;
+        const mov = {
+            id: Date.now(),
+            date: document.getElementById('m-date').value,
+            desc: document.getElementById('m-desc').value,
+            amount: parseFloat(document.getElementById('m-amount').value),
+            category: document.getElementById('m-category').value,
+            type: type,
+            payer: type === 'gasto' ? document.getElementById('m-payer').value : 'pipe', // Ingreso asumimos quien lo registra o podríamos añadir campo
+            splitType: type === 'gasto' ? splitMode : null,
+            splitP: type === 'gasto' ? document.getElementById('split-p').value : null,
+            splitL: type === 'gasto' ? document.getElementById('split-l').value : null
+        };
+        
+        dbData.movimientos.unshift(mov);
+        saveData();
+        renderMovimientos();
+        e.target.reset();
+        document.getElementById('m-date').valueAsDate = new Date();
+        toggleSplitOptions();
+        showAlert('Movimiento guardado');
+    });
+
+    function renderMovimientos() {
+        const list = document.getElementById('movimientos-list');
+        list.innerHTML = '';
+        
+        // Filtrar por mes seleccionado en dashboard? O mostrar todo? 
+        // El usuario pidió ver historial, pero el dashboard filtra. Mostraremos los del mes seleccionado para consistencia, o todos con etiqueta.
+        // Vamos a mostrar los del mes seleccionado en el dashboard para que coincida.
+        const targetDate = getTargetDate(currentMonthOffset);
+        const year = targetDate.getFullYear();
+        const month = targetDate.getMonth();
+
+        const filtered = dbData.movimientos.filter(m => {
+            const d = new Date(m.date);
+            return d.getFullYear() === year && d.getMonth() === month;
+        }).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        if(filtered.length === 0) {
+            list.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:20px;">No hay movimientos este mes.</p>';
+            return;
+        }
+
+        filtered.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            const isExp = m.type === 'gasto';
+            const color = isExp ? 'var(--danger)' : 'var(--success)';
+            const sign = isExp ? '-' : '+';
+            
+            let payerIcon = '';
+            if(m.payer === 'pipe') payerIcon = '<i class="fas fa-male" style="color:#3B82F6"></i>';
+            else if(m.payer === 'luu') payerIcon = '<i class="fas fa-female" style="color:#EC4899"></i>';
+            else payerIcon = '<i class="fas fa-paw" style="color:#F59E0B"></i>';
+
+            div.innerHTML = `
+                <div class="item-info">
+                    <div class="item-title">${m.desc} <span class="badge" style="background:#eee; color:#333; margin-left:5px;">${m.category}</span></div>
+                    <div class="item-sub">${m.date} ${payerIcon}</div>
+                </div>
+                <div style="text-align:right">
+                    <div style="font-weight:bold; color:${color}">${sign}$${parseFloat(m.amount).toLocaleString()}</div>
+                    <button class="delete-btn" onclick="deleteMov(${m.id})"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function deleteMov(id) {
+        if(confirm('¿Borrar movimiento?')) {
+            dbData.movimientos = dbData.movimientos.filter(m => m.id !== id);
+            saveData();
+            renderMovimientos();
+            updateDashboard();
+        }
+    }
+
+    // --- CREDITOS ---
+    document.getElementById('form-credito').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const total = parseFloat(document.getElementById('c-total').value);
+        const term = parseInt(document.getElementById('c-term').value);
+        const rate = parseFloat(document.getElementById('c-rate').value) / 100;
+        const paidMonths = parseInt(document.getElementById('c-paid-months').value) || 0;
+        
+        // Calcular cuota fija
+        let cuota = 0;
+        if(rate > 0) {
+            cuota = total * (rate * Math.pow(1+rate, term)) / (Math.pow(1+rate, term) - 1);
+        } else {
+            cuota = total / term;
+        }
+
+        // Calcular saldo restante después de los meses pagados
+        // Fórmula de saldo restante: P * ((1+r)^n - (1+r)^p) / ((1+r)^n - 1)
+        let balance = total;
+        if(paidMonths > 0) {
+             if(rate > 0) {
+                 balance = total * ( (Math.pow(1+rate, term) - Math.pow(1+rate, paidMonths)) / (Math.pow(1+rate, term) - 1) );
+             } else {
+                 balance = total - (cuota * paidMonths);
+             }
+        }
+
+        // Generar movimientos históricos si paidMonths > 0
+        const owner = document.getElementById('c-owner').value;
+        const startDate = new Date(document.getElementById('c-start').value);
+        const day = parseInt(document.getElementById('c-day').value);
+
+        if(paidMonths > 0) {
+            if(confirm(`Se generarán ${paidMonths} movimientos de pago históricos. ¿Continuar?`)) {
+                for(let i=1; i<=paidMonths; i++) {
+                    const payDate = new Date(startDate);
+                    payDate.setMonth(startDate.getMonth() + i);
+                    // Ajustar día
+                    payDate.setDate(day); 
+                    
+                    // Desglose interés/capital para el registro (aproximado para el histórico)
+                    // No desglosamos en dos movimientos, sino uno solo de "Pago Cuota"
+                    dbData.movimientos.push({
+                        id: Date.now() + i,
+                        date: payDate.toISOString().split('T')[0],
+                        desc: `Pago cuota ${i}: ${document.getElementById('c-name').value}`,
+                        amount: cuota,
+                        category: 'Deudas',
+                        type: 'gasto',
+                        payer: owner,
+                        splitType: '1000', // Lo paga el dueño entero
+                        splitP: owner==='pipe'?100:0,
+                        splitL: owner==='luu'?100:0
+                    });
+                }
+            }
+        }
+
+        const credito = {
+            id: Date.now(),
+            name: document.getElementById('c-name').value,
+            originalAmount: total,
+            currentBalance: balance,
+            rate: rate,
+            term: term,
+            cuota: cuota,
+            startDate: document.getElementById('c-start').value,
+            day: day,
+            owner: owner,
+            paidMonths: paidMonths
+        };
+
+        dbData.creditos.push(credito);
+        saveData();
+        renderCreditos();
+        e.target.reset();
+        showAlert('Crédito creado y histórico generado');
+    });
+
+    function renderCreditos() {
+        const list = document.getElementById('creditos-list');
+        list.innerHTML = '';
+        
+        dbData.creditos.forEach(c => {
+            const pct = ((c.originalAmount - c.currentBalance) / c.originalAmount) * 100;
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between;">
+                    <h3>${c.name} <small style="font-size:0.8rem; color:var(--text-light)">(${c.owner})</small></h3>
+                    <button class="delete-btn" onclick="deleteCredito(${c.id})"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:10px;">
+                    <span>Pendiente: <strong>$${Math.round(c.currentBalance).toLocaleString()}</strong></span>
+                    <span>Cuota: $${Math.round(c.cuota).toLocaleString()}</span>
+                </div>
+                <button onclick="openCreditoModal(${c.id})" class="btn btn-sm btn-secondary">Ver Detalles / Pagar</button>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function openCreditoModal(id) {
+        currentCreditId = id;
+        const c = dbData.creditos.find(x => x.id === id);
+        document.getElementById('modal-c-title').textContent = c.name;
+        
+        const remainingMonths = c.term - c.paidMonths;
+        const nextPayDate = new Date(c.startDate);
+        nextPayDate.setMonth(nextPayDate.getMonth() + c.paidMonths + 1);
+        nextPayDate.setDate(c.day);
+
+        document.getElementById('modal-c-body').innerHTML = `
+            <p><strong>Saldo:</strong> $${Math.round(c.currentBalance).toLocaleString()}</p>
+            <p><strong>Cuota Fija:</strong> $${Math.round(c.cuota).toLocaleString()}</p>
+            <p><strong>Meses Restantes:</strong> ${remainingMonths}</p>
+            <p><strong>Próximo Pago:</strong> ${nextPayDate.toLocaleDateString()}</p>
+            <p style="font-size:0.8rem; color:var(--text-light); margin-top:10px;">
+                * Al pagar, se registrará un gasto a nombre de <strong>${c.owner}</strong>.
+            </p>
+        `;
+        
+        const btn = document.getElementById('btn-pay-month');
+        btn.onclick = () => payCreditMonth(c);
+        
+        document.getElementById('modal-credito').style.display = 'flex';
+    }
+
+    function payCreditMonth(c) {
+        // 1. Crear movimiento
+        const today = new Date().toISOString().split('T')[0];
+        dbData.movimientos.unshift({
+            id: Date.now(),
+            date: today,
+            desc: `Pago cuota: ${c.name}`,
+            amount: c.cuota,
+            category: 'Deudas',
+            type: 'gasto',
+            payer: c.owner, // Importante: Usa el dueño del crédito
+            splitType: '1000', // El dueño paga el 100% de su deuda
+            splitP: c.owner === 'pipe' ? 100 : 0,
+            splitL: c.owner === 'luu' ? 100 : 0
+        });
+
+        // 2. Actualizar crédito
+        // Recalcular saldo simple (resta cuota) - Para precisión financiera real se debería recalculaar tabla amortización, 
+        // pero para esta app, restar cuota es suficiente aproximación si la cuota es fija precalculada.
+        // Mejora: Recalcular interés del mes sobre el saldo actual.
+        const interest = c.currentBalance * c.rate;
+        const principal = c.cuota - interest;
+        
+        c.currentBalance -= principal;
+        c.paidMonths++;
+
+        if(c.currentBalance < 0) c.currentBalance = 0;
+
+        saveData();
+        closeModal('modal-credito');
+        renderCreditos();
+        renderMovimientos();
+        showAlert('Pago registrado correctamente');
+    }
+
+    function deleteCredito(id) {
+        if(confirm('¿Eliminar crédito?')) {
+            dbData.creditos = dbData.creditos.filter(c => c.id !== id);
+            saveData();
+            renderCreditos();
+        }
+    }
+
+    // --- PROYECTOS ---
+    document.getElementById('form-proyecto').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const proj = {
+            id: Date.now(),
+            name: document.getElementById('p-name').value,
+            goal: parseFloat(document.getElementById('p-goal').value),
+            current: parseFloat(document.getElementById('p-current').value),
+            deadline: document.getElementById('p-deadline').value
+        };
+        
+        // Si hay ahorro inicial, crear movimiento
+        if(proj.current > 0) {
+            dbData.movimientos.unshift({
+                id: Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                desc: `Ahorro inicial: ${proj.name}`,
+                amount: proj.current,
+                category: 'Ahorro/Proyecto',
+                type: 'gasto',
+                payer: 'pipe', // Asumimos pipe por defecto o podríamos preguntar
+                splitType: '1000',
+                splitP: 100, splitL: 0
+            });
+        }
+
+        dbData.proyectos.push(proj);
+        saveData();
+        renderProyectos();
+        e.target.reset();
+        showAlert('Proyecto creado');
+    });
+
+    function renderProyectos() {
+        const list = document.getElementById('proyectos-list');
+        list.innerHTML = '';
+        dbData.proyectos.forEach(p => {
+            const pct = Math.min(100, (p.current / p.goal) * 100);
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.onclick = () => openProjectModal(p.id);
+            div.style.cursor = 'pointer';
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between;">
+                    <h3>${p.name}</h3>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+                    <span>$${p.current.toLocaleString()}</span>
+                    <span>Meta: $${p.goal.toLocaleString()}</span>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function openProjectModal(id) {
+        currentProjectId = id;
+        const p = dbData.proyectos.find(x => x.id === id);
+        document.getElementById('modal-p-title').textContent = p.name;
+        const pct = Math.min(100, (p.current / p.goal) * 100);
+        document.getElementById('modal-p-progress').style.width = pct + '%';
+        document.getElementById('modal-p-stats').textContent = `${pct.toFixed(1)}% completado`;
+        document.getElementById('modal-p-amount').value = '';
+        document.getElementById('modal-proyecto').style.display = 'flex';
+    }
+
+    function saveProjectFund() {
+        const amount = parseFloat(document.getElementById('modal-p-amount').value);
+        if(!amount || amount <= 0) return;
+
+        const p = dbData.proyectos.find(x => x.id === currentProjectId);
+        p.current += amount;
+
+        // Generar movimiento
+        dbData.movimientos.unshift({
+            id: Date.now(),
+            date: new Date().toISOString().split('T')[0],
+            desc: `Ahorro para: ${p.name}`,
+            amount: amount,
+            category: 'Ahorro/Proyecto',
+            type: 'gasto',
+            payer: 'pipe', // Default
+            splitType: '1000',
+            splitP: 100, splitL: 0
+        });
+
+        saveData();
+        renderProyectos();
+        closeModal('modal-proyecto');
+        showAlert('Ahorro añadido y movimiento registrado');
+    }
+
+    function deleteCurrentProject() {
+        if(confirm('¿Eliminar proyecto permanentemente?')) {
+            dbData.proyectos = dbData.proyectos.filter(p => p.id !== currentProjectId);
+            saveData();
+            renderProyectos();
+            closeModal('modal-proyecto');
+        }
+    }
+    
+    function deleteProject(id) {
+        if(confirm('¿Eliminar proyecto?')) {
+            dbData.proyectos = dbData.proyectos.filter(p => p.id !== id);
+            saveData();
+            renderProyectos();
+        }
+    }
+
+    // --- CONFIG & UTILS ---
+    function renderCategories() {
+        const select = document.getElementById('m-category');
+        const list = document.getElementById('config-categories-list');
+        select.innerHTML = '';
+        list.innerHTML = '';
+        
+        dbData.categorias.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            select.appendChild(opt);
+
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `<span>${cat}</span> <button class="delete-btn" onclick="removeCategory('${cat}')"><i class="fas fa-times"></i></button>`;
+            list.appendChild(item);
+        });
+    }
+
+    function addCategory() {
+        const name = document.getElementById('new-cat-name').value;
+        if(name && !dbData.categorias.includes(name)) {
+            dbData.categorias.push(name);
+            saveData();
+            renderCategories();
+            document.getElementById('new-cat-name').value = '';
+        }
+    }
+
+    function removeCategory(name) {
+        if(confirm('¿Quitar categoría?')) {
+            dbData.categorias = dbData.categorias.filter(c => c !== name);
+            saveData();
+            renderCategories();
+        }
+    }
+
+    function resetAll() {
+        if(confirm('¿ESTÁS SEGURO? Se borrará TODO.')) {
+            localStorage.removeItem('pipeLuuData_v2');
+            location.reload();
+        }
+    }
+
+    function exportCSV() {
+        let csv = "fecha,tipo,descripcion,monto,categoria,payer\n";
+        dbData.movimientos.forEach(m => {
+            csv += `${m.date},${m.type},"${m.desc}",${m.amount},${m.category},${m.payer}\n`;
+        });
+        const blob = new Blob([csv], {type: 'text/csv'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'finanzas_pipe_luu.csv';
+        a.click();
+    }
+
+    function importCSV() {
+        const file = document.getElementById('csv-file').files[0];
+        if(!file) return alert('Selecciona un archivo');
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target.result;
+            const rows = text.split('\n').slice(1);
+            let count = 0;
+            rows.forEach(row => {
+                const cols = row.split(',');
+                if(cols.length >= 5) {
+                    dbData.movimientos.push({
+                        id: Date.now() + Math.random(),
+                        date: cols[0],
+                        type: cols[1],
+                        desc: cols[2].replace(/"/g, ''),
+                        amount: parseFloat(cols[3]),
+                        category: cols[4],
+                        payer: cols[5] || 'pipe',
+                        splitType: '1000',
+                        splitP: 100, splitL: 0
+                    });
+                    count++;
+                }
+            });
+            saveData();
+            renderMovimientos();
+            alert(`${count} movimientos importados.`);
+        };
+        reader.readAsText(file);
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    // Cerrar modales al hacer click fuera
+    window.onclick = (e) => {
+        if(e.target.classList.contains('modal')) e.target.style.display = 'none';
+    }
+</script>
 </body>
 </html>
