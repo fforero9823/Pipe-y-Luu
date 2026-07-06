@@ -14,6 +14,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pipe & Luu - Finanzas</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+            <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --bg-color: #F5F5F0;
@@ -311,6 +314,9 @@
             margin-left: 5px;
         }
     </style>
+    <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -691,9 +697,76 @@
     let isCapitalAbonoMode = false;
     let currentPayCreditId = null;
 
-    // --- INICIALIZACIÓN ---
-    window.addEventListener('DOMContentLoaded', () => {
+    // --- FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyB5GHHomIJc2JLzKyfnUntxL_brSiU9gVU",
+      authDomain: "pipe-y-luu-finanzas.firebaseapp.com",
+      projectId: "pipe-y-luu-finanzas",
+      storageBucket: "pipe-y-luu-finanzas.firebasestorage.app",
+      messagingSenderId: "1008646227450",
+      appId: "1:1008646227450:web:070091ff8b542d3a621043"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- INICIALIZACIÓN CON FIREBASE ---
+    window.addEventListener('DOMContentLoaded', async () => {
+        // Primero cargar datos locales como respaldo
         loadLocalData();
+        
+        // Luego intentar cargar desde Firebase
+        try {
+            const doc = await db.collection('finanzas').doc('datos').get();
+            if (doc.exists) {
+                const firebaseData = doc.data();
+                dbData = {
+                    movimientos: firebaseData.movimientos || [],
+                    creditos: firebaseData.creditos || [],
+                    proyectos: firebaseData.proyectos || [],
+                    categorias: firebaseData.categorias || dbData.categorias,
+                    lugares: firebaseData.lugares || dbData.lugares,
+                    presupuestos: firebaseData.presupuestos || {}
+                };
+                saveLocalData();
+                console.log('✅ Datos cargados desde Firebase');
+            } else {
+                console.log('No hay datos en Firebase, subiendo datos locales');
+                await saveData();
+            }
+        } catch (error) {
+            console.error('Error cargando Firebase:', error);
+            mostrarToast('⚠️ Usando datos locales (sin conexión)', 'warning');
+        }
+
+        // Escuchar cambios en tiempo real (sincronización automática)
+        db.collection('finanzas').doc('datos').onSnapshot(doc => {
+            if (doc.exists) {
+                const firebaseData = doc.data();
+                dbData = {
+                    movimientos: firebaseData.movimientos || [],
+                    creditos: firebaseData.creditos || [],
+                    proyectos: firebaseData.proyectos || [],
+                    categorias: firebaseData.categorias || dbData.categorias,
+                    lugares: firebaseData.lugares || dbData.lugares,
+                    presupuestos: firebaseData.presupuestos || {}
+                };
+                saveLocalData();
+                
+                // Actualizar todo lo que se ve en pantalla
+                renderCategories();
+                renderPlaces();
+                renderBudgetsConfig();
+                updateDashboard();
+                renderMovimientos();
+                renderCreditos();
+                renderProyectos();
+                
+                console.log('🔄 Datos sincronizados desde Firebase');
+            }
+        });
+
         renderCategories();
         renderPlaces();
         renderBudgetsConfig();
@@ -712,6 +785,53 @@
         setupConnectionListener();
         setupFAB();
     });
+
+    // --- GESTIÓN DE DATOS HÍBRIDA (FIREBASE + LOCAL) ---
+    async function saveData() {
+        // Guardar en local inmediatamente (para que funcione rápido)
+        saveLocalData();
+        
+        // Intentar guardar en Firebase
+        if (navigator.onLine) {
+            try {
+                await db.collection('finanzas').doc('datos').set(dbData);
+                updateConnectionStatus(true);
+            } catch (error) {
+                console.error('Error guardando en Firebase:', error);
+                updateConnectionStatus(false);
+                mostrarToast('⚠️ Guardado solo en local', 'warning');
+            }
+        } else {
+            updateConnectionStatus(false);
+        }
+        
+        updateDashboard();
+    }
+
+    function saveLocalData() {
+        localStorage.setItem('pipeLuuData_v2', JSON.stringify(dbData));
+    }
+
+    function loadLocalData() {
+        const saved = localStorage.getItem('pipeLuuData_v2');
+        if (saved) {
+            dbData = JSON.parse(saved);
+            if (!dbData.lugares) dbData.lugares = ['Efectivo', 'Cuenta Ahorros', 'Nequi', 'Daviplata', 'Tarjeta Pipe', 'Tarjeta Luu'];
+            if (!dbData.presupuestos) dbData.presupuestos = {};
+            
+            if (dbData.proyectos) {
+                dbData.proyectos.forEach(p => {
+                    if (!p.locations) {
+                        p.locations = [{
+                            name: 'General',
+                            amount: p.current || 0,
+                            yield: 0
+                        }];
+                    }
+                });
+            }
+        }
+    }
 
     function mostrarToast(mensaje, tipo = 'success') {
         const container = document.getElementById('toastContainer');
@@ -732,12 +852,11 @@
     function updateConnectionStatus(isOnline) {
         const badge = document.getElementById('connection-status');
         if (isOnline) {
-            badge.innerHTML = '<i class="fas fa-wifi"></i> Nube (Sync)';
+            badge.innerHTML = '<i class="fas fa-cloud"></i> Firebase (Sync)';
             badge.className = 'status-badge online';
         } else {
             badge.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline (Local)';
             badge.className = 'status-badge offline';
-            mostrarToast('📴 Sin conexión. Guardando en local...', 'warning');
         }
     }
 
@@ -766,33 +885,6 @@
             
             mostrarToast('✨ ¿Qué vamos a registrar?', 'success');
         });
-    }
-
-    function saveData() {
-        localStorage.setItem('pipeLuuData_v2', JSON.stringify(dbData));
-        updateDashboard();
-    }
-
-    function loadLocalData() {
-        const saved = localStorage.getItem('pipeLuuData_v2');
-        if (saved) {
-            dbData = JSON.parse(saved);
-            if (!dbData.lugares) dbData.lugares = ['Efectivo', 'Cuenta Ahorros', 'Nequi', 'Daviplata', 'Tarjeta Pipe', 'Tarjeta Luu'];
-            if (!dbData.presupuestos) dbData.presupuestos = {};
-            
-            // Migración de proyectos antiguos
-            if (dbData.proyectos) {
-                dbData.proyectos.forEach(p => {
-                    if (!p.locations) {
-                        p.locations = [{
-                            name: 'General',
-                            amount: p.current || 0,
-                            yield: 0
-                        }];
-                    }
-                });
-            }
-        }
     }
 
     function showAlert(msg, type = 'success') {
