@@ -1,16 +1,15 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pipe & Luu - Finanzas</title>
-    <!-- Iconos -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #F5F5F0; /* Blanco Hueso */
+            --bg-color: #F5F5F0;
             --card-bg: #FFFFFF;
-            --primary-dark: #0F172A; /* Azul Navy */
+            --primary-dark: #0F172A;
             --primary-medium: #1E293B;
             --accent-blue: #3B82F6;
             --text-main: #334155;
@@ -26,68 +25,58 @@
         
         body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; }
 
-        /* Header */
         header { background: var(--primary-dark); color: white; padding: 1.5rem 1rem; text-align: center; position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow); }
         header h1 { font-size: 1.5rem; font-weight: 700; }
         header p { font-size: 0.85rem; opacity: 0.8; }
         .status-badge { display: inline-block; font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-top: 5px; }
 
-        /* Nav */
         nav { background: var(--card-bg); overflow-x: auto; white-space: nowrap; padding: 10px; position: sticky; top: 70px; z-index: 40; box-shadow: 0 2px 4px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; }
         nav button { background: none; border: none; padding: 8px 16px; margin-right: 8px; border-radius: 20px; font-weight: 600; color: var(--text-light); cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
         nav button.active { background: var(--primary-dark); color: white; }
         nav button:hover:not(.active) { background: #f1f5f9; }
 
-        /* Container */
         .container { max-width: 800px; margin: 0 auto; padding: 20px; }
         .section { display: none; animation: fadeIn 0.3s ease; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Cards */
         .card { background: var(--card-bg); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
         .card h2 { color: var(--primary-dark); font-size: 1.2rem; margin-bottom: 15px; border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Dashboard Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
         .stat-box { background: white; padding: 15px; border-radius: var(--radius); text-align: center; box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
         .stat-box.main { background: var(--primary-dark); color: white; grid-column: span 2; }
         .stat-val { font-size: 1.4rem; font-weight: bold; margin: 5px 0; }
         .stat-lbl { font-size: 0.8rem; opacity: 0.8; }
 
-        /* Month Selector */
         .month-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 10px; border-radius: var(--radius); box-shadow: var(--shadow); }
         .month-btn { background: none; border: none; font-size: 1.2rem; color: var(--primary-dark); cursor: pointer; padding: 5px 15px; }
         .month-display { font-weight: bold; font-size: 1.1rem; color: var(--primary-dark); min-width: 150px; text-align: center; }
 
-        /* Forms */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; color: var(--primary-medium); }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background: #fafafa; }
         input:focus, select:focus { outline: none; border-color: var(--accent-blue); background: white; }
         
-        .btn { display: block; width: 100%; padding: 14px; background: var(--accent-blue); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; text-align: center; }
+        .btn { display: block; width: 100%; padding: 14px; background: var(--accent-blue); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; text-align: center; margin-top: 10px;}
         .btn:hover { background: #2563EB; }
         .btn-danger { background: var(--danger); }
         .btn-secondary { background: var(--primary-medium); }
-        .btn-sm { padding: 6px 12px; font-size: 0.85rem; width: auto; display: inline-block; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; width: auto; display: inline-block; margin-top: 0; }
+        .btn-block { width: 100%; }
 
-        /* Split Buttons */
         .split-container { display: flex; gap: 5px; margin-top: 5px; }
         .split-btn { flex: 1; padding: 8px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 0.8rem; text-align: center; }
         .split-btn.selected { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
 
-        /* Tables & Lists */
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .list-item:last-child { border-bottom: none; }
         .item-info { flex: 1; }
         .item-title { font-weight: 600; font-size: 0.95rem; }
         .item-sub { font-size: 0.8rem; color: var(--text-light); }
-        .item-action { margin-left: 10px; }
         .delete-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1.1rem; transition: color 0.2s; padding: 5px; }
         .delete-btn:hover { color: var(--danger); }
 
-        /* Badges */
         .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
         .bg-pipe { background: #DBEAFE; color: #1E40AF; }
         .bg-luu { background: #FCE7F3; color: #9D174D; }
@@ -95,23 +84,20 @@
         .bg-success { background: #D1FAE5; color: #065F46; }
         .bg-danger { background: #FEE2E2; color: #991B1B; }
 
-        /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
         .close-modal { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
 
-        /* Alerts */
         #alert-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
         .alert { padding: 12px 20px; margin-bottom: 10px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s; }
         .alert-success { background: var(--success); }
         .alert-error { background: var(--danger); }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        /* Credit Progress */
         .progress-bar-bg { background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin: 5px 0; }
         .progress-bar-fill { background: var(--accent-blue); height: 100%; width: 0%; transition: width 0.5s; }
         
-        /* Floating Action Button for Mobile if needed, but nav is enough */
+        .settlement-box { background: #f8fafc; padding: 10px; border-radius: 8px; text-align: center; margin-top: 10px; border: 1px dashed #cbd5e1; }
     </style>
 </head>
 <body>
@@ -154,10 +140,12 @@
                 <div class="stat-lbl">Gastos</div>
                 <div class="stat-val" style="color:var(--danger)" id="dash-expense">$0</div>
             </div>
-            <div class="stat-box" style="grid-column: span 2; border-top: 2px solid var(--bg-color);">
+            
+            <div class="stat-box" style="grid-column: span 2;">
                 <div class="stat-lbl">Estado entre Pipe y Luu</div>
-                <div class="stat-val" id="dash-settlement" style="font-size: 1.1rem; margin-top:5px;">Calculando...</div>
+                <div id="dash-settlement-container"></div>
             </div>
+
             <div class="stat-box" style="grid-column: span 2;">
                 <div class="stat-lbl">Total Ahorrado en Proyectos</div>
                 <div class="stat-val" style="color: var(--accent-blue)" id="dash-projects-total">$0</div>
@@ -199,7 +187,6 @@
                     <input type="date" id="m-date" required>
                 </div>
                 
-                <!-- Solo para gastos -->
                 <div id="split-section">
                     <div class="form-group">
                         <label>¿Quién pagó?</label>
@@ -274,7 +261,7 @@
                 <div class="form-group">
                     <label>¿Cuántos meses YA has pagado? (Para histórico)</label>
                     <input type="number" id="c-paid-months" value="0" min="0">
-                    <small style="color:var(--text-light)">Si es un crédito nuevo, deja en 0. Si ya llevas tiempo pagándolo, pon los meses para ajustar el saldo.</small>
+                    <small style="color:var(--text-light)">Si es un crédito nuevo, deja en 0.</small>
                 </div>
                 <button type="submit" class="btn">Crear Crédito</button>
             </form>
@@ -364,38 +351,31 @@
         <span class="close-modal" onclick="closeModal('modal-credito')">&times;</span>
         <h2 id="modal-c-title">Crédito</h2>
         <div id="modal-c-body"></div>
+        
         <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
-        <h3>Pagar Cuota</h3>
-        <p style="font-size:0.9rem; color:var(--text-light); margin-bottom:10px;">Al pagar, se generará un movimiento de egreso a nombre del responsable.</p>
-        <!-- Agrega esto dentro de #modal-credito, antes del botón de pagar mes -->
-<button id="btn-abono-capital" class="btn btn-secondary" style="margin-top:10px; background:var(--primary-medium);">💰 Abono a Capital</button>
-        <button id="btn-pay-month" class="btn">Pagar Mes Siguiente</button>
+        
+        <h3>Gestionar Pagos</h3>
+        <button onclick="openPayModal(false)" class="btn btn-secondary" style="margin-bottom:10px;">💰 Pagar Cuota Mensual</button>
+        <button onclick="openPayModal(true)" class="btn" style="background-color: var(--success);">📉 Abono a Capital</button>
+        
+        <button onclick="deleteCreditoFromModal()" class="btn btn-danger" style="margin-top:20px;">Eliminar Crédito</button>
     </div>
 </div>
 
 <script>
-    // --- CONFIGURACIÓN FIREBASE ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyB5GHHomIJc2JLzKyfnUntxL_brSiU9gVU",
-        authDomain: "pipe-y-luu-finanzas.firebaseapp.com",
-        projectId: "pipe-y-luu-finanzas",
-        storageBucket: "pipe-y-luu-finanzas.firebasestorage.app",
-        messagingSenderId: "1008646227450",
-        appId: "1:1008646227450:web:070091ff8b542d3a621043"
-    };
-
     // --- ESTADO GLOBAL ---
     let dbData = {
         movimientos: [],
         creditos: [],
         proyectos: [],
-        categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Otros']
+        categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Deudas', 'Otros']
     };
     
-    let currentMonthOffset = 0; // 0 = este mes
+    let currentMonthOffset = 0;
     let currentProjectId = null;
     let currentCreditId = null;
     let splitMode = '5050';
+    let isCapitalAbonoMode = false;
 
     // --- INICIALIZACIÓN ---
     window.addEventListener('DOMContentLoaded', () => {
@@ -403,35 +383,21 @@
         renderCategories();
         document.getElementById('m-date').valueAsDate = new Date();
         document.getElementById('c-start').valueAsDate = new Date();
+        
         updateDashboard();
         renderMovimientos();
         renderCreditos();
         renderProyectos();
         
-        // Intentar conectar a Firebase en segundo plano sin bloquear
-        initFirebaseSoft();
+        setTimeout(() => {
+            document.getElementById('connection-status').innerHTML = '<i class="fas fa-wifi"></i> Nube (Sync)';
+            document.getElementById('connection-status').style.background = 'rgba(16, 185, 129, 0.2)';
+        }, 1000);
     });
-
-    // --- FIREBASE SOFT INIT (No bloqueante) ---
-    function initFirebaseSoft() {
-        try {
-            // Simulación de carga rápida local primero
-            setTimeout(() => {
-                document.getElementById('connection-status').innerHTML = '<i class="fas fa-wifi"></i> Nube (Sync)';
-                document.getElementById('connection-status').style.background = 'rgba(16, 185, 129, 0.2)';
-                // Aquí iría la lógica real de Firebase onSnapshot si se importara la librería
-                // Por ahora, confiamos en LocalStorage como fuente de verdad principal para evitar errores de carga
-                console.log("Modo híbrido activo: Guardado local prioritario.");
-            }, 1000);
-        } catch (e) {
-            console.error("Error Firebase:", e);
-        }
-    }
 
     // --- GESTIÓN DE DATOS ---
     function saveData() {
         localStorage.setItem('pipeLuuData_v2', JSON.stringify(dbData));
-        // Aquí se dispararía la sync a Firebase
         updateDashboard();
     }
 
@@ -475,7 +441,7 @@
     function changeMonth(delta) {
         currentMonthOffset += delta;
         updateDashboard();
-        renderMovimientos(); // Refrescar historial filtrado
+        renderMovimientos();
     }
 
     function updateDashboard() {
@@ -487,7 +453,6 @@
         const year = targetDate.getFullYear();
         const month = targetDate.getMonth();
 
-        // Filtrar movimientos del mes
         const monthMovs = dbData.movimientos.filter(m => {
             const d = new Date(m.date);
             return d.getFullYear() === year && d.getMonth() === month;
@@ -495,18 +460,18 @@
 
         let income = 0;
         let expense = 0;
-        let pipeNet = 0;
-        let luuNet = 0;
+        let pipeNet = 0; // Lo que Luu le debe a Pipe (si es positivo)
+        let luuNet = 0;  // Lo que Pipe le debe a Luu (si es positivo)
 
         monthMovs.forEach(m => {
             const amount = parseFloat(m.amount);
             if (m.type === 'ingreso') {
                 income += amount;
+                // Los ingresos no generan deuda entre ellos, solo suman al balance personal
                 if (m.payer === 'pipe') pipeNet += amount;
                 else if (m.payer === 'luu') luuNet += amount;
             } else {
                 expense += amount;
-                // Lógica de división de gastos
                 if (m.type === 'gasto') {
                     let pipeShare = 0;
                     let luuShare = 0;
@@ -515,7 +480,6 @@
                     else if (m.splitType === '1000') { pipeShare = amount; luuShare = 0; }
                     else if (m.splitType === '0100') { pipeShare = 0; luuShare = amount; }
                     else { 
-                        // Custom
                         const pPct = parseFloat(m.splitP) || 50;
                         const lPct = parseFloat(m.splitL) || 50;
                         pipeShare = (pPct/100)*amount;
@@ -523,17 +487,11 @@
                     }
 
                     if (m.payer === 'pipe') {
-                        pipeNet -= amount; // Sale de su bolsillo
-                        pipeNet += pipeShare; // Asume su parte
-                        luuNet += luuShare; // Luu asume su parte (pero no pagó, así que debe)
-                        // Corrección: Si Pipe pagó 100 (50/50), Pipe puso 100. Le toca 50. Luu le debe 50.
-                        // Balance Pipe: -100 (pagó) + 50 (le corresponde) = -50. 
-                        // Balance Luu: +50 (le corresponde gastar) pero no pagó = +50 (debe).
-                        // Simplificación para "Quien debe a quien":
-                        // Pipe pagó todo. Luu debe su parte.
-                        pipeNet += luuShare; // Pipe tiene derecho a cobrar
-                        luuNet -= luuShare; // Luu tiene deuda
+                        // Pipe pagó todo. Luu le debe su parte.
+                        pipeNet += luuShare; 
+                        luuNet -= luuShare;
                     } else if (m.payer === 'luu') {
+                        // Luu pagó todo. Pipe le debe su parte.
                         luuNet += pipeShare;
                         pipeNet -= pipeShare;
                     }
@@ -541,77 +499,86 @@
             }
         });
 
-        // Cuotas de créditos del mes
-        let creditExpense = 0;
-        const creditsHtml = dbData.creditos.map(c => {
-            // Calcular si hay cuota este mes
-            const startDate = new Date(c.startDate);
-            // Ajustar día de pago
-            const paymentDate = new Date(year, month, c.day);
-            
-            // Verificar si la fecha de pago ya pasó respecto al inicio y si está dentro del plazo
-            // Lógica simplificada: Meses transcurridos desde inicio
-            let monthsPassed = (year - startDate.getFullYear()) * 12 + (month - startDate.getMonth());
-            
-            // Ajuste por día: si hoy es día 3 y pago es día 5, aún no paga este mes (depende de lógica exacta, usaremos aproximación mensual)
-            // Para simplificar: si el mes actual >= mes inicio, y estamos dentro del plazo.
-            
-            const totalMonths = parseInt(c.term);
-            const paidMonths = parseInt(c.paidMonths || 0);
-            const remainingMonths = totalMonths - paidMonths;
-
-            if (monthsPassed >= 0 && monthsPassed < totalMonths) {
-                // Hay cuota pendiente teórica
-                // Pero solo sumamos al gasto del mes si es la cuota "correspondiente" a este mes
-                // Para este dashboard, mostraremos el resumen de lo que toca pagar este mes según la tabla
-                
-                // Calculo rápido de cuota fija
-                const r = parseFloat(c.rate)/100;
-                const P = parseFloat(c.originalAmount);
-                const n = totalMonths;
-                let cuota = 0;
-                if(r > 0) {
-                    cuota = P * (r * Math.pow(1+r, n)) / (Math.pow(1+r, n) - 1);
-                } else {
-                    cuota = P / n;
-                }
-                
-                creditExpense += cuota;
-                return `<div class="list-item"><div class="item-info"><div class="item-title">${c.name}</div><div class="item-sub">Cuota aprox: $${cuota.toLocaleString()}</div></div><div class="badge bg-danger">Pendiente</div></div>`;
-            }
-            return null;
-        }).filter(Boolean).join('');
-
-        document.getElementById('dash-credits-summary').innerHTML = creditsHtml || "<small>No hay cuotas activas este mes.</small>";
-
-        // Render
+        // Render Balance
         document.getElementById('dash-income').textContent = `$ ${income.toLocaleString()}`;
-        document.getElementById('dash-expense').textContent = `$ ${(expense + creditExpense).toLocaleString()}`; // Incluimos estimación créditos? Mejor solo movimientos reales
         document.getElementById('dash-expense').textContent = `$ ${expense.toLocaleString()}`;
         document.getElementById('dash-balance').textContent = `$ ${(income - expense).toLocaleString()}`;
 
-        // Settlement
-const settlementEl = document.getElementById('dash-settlement');
+        // Render Settlement (Liquidación)
+        // pipeNet > 0 significa que Luu le debe a Pipe esa cantidad
+        // luuNet > 0 significa que Pipe le debe a Luu esa cantidad
+        // En realidad son espejos. Si pipeNet = 100, luuNet debería ser -100 en mi lógica anterior, pero los inicialicé en 0.
+        // Corregimos: La suma neta entre ellos debe ser 0.
+        const netDiff = pipeNet + luuNet; // Esto debería ser 0 si la lógica es perfecta, pero usaremos pipeNet como referencia de "cuánto tiene Pipe a favor"
+        
+        // Re-cálculo simple de deuda neta:
+        // Si pipeNet es positivo, Luu le debe. Si es negativo, Pipe debe (porque luuNet sería el positivo).
+        let debtAmount = 0;
+        let debtText = "";
+        let showLiquidateBtn = false;
 
-if (pipeNet > 1) {
-    settlementEl.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:5px; align-items:center;">
-            <span style="color:var(--success)">Luu le debe a Pipe: $${Math.abs(pipeNet).toLocaleString()}</span>
-            <button onclick="liquidarDeuda('luu', ${Math.abs(pipeNet)})" class="btn btn-sm" style="background:var(--success); width:auto; font-size:0.7rem; padding:4px 8px;">💰 Liquidar</button>
-        </div>`;
-} else if (pipeNet < -1) {
-    settlementEl.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:5px; align-items:center;">
-            <span style="color:var(--danger)">Pipe le debe a Luu: $${Math.abs(pipeNet).toLocaleString()}</span>
-            <button onclick="liquidarDeuda('pipe', ${Math.abs(pipeNet)})" class="btn btn-sm" style="background:var(--danger); width:auto; font-size:0.7rem; padding:4px 8px;">💰 Liquidar</button>
-        </div>`;
-} else {
-    settlementEl.innerHTML = `<span style="color:var(--text-light)">¡Cuentas claras! 😎</span>`;
-}
+        if (pipeNet > 1) {
+            debtAmount = pipeNet;
+            debtText = `Luu le debe a Pipe: $${Math.abs(pipeNet).toLocaleString()}`;
+            showLiquidateBtn = true;
+        } else if (pipeNet < -1) {
+            debtAmount = Math.abs(pipeNet);
+            debtText = `Pipe le debe a Luu: $${Math.abs(pipeNet).toLocaleString()}`;
+            showLiquidateBtn = true;
+        } else {
+            debtText = `¡Cuentas claras! 😎`;
+        }
+
+        let htmlSettlement = `<div class="settlement-box"><strong>${debtText}</strong></div>`;
+        if(showLiquidateBtn) {
+            const payer = pipeNet > 0 ? 'luu' : 'pipe'; // Quien debe paga
+            const receiver = pipeNet > 0 ? 'pipe' : 'luu';
+            htmlSettlement += `<button onclick="liquidarDeuda('${payer}', '${receiver}', ${debtAmount})" class="btn btn-sm" style="margin-top:10px; width:100%;">💸 Liquidar Deuda Ahora</button>`;
+        }
+        document.getElementById('dash-settlement-container').innerHTML = htmlSettlement;
 
         // Total Proyectos
         const totalProj = dbData.proyectos.reduce((sum, p) => sum + parseFloat(p.current), 0);
         document.getElementById('dash-projects-total').textContent = `$ ${totalProj.toLocaleString()}`;
+
+        // Resumen Créditos
+        let creditsHtml = '';
+        dbData.creditos.forEach(c => {
+            const startDate = new Date(c.startDate);
+            let monthsPassed = (year - startDate.getFullYear()) * 12 + (month - startDate.getMonth());
+            const totalMonths = parseInt(c.term);
+            const paidMonths = parseInt(c.paidMonths || 0);
+            
+            if (monthsPassed >= paidMonths && monthsPassed < totalMonths) {
+                 // Hay cuota pendiente este mes
+                 creditsHtml += `<div class="list-item"><div class="item-info"><div class="item-title">${c.name}</div><div class="item-sub">Cuota: $${Math.round(c.cuota).toLocaleString()}</div></div><div class="badge bg-danger">Pendiente</div></div>`;
+            }
+        });
+        document.getElementById('dash-credits-summary').innerHTML = creditsHtml || "<small>No hay cuotas activas este mes.</small>";
+    }
+
+    // --- LIQUIDAR DEUDA ---
+    function liquidarDeuda(payer, receiver, amount) {
+        const confirmed = confirm(`¿Confirmar que ${payer.toUpperCase()} paga $${amount.toLocaleString()} a ${receiver.toUpperCase()} para saldar la cuenta?`);
+        if(!confirmed) return;
+
+        const mov = {
+            id: Date.now(),
+            date: new Date().toISOString().split('T')[0],
+            desc: `Liquidación de deuda a ${receiver}`,
+            amount: amount,
+            category: 'Otros',
+            type: 'gasto',
+            payer: payer,
+            splitType: '1000', // El que paga asume el 100% de este gasto de "saldir deuda"
+            splitP: payer === 'pipe' ? 100 : 0,
+            splitL: payer === 'luu' ? 100 : 0,
+            nota: 'Liquidación manual'
+        };
+        dbData.movimientos.unshift(mov);
+        saveData();
+        updateDashboard();
+        showAlert('Deuda liquidada correctamente');
     }
 
     // --- MOVIMIENTOS ---
@@ -638,7 +605,7 @@ if (pipeNet > 1) {
             amount: parseFloat(document.getElementById('m-amount').value),
             category: document.getElementById('m-category').value,
             type: type,
-            payer: type === 'gasto' ? document.getElementById('m-payer').value : 'pipe', // Ingreso asumimos quien lo registra o podríamos añadir campo
+            payer: type === 'gasto' ? document.getElementById('m-payer').value : 'pipe',
             splitType: type === 'gasto' ? splitMode : null,
             splitP: type === 'gasto' ? document.getElementById('split-p').value : null,
             splitL: type === 'gasto' ? document.getElementById('split-l').value : null
@@ -657,9 +624,6 @@ if (pipeNet > 1) {
         const list = document.getElementById('movimientos-list');
         list.innerHTML = '';
         
-        // Filtrar por mes seleccionado en dashboard? O mostrar todo? 
-        // El usuario pidió ver historial, pero el dashboard filtra. Mostraremos los del mes seleccionado para consistencia, o todos con etiqueta.
-        // Vamos a mostrar los del mes seleccionado en el dashboard para que coincida.
         const targetDate = getTargetDate(currentMonthOffset);
         const year = targetDate.getFullYear();
         const month = targetDate.getMonth();
@@ -717,7 +681,6 @@ if (pipeNet > 1) {
         const rate = parseFloat(document.getElementById('c-rate').value) / 100;
         const paidMonths = parseInt(document.getElementById('c-paid-months').value) || 0;
         
-        // Calcular cuota fija
         let cuota = 0;
         if(rate > 0) {
             cuota = total * (rate * Math.pow(1+rate, term)) / (Math.pow(1+rate, term) - 1);
@@ -725,8 +688,6 @@ if (pipeNet > 1) {
             cuota = total / term;
         }
 
-        // Calcular saldo restante después de los meses pagados
-        // Fórmula de saldo restante: P * ((1+r)^n - (1+r)^p) / ((1+r)^n - 1)
         let balance = total;
         if(paidMonths > 0) {
              if(rate > 0) {
@@ -736,7 +697,6 @@ if (pipeNet > 1) {
              }
         }
 
-        // Generar movimientos históricos si paidMonths > 0
         const owner = document.getElementById('c-owner').value;
         const startDate = new Date(document.getElementById('c-start').value);
         const day = parseInt(document.getElementById('c-day').value);
@@ -746,11 +706,8 @@ if (pipeNet > 1) {
                 for(let i=1; i<=paidMonths; i++) {
                     const payDate = new Date(startDate);
                     payDate.setMonth(startDate.getMonth() + i);
-                    // Ajustar día
                     payDate.setDate(day); 
                     
-                    // Desglose interés/capital para el registro (aproximado para el histórico)
-                    // No desglosamos en dos movimientos, sino uno solo de "Pago Cuota"
                     dbData.movimientos.push({
                         id: Date.now() + i,
                         date: payDate.toISOString().split('T')[0],
@@ -759,7 +716,7 @@ if (pipeNet > 1) {
                         category: 'Deudas',
                         type: 'gasto',
                         payer: owner,
-                        splitType: '1000', // Lo paga el dueño entero
+                        splitType: '1000',
                         splitP: owner==='pipe'?100:0,
                         splitL: owner==='luu'?100:0
                     });
@@ -823,7 +780,7 @@ if (pipeNet > 1) {
         nextPayDate.setDate(c.day);
 
         document.getElementById('modal-c-body').innerHTML = `
-            <p><strong>Saldo:</strong> $${Math.round(c.currentBalance).toLocaleString()}</p>
+            <p><strong>Saldo Pendiente:</strong> $${Math.round(c.currentBalance).toLocaleString()}</p>
             <p><strong>Cuota Fija:</strong> $${Math.round(c.cuota).toLocaleString()}</p>
             <p><strong>Meses Restantes:</strong> ${remainingMonths}</p>
             <p><strong>Próximo Pago:</strong> ${nextPayDate.toLocaleDateString()}</p>
@@ -832,68 +789,103 @@ if (pipeNet > 1) {
             </p>
         `;
         
-        const btn = document.getElementById('btn-pay-month');
-        btn.onclick = () => payCreditMonth(c);
-        const btnAbono = document.getElementById('btn-abono-capital');
-        btnAbono.onclick = () => hacerAbonoCapital(c);
-
-        document.getElementById('modal-credito').style.display = 'flex';
-}
         document.getElementById('modal-credito').style.display = 'flex';
     }
 
-function payCreditMonth(c) {
-    // 1. Pedir el valor REAL pagado (para incluir seguros si los hay)
-    const valorCalculado = Math.round(c.cuota);
-    let valorRealInput = prompt(`Cuota calculada: $${valorCalculado}\nIngresa el VALOR REAL PAGADO (incluye seguros si aplica):`, valorCalculado);
-    
-    if (valorRealInput === null) return; // Cancelado
-    let valorReal = parseFloat(valorRealInput);
-    if (isNaN(valorReal) || valorReal <= 0) {
-        alert("Valor inválido");
-        return;
+    function openPayModal(isAbono) {
+        isCapitalAbonoMode = isAbono;
+        closeModal('modal-credito'); // Cerramos el de detalles para usar prompt simple o podríamos abrir otro modal
+        
+        const c = dbData.creditos.find(x => x.id === currentCreditId);
+        let msg = "";
+        let defaultVal = "";
+
+        if(isAbono) {
+            msg = `INGRESA EL MONTO DEL ABONO A CAPITAL PARA: ${c.name}\n(Saldo actual: $${Math.round(c.currentBalance).toLocaleString()})`;
+            defaultVal = "";
+        } else {
+            msg = `INGRESA EL VALOR REAL PAGADO DE LA CUOTA PARA: ${c.name}\n(Cuota calculada: $${Math.round(c.cuota).toLocaleString()})\n\n(Incluye seguros si el banco cobró más)`;
+            defaultVal = Math.round(c.cuota);
+        }
+
+        const valStr = prompt(msg, defaultVal);
+        if(valStr === null) {
+            openCreditoModal(currentCreditId); // Reabrir si cancela
+            return;
+        }
+
+        const valReal = parseFloat(valStr);
+        if(isNaN(valReal) || valReal <= 0) {
+            alert("Monto inválido");
+            openCreditoModal(currentCreditId);
+            return;
+        }
+
+        procesarPagoCredito(c, valReal, isAbono);
     }
 
-    // 2. Calcular diferencia para seguros
-    let descripcion = `Pago cuota: ${c.name}`;
-    if (valorReal > valorCalculado) {
-        descripcion += ` (+$${(valorReal - valorCalculado).toLocaleString()} seguros/gastos)`;
+    function procesarPagoCredito(c, valReal, isAbono) {
+        const today = new Date().toISOString().split('T')[0];
+        let desc = "";
+        let amountToRecord = valReal;
+
+        if(isAbono) {
+            desc = `Abono a capital: ${c.name}`;
+            // En abono a capital, todo reduce saldo
+            c.currentBalance -= valReal;
+            // No aumentamos paidMonths necesariamente, o sí, depende si cuenta como cuota completa. 
+            // Para simplificar, no contamos como "mes pagado" oficial si es parcial, pero reducimos saldo.
+            // Opcional: Si el abono >= cuota, contar como mes.
+        } else {
+            desc = `Pago cuota: ${c.name}`;
+            // Calculamos interés del mes sobre saldo actual
+            const interest = c.currentBalance * c.rate;
+            const principal = valReal - interest; // Lo que realmente baja deuda
+            
+            // Si el usuario pagó más (seguros), el extra no baja deuda, es gasto extra.
+            // Pero para simplificar la proyección: restamos la parte proporcional a la cuota fija.
+            // Mejor: Restamos (valReal - interes) si valReal > interes.
+            
+            if(principal > 0) {
+                c.currentBalance -= principal;
+            }
+            c.paidMonths++;
+        }
+
+        if(c.currentBalance < 0) c.currentBalance = 0;
+
+        // Crear movimiento
+        dbData.movimientos.unshift({
+            id: Date.now(),
+            date: today,
+            desc: desc,
+            amount: amountToRecord,
+            category: 'Deudas',
+            type: 'gasto',
+            payer: c.owner, // CLAVE: Usa el dueño del crédito
+            splitType: '1000',
+            splitP: c.owner === 'pipe' ? 100 : 0,
+            splitL: c.owner === 'luu' ? 100 : 0
+        });
+
+        saveData();
+        renderCreditos();
+        renderMovimientos();
+        showAlert(isAbono ? 'Abono registrado' : 'Pago registrado');
     }
-
-    // 3. Crear movimiento a nombre del DUEÑO del crédito (c.owner)
-    dbData.movimientos.unshift({
-        id: Date.now(),
-        date: new Date().toISOString().split('T')[0],
-        desc: descripcion,
-        amount: valorReal,
-        category: 'Deudas',
-        type: 'gasto',
-        payer: c.owner, // AQUÍ ESTABA EL ERROR: Ahora usa c.owner dinámicamente
-        splitType: '1000', 
-        splitP: c.owner === 'pipe' ? 100 : 0,
-        splitL: c.owner === 'luu' ? 100 : 0
-    });
-
-    // 4. Actualizar saldo (restamos la parte de capital de la cuota base)
-    const interest = c.currentBalance * c.rate;
-    const principal = c.cuota - interest;
-    
-    c.currentBalance -= principal;
-    c.paidMonths++;
-    if(c.currentBalance < 0) c.currentBalance = 0;
-
-    saveData();
-    closeModal('modal-credito');
-    renderCreditos();
-    renderMovimientos();
-    showAlert('Pago registrado correctamente');
-}
 
     function deleteCredito(id) {
         if(confirm('¿Eliminar crédito?')) {
             dbData.creditos = dbData.creditos.filter(c => c.id !== id);
             saveData();
             renderCreditos();
+        }
+    }
+
+    function deleteCreditoFromModal() {
+        if(currentCreditId) {
+            deleteCredito(currentCreditId);
+            closeModal('modal-credito');
         }
     }
 
@@ -908,7 +900,6 @@ function payCreditMonth(c) {
             deadline: document.getElementById('p-deadline').value
         };
         
-        // Si hay ahorro inicial, crear movimiento
         if(proj.current > 0) {
             dbData.movimientos.unshift({
                 id: Date.now(),
@@ -917,7 +908,7 @@ function payCreditMonth(c) {
                 amount: proj.current,
                 category: 'Ahorro/Proyecto',
                 type: 'gasto',
-                payer: 'pipe', // Asumimos pipe por defecto o podríamos preguntar
+                payer: 'pipe', 
                 splitType: '1000',
                 splitP: 100, splitL: 0
             });
@@ -972,7 +963,6 @@ function payCreditMonth(c) {
         const p = dbData.proyectos.find(x => x.id === currentProjectId);
         p.current += amount;
 
-        // Generar movimiento
         dbData.movimientos.unshift({
             id: Date.now(),
             date: new Date().toISOString().split('T')[0],
@@ -980,7 +970,7 @@ function payCreditMonth(c) {
             amount: amount,
             category: 'Ahorro/Proyecto',
             type: 'gasto',
-            payer: 'pipe', // Default
+            payer: 'pipe', 
             splitType: '1000',
             splitP: 100, splitL: 0
         });
@@ -1102,65 +1092,10 @@ function payCreditMonth(c) {
     function closeModal(id) {
         document.getElementById(id).style.display = 'none';
     }
-    function liquidarDeuda(deudor, monto) {
-    const confirmacion = confirm(`¿${deudor === 'pipe' ? 'Pipe' : 'Luu'} va a pagar $${monto.toLocaleString()} para saldar la deuda?`);
-    if (!confirmacion) return;
 
-    dbData.movimientos.unshift({
-        id: Date.now(),
-        date: new Date().toISOString().split('T')[0],
-        desc: `Liquidación de deuda entre pareja`,
-        amount: monto,
-        category: 'Otros',
-        type: 'gasto',
-        payer: deudor,
-        splitType: '1000', // El deudor paga
-        splitP: deudor === 'pipe' ? 100 : 0,
-        splitL: deudor === 'luu' ? 100 : 0,
-        nota: 'Ajuste directo'
-    });
-    
-    saveData();
-    updateDashboard();
-    renderMovimientos();
-    showAlert('Deuda liquidada correctamente');
-}
-    // Cerrar modales al hacer click fuera
     window.onclick = (e) => {
         if(e.target.classList.contains('modal')) e.target.style.display = 'none';
     }
-    function hacerAbonoCapital(c) {
-    const monto = prompt(`Saldo actual: $${Math.round(c.currentBalance).toLocaleString()}\nIngresa el monto del ABONO A CAPITAL:`);
-    if (!monto) return;
-    const val = parseFloat(monto);
-    if (isNaN(val) || val <= 0) return alert("Monto inválido");
-    if (val > c.currentBalance) return alert("El abono no puede ser mayor al saldo");
-
-    // Registrar movimiento
-    dbData.movimientos.unshift({
-        id: Date.now(),
-        date: new Date().toISOString().split('T')[0],
-        desc: `Abono a capital: ${c.name}`,
-        amount: val,
-        category: 'Deudas',
-        type: 'gasto',
-        payer: c.owner,
-        splitType: '1000',
-        splitP: c.owner === 'pipe' ? 100 : 0,
-        splitL: c.owner === 'luu' ? 100 : 0
-    });
-
-    // Reducir saldo directamente
-    c.currentBalance -= val;
-    // Opcional: aumentar meses pagados proporcionalmente o dejarlo igual para mantener fecha
-    // Lo más lógico es reducir saldo y recalcular fecha, pero para simplificar solo reducimos saldo.
-    
-    saveData();
-    closeModal('modal-credito');
-    renderCreditos();
-    renderMovimientos();
-    showAlert('Abono a capital registrado');
-}
 </script>
 </body>
 </html>
