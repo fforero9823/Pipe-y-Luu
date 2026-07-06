@@ -8,11 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #F5F5F0; /* Blanco Hueso */
+            --bg-color: #F5F5F0;
             --card-bg: #FFFFFF;
-            --primary-dark: #0F172A; /* Azul Navy Oscuro */
-            --primary-medium: #1E293B; /* Azul Slate */
-            --accent-blue: #3B82F6; /* Azul Brillante */
+            --primary-dark: #0F172A;
+            --primary-medium: #1E293B;
+            --accent-blue: #3B82F6;
             --text-main: #334155;
             --text-light: #64748B;
             --success: #10B981;
@@ -22,43 +22,42 @@
             --shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
         body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; }
 
         /* Header */
         header { background-color: var(--primary-dark); color: white; padding: 1.5rem 1rem; text-align: center; position: relative; }
-        header h1 { font-size: 1.5rem; font-weight: 700; }
-        header p { font-size: 0.85rem; opacity: 0.8; }
-        .cats-badge { display: inline-block; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; margin-top: 8px; }
+        header h1 { font-size: 1.8rem; font-weight: 700; }
+        header p { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
+        .cats-badge { display: inline-block; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin-top: 10px; }
         
-        /* Loading Overlay */
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 0.5s;
-        }
-        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--accent-blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Status Indicator */
+        #cloud-status { position: absolute; top: 10px; right: 10px; font-size: 0.7rem; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 10px; }
+        .status-ok { color: #4ade80; }
+        .status-error { color: #f87171; }
+        .status-sync { color: #60a5fa; }
 
-        /* Navigation - Scrollable Horizontal */
+        /* Navigation - Scrollable for Mobile */
         nav {
             background: var(--card-bg);
-            position: sticky; top: 0; z-index: 100;
+            position: sticky;
+            top: 0;
+            z-index: 100;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             overflow-x: auto;
             white-space: nowrap;
             padding: 0.5rem 10px;
             -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
+            scrollbar-width: none; /* Hide scrollbar Firefox */
         }
-        nav::-webkit-scrollbar { display: none; } /* Hide scrollbar */
-        
+        nav::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+
         nav button {
             background: none; border: none; padding: 10px 16px;
-            font-size: 0.95rem; color: var(--text-light);
-            cursor: pointer; border-radius: 20px;
-            transition: all 0.3s; font-weight: 600; margin-right: 8px;
+            font-size: 0.95rem; color: var(--text-light); cursor: pointer;
+            border-radius: 20px; transition: all 0.3s ease; font-weight: 600;
+            margin-right: 8px; display: inline-block;
         }
         nav button.active { background-color: var(--primary-dark); color: white; }
         nav button:hover:not(.active) { background-color: #f1f5f9; }
@@ -72,55 +71,50 @@
         /* Cards */
         .card { background: var(--card-bg); border-radius: var(--border-radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
         .card h2 { color: var(--primary-dark); margin-bottom: 15px; font-size: 1.3rem; border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-
-        /* Dashboard Controls */
-        .month-control { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: white; padding: 10px; border-radius: var(--border-radius); box-shadow: var(--shadow); }
-        .month-btn { background: none; border: none; font-size: 1.2rem; color: var(--primary-dark); cursor: pointer; padding: 5px 10px; }
-        .month-label { font-weight: bold; color: var(--primary-medium); font-size: 1.1rem; min-width: 140px; text-align: center; }
-
-        /* Stats Grid */
+        
+        /* Dashboard Stats */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--primary-dark); color: white; padding: 15px; border-radius: var(--border-radius); text-align: center; }
         .stat-card.light { background: white; color: var(--primary-dark); border: 1px solid #e2e8f0; }
-        .stat-value { font-size: 1.4rem; font-weight: bold; margin: 8px 0; }
+        .stat-value { font-size: 1.4rem; font-weight: bold; margin: 8px 0; word-break: break-word; }
         .stat-label { font-size: 0.8rem; opacity: 0.9; }
-        .stat-sub { font-size: 0.7rem; opacity: 0.7; margin-top: 4px; }
+        .stat-sub { font-size: 0.75rem; opacity: 0.7; margin-top: 4px; }
+
+        /* Month Selector */
+        .month-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: white; padding: 10px; border-radius: var(--border-radius); }
+        .month-btn { background: none; border: 1px solid #cbd5e1; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; color: var(--primary-dark); font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .month-btn:hover { background: #f1f5f9; }
+        .current-month { font-weight: bold; color: var(--primary-dark); text-transform: capitalize; }
 
         /* Forms */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; color: var(--primary-medium); font-weight: 600; font-size: 0.9rem; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background-color: #fafafa; transition: border 0.3s; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background-color: #fafafa; transition: border-color 0.3s; }
         input:focus, select:focus { outline: none; border-color: var(--accent-blue); background-color: white; }
         
-        .btn { display: inline-block; background-color: var(--accent-blue); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: background 0.3s; text-align: center; }
+        .btn { display: inline-block; background-color: var(--accent-blue); color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: background 0.3s; text-align: center; }
         .btn:hover { background-color: #2563EB; }
         .btn-danger { background-color: var(--danger); }
         .btn-secondary { background-color: var(--primary-medium); }
-        .btn-small { padding: 6px 12px; font-size: 0.85rem; width: auto; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; width: auto; }
 
-        /* Split Buttons - Premium Style */
-        .split-container { margin-top: 10px; }
-        .split-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .split-btn {
-            padding: 12px; border: 2px solid #e2e8f0; background: white;
-            border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
-            color: var(--text-light); transition: all 0.2s; text-align: center;
-        }
-        .split-btn.selected {
-            border-color: var(--primary-dark); background-color: var(--primary-dark);
-            color: white; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .custom-split-inputs { display: none; margin-top: 15px; gap: 10px; }
-        .custom-split-inputs.show { display: flex; }
+        /* Split Buttons */
+        .split-options { display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+        .split-btn { flex: 1; min-width: 70px; padding: 8px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 0.85rem; text-align: center; transition: all 0.2s; }
+        .split-btn.selected { background: var(--primary-dark); color: white; border-color: var(--primary-dark); transform: scale(1.05); }
+        .split-btn:hover:not(.selected) { background: #f1f5f9; }
 
-        /* Tables & Lists */
+        /* Tables */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
-        th, td { text-align: left; padding: 12px 8px; border-bottom: 1px solid #f1f5f9; }
-        th { color: var(--text-light); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
-        
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8fafc; color: var(--primary-medium); font-weight: 600; white-space: nowrap; }
+        tr:last-child td { border-bottom: none; }
+
         /* Badges */
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; display: inline-block; }
+        .badge-ingreso { background-color: #D1FAE5; color: #065F46; }
+        .badge-egreso { background-color: #FEE2E2; color: #991B1B; }
         .badge-pipe { background-color: #DBEAFE; color: #1E40AF; }
         .badge-luu { background-color: #FCE7F3; color: #9D174D; }
         .badge-gatos { background-color: #FFEDD5; color: #C2410C; }
@@ -132,22 +126,31 @@
 
         /* Alerts */
         #alertContainer { position: fixed; top: 20px; right: 20px; z-index: 2000; max-width: 300px; }
-        .alert { padding: 12px 16px; margin-bottom: 10px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease; font-size: 0.9rem; }
+        .alert { padding: 15px; margin-bottom: 10px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease; font-size: 0.9rem; }
         .alert-success { background-color: var(--success); }
         .alert-error { background-color: var(--danger); }
-        .alert-warning { background-color: var(--warning); }
+        .alert-warning { background-color: var(--warning); color: #333; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         /* Progress */
-        .progress-container { background-color: #e2e8f0; border-radius: 10px; height: 10px; width: 100%; margin-top: 8px; overflow: hidden; }
+        .progress-container { background-color: #e2e8f0; border-radius: 10px; height: 12px; width: 100%; margin-top: 8px; overflow: hidden; }
         .progress-bar { background-color: var(--accent-blue); height: 100%; width: 0%; transition: width 0.5s ease; }
 
-        /* Charts Container */
+        /* Charts */
         .chart-container { position: relative; height: 250px; width: 100%; margin-top: 20px; }
 
-        /* Debt Specific */
-        .debt-controls { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-        .debt-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; color: var(--text-light); margin-top: 10px; }
+        /* Category Tags */
+        .category-tag { display: inline-flex; align-items: center; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; margin: 2px; cursor: pointer; }
+        .category-tag:hover { background: #bae6fd; }
+        .category-tag span { margin-left: 5px; cursor: pointer; font-weight: bold; }
+
+        /* Loading Overlay */
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { font-weight: 600; color: var(--primary-dark); }
+        .loading-sub { font-size: 0.85rem; color: var(--text-light); margin-top: 5px; }
+
     </style>
 </head>
 <body>
@@ -155,11 +158,12 @@
 <!-- Loading Screen -->
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <div id="loading-text">Cargando datos de la nube...</div>
-    <div id="loading-sub" style="font-size: 0.8rem; color: #64748B; margin-top: 10px;">Si tarda mucho, usaremos modo local</div>
+    <div class="loading-text">Cargando Finanzas...</div>
+    <div class="loading-sub" id="loading-msg">Conectando con la nube</div>
 </div>
 
 <header>
+    <div id="cloud-status"><span class="status-sync">●</span> Nube</div>
     <h1>Pipe & Luu 💙</h1>
     <p>Control Financiero Familiar</p>
     <div class="cats-badge">🐱 Lua & Patacon Approved</div>
@@ -168,9 +172,9 @@
 <nav>
     <button onclick="showSection('dashboard')" class="active" id="btn-dashboard">📊 Dashboard</button>
     <button onclick="showSection('transacciones')" id="btn-transacciones">💳 Movimientos</button>
-    <button onclick="showSection('presupuestos')" id="btn-presupuestos">📉 Presupuestos</button>
     <button onclick="showSection('deudas')" id="btn-deudas">💵 Créditos</button>
-    <button onclick="showSection('proyectos')" id="btn-proyectos">🎯 Metas</button>
+    <button onclick="showSection('presupuestos')" id="btn-presupuestos">📉 Budgets</button>
+    <button onclick="showSection('proyectos')" id="btn-proyectos">🎯 Proyectos</button>
     <button onclick="showSection('datos')" id="btn-datos">⚙️ Datos</button>
 </nav>
 
@@ -179,14 +183,12 @@
 
     <!-- DASHBOARD -->
     <div id="dashboard" class="section active">
-        <!-- Month Selector -->
-        <div class="month-control">
-            <button class="month-btn" onclick="changeMonth(-1)">❮</button>
-            <span class="month-label" id="current-month-label">Octubre 2023</span>
-            <button class="month-btn" onclick="changeMonth(1)">❯</button>
+        <div class="month-selector">
+            <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+            <span class="current-month" id="dash-month-display">Octubre 2023</span>
+            <button class="month-btn" onclick="changeMonth(1)">›</button>
         </div>
 
-        <!-- Balance Cards -->
         <div class="dashboard-grid">
             <div class="stat-card">
                 <div class="stat-label">Balance Mes</div>
@@ -195,64 +197,38 @@
             </div>
             <div class="stat-card light">
                 <div class="stat-label">Desbalance Pareja</div>
-                <div class="stat-value" id="dash-imbalance" style="color: var(--danger)">$0</div>
-                <div class="stat-sub" id="dash-imbalance-text">Están a paz</div>
-            </div>
-        </div>
-
-        <!-- Individual Stats -->
-        <div class="dashboard-grid">
-            <div class="stat-card light">
-                <div class="stat-label">👤 Pipe</div>
-                <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-top:5px;">
-                    <span>Ingresos:</span> <strong id="pipe-income">$0</strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-                    <span>Gastos:</span> <strong id="pipe-expense" style="color:var(--danger)">$0</strong>
-                </div>
-                <div style="border-top:1px solid #eee; margin-top:5px; padding-top:5px; font-size:0.8rem;">
-                    Neto: <span id="pipe-net">$0</span>
-                </div>
+                <div class="stat-value" id="dash-diff" style="font-size: 1.1rem;">$0</div>
+                <div class="stat-sub" id="dash-diff-text">Están a paz</div>
             </div>
             <div class="stat-card light">
-                <div class="stat-label">👤 Luu</div>
-                <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-top:5px;">
-                    <span>Ingresos:</span> <strong id="luu-income">$0</strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-                    <span>Gastos:</span> <strong id="luu-expense" style="color:var(--danger)">$0</strong>
-                </div>
-                <div style="border-top:1px solid #eee; margin-top:5px; padding-top:5px; font-size:0.8rem;">
-                    Neto: <span id="luu-net">$0</span>
-                </div>
+                <div class="stat-label">Deuda Total</div>
+                <div class="stat-value" id="dash-debt-total" style="color: var(--danger)">$0</div>
             </div>
         </div>
 
-        <!-- Liquidation Button (Only if needed) -->
-        <div id="liquidation-area" style="display:none; margin-bottom: 20px;">
-            <button onclick="openLiquidationModal()" class="btn btn-secondary">⚖️ Liquidar Cuentas entre Pipe y Luu</button>
-        </div>
-
-        <!-- Charts -->
+        <!-- Gráfica Principal -->
         <div class="card">
-            <h2>Resumen Gráfico</h2>
+            <h2>Resumen Mensual</h2>
             <div class="chart-container">
                 <canvas id="mainChart"></canvas>
             </div>
         </div>
-        <div class="card">
-            <h2>Categorías del Mes</h2>
-            <div class="chart-container" style="height: 200px;">
-                <canvas id="categoryChart"></canvas>
-            </div>
+
+        <!-- Botón Liquidar (Solo si hay deuda entre ellos) -->
+        <div id="settle-section" style="display:none;" class="card" style="border: 2px solid var(--success);">
+            <h2 style="color: var(--success);">💰 Oportunidad de Liquidación</h2>
+            <p id="settle-msg" style="margin-bottom: 10px;"></p>
+            <button onclick="openSettleModal()" class="btn btn-success" style="background-color: var(--success);">Registrar Pago entre Pareja</button>
         </div>
 
-        <!-- Future Projections Warning -->
-        <div class="card" style="border-left: 4px solid var(--warning);">
-            <h3 style="font-size: 1rem; color: var(--warning);">🔮 Proyección de Flujo de Caja</h3>
-            <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 5px;">
-                Teniendo en cuenta las cuotas futuras de créditos activos, se proyecta un egreso fijo mensual de <strong id="future-debt-outflow">$0</strong>.
-            </p>
+        <div class="card">
+            <h2>Movimientos Recientes</h2>
+            <div class="table-responsive">
+                <table id="dash-table">
+                    <thead><tr><th>Concepto</th><th>Monto</th><th>Quién</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -270,59 +246,44 @@
                 </div>
                 <div class="form-group">
                     <label>Concepto</label>
-                    <input type="text" id="t-desc" placeholder="Ej: Mercado, Nómina..." required>
+                    <input type="text" id="t-desc" placeholder="Ej: Mercado, Salario..." required>
                 </div>
                 <div class="form-group">
                     <label>Monto ($)</label>
                     <input type="number" id="t-amount" placeholder="0" required min="0">
                 </div>
                 
-                <!-- Who paid/received -->
                 <div class="form-group">
-                    <label id="lbl-owner">¿Quién pagó?</label>
+                    <label>¿Quién pagó / recibe?</label>
                     <select id="t-payer" required>
                         <option value="pipe">Pipe</option>
                         <option value="luu">Luu</option>
-                        <option value="gatos">Lua y Patacon (Gastos Gatos)</option>
+                        <option value="gatos">Lua y Patacon 🐱</option>
+                        <option value="conjunto">Conjunto (Caja común)</option>
                     </select>
                 </div>
 
-                <!-- Split Options (Only for Expenses) -->
-                <div id="split-section" class="form-group split-container">
+                <!-- Opciones de División (Solo para Gastos) -->
+                <div class="form-group" id="split-group">
                     <label>¿Cómo se divide el gasto?</label>
                     <div class="split-options">
-                        <div class="split-btn selected" onclick="setSplit('5050', this)">50% / 50%</div>
-                        <div class="split-btn" onclick="setSplit('1000', this)">100% Pipe</div>
-                        <div class="split-btn" onclick="setSplit('0100', this)">100% Luu</div>
-                        <div class="split-btn" onclick="setSplit('custom', this)">Personalizado</div>
+                        <button type="button" class="split-btn selected" onclick="setSplit('5050', this)">50% / 50%</button>
+                        <button type="button" class="split-btn" onclick="setSplit('1000', this)">100% Pipe</button>
+                        <button type="button" class="split-btn" onclick="setSplit('0100', this)">100% Luu</button>
+                        <button type="button" class="split-btn" onclick="setSplit('custom', this)">Personalizado</button>
                     </div>
-                    <div id="custom-split-inputs" class="custom-split-inputs">
-                        <div style="flex:1">
-                            <label style="font-size:0.7rem">% Pipe</label>
-                            <input type="number" id="split-pipe" value="50" min="0" max="100">
-                        </div>
-                        <div style="flex:1">
-                            <label style="font-size:0.7rem">% Luu</label>
-                            <input type="number" id="split-luu" value="50" min="0" max="100">
-                        </div>
+                    <div id="custom-split-inputs" style="display:none; margin-top:10px; display:flex; gap:10px;">
+                        <input type="number" id="split-pipe" placeholder="% Pipe" value="50">
+                        <input type="number" id="split-luu" placeholder="% Luu" value="50">
                     </div>
                 </div>
 
-                <!-- Category with Dynamic Option -->
                 <div class="form-group">
                     <label>Categoría</label>
-                    <select id="t-category" required onchange="checkNewCategory(this)">
-                        <option value="hogar">Hogar</option>
-                        <option value="comida">Comida</option>
-                        <option value="gatos">🐱 Gatos</option>
-                        <option value="transporte">Transporte</option>
-                        <option value="ocio">Ocio</option>
-                        <option value="salud">Salud</option>
-                        <option value="servicios">Servicios</option>
-                        <option value="otros">Otros</option>
-                        <option value="_new">+ Crear Nueva...</option>
+                    <select id="t-category">
+                        <!-- Se llena dinámicamente -->
                     </select>
-                    <input type="text" id="t-new-category" placeholder="Nombre de nueva categoría" style="display:none; margin-top:5px;">
+                    <small style="color:var(--text-light); font-size:0.75rem;">¿No está tu categoría? Ve a "Budgets" para crearla.</small>
                 </div>
 
                 <div class="form-group">
@@ -334,44 +295,14 @@
         </div>
 
         <div class="card">
-            <h2>Historial Reciente</h2>
+            <h2>Historial</h2>
             <div class="table-responsive">
                 <table id="transactions-table">
-                    <thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th><th></th></tr></thead>
+                    <thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th><th>Acción</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
         </div>
-    </div>
-
-    <!-- PRESUPUESTOS -->
-    <div id="presupuestos" class="section">
-        <div class="card">
-            <h2>Crear Presupuesto Mensual</h2>
-            <form id="form-budget">
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <select id="b-category" required onchange="checkNewCategoryBudget(this)">
-                        <option value="hogar">Hogar</option>
-                        <option value="comida">Comida</option>
-                        <option value="gatos">🐱 Gatos</option>
-                        <option value="transporte">Transporte</option>
-                        <option value="ocio">Ocio</option>
-                        <option value="salud">Salud</option>
-                        <option value="servicios">Servicios</option>
-                        <option value="otros">Otros</option>
-                        <option value="_new">+ Crear Nueva...</option>
-                    </select>
-                    <input type="text" id="b-new-category" placeholder="Nombre nueva categoría" style="display:none; margin-top:5px;">
-                </div>
-                <div class="form-group">
-                    <label>Límite Mensual ($)</label>
-                    <input type="number" id="b-limit" required>
-                </div>
-                <button type="submit" class="btn">Guardar Presupuesto</button>
-            </form>
-        </div>
-        <div id="budgets-list"></div>
     </div>
 
     <!-- DEUDAS / CRÉDITOS -->
@@ -379,34 +310,53 @@
         <div class="card">
             <h2>Nuevo Crédito / Deuda</h2>
             <form id="form-deuda">
-                <div class="form-group"><label>Nombre</label><input type="text" id="d-name" required></div>
-                <div class="form-group"><label>Monto Total Inicial ($)</label><input type="number" id="d-total" required></div>
+                <div class="form-group"><label>Nombre</label><input type="text" id="d-name" placeholder="Ej: Visa Nu, Préstamo" required></div>
+                <div class="form-group"><label>Monto Inicial ($)</label><input type="number" id="d-total" required></div>
                 <div class="form-group"><label>Tasa Interés Mensual (%)</label><input type="number" id="d-rate" step="0.01" value="0"></div>
-                <div class="form-group"><label>Cuota Base Mensual ($)</label><input type="number" id="d-payment" required></div>
-                <div class="form-group">
-                    <label>Ajuste Manual (Seguros/Variaciones) ($)</label>
-                    <input type="number" id="d-adjustment" value="0" placeholder="Ej: 15000 (seguro)">
-                    <small style="color:var(--text-light)">Suma o resta este valor a la cuota proyectada.</small>
-                </div>
+                <div class="form-group"><label>Cuota Base ($)</label><input type="number" id="d-payment" required></div>
+                <div class="form-group"><label>Ajuste Manual (Seguros/Variaciones $)</label><input type="number" id="d-adjustment" value="0" placeholder="Opcional"><small>Suma/resta a la cuota proyectada</small></div>
                 <div class="form-group"><label>Fecha Inicio</label><input type="date" id="d-start" required></div>
-                <div class="form-group"><label>Responsable</label>
-                    <select id="d-owner"><option value="pipe">Pipe</option><option value="luu">Luu</option><option value="conjunto">Conjunto</option></select>
-                </div>
-                <button type="submit" class="btn">Agregar Crédito</button>
+                <div class="form-group"><label>Responsable</label><select id="d-owner"><option value="pipe">Pipe</option><option value="luu">Luu</option><option value="conjunto">Conjunto</option></select></div>
+                <button type="submit" class="btn">Agregar Deuda</button>
             </form>
         </div>
         <div id="debts-list"></div>
     </div>
 
+    <!-- PRESUPUESTOS & CATEGORÍAS -->
+    <div id="presupuestos" class="section">
+        <div class="card">
+            <h2>Gestión de Categorías</h2>
+            <p style="margin-bottom:10px; font-size:0.9rem;">Crea nuevas categorías para organizar tus budgets.</p>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input type="text" id="new-cat-name" placeholder="Nueva Categoría (Ej: Mascotas)">
+                <button onclick="addCategory()" class="btn btn-sm" style="width:auto;">+</button>
+            </div>
+            <div id="categories-list" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:20px;"></div>
+            
+            <hr style="border:0; border-top:1px solid #e2e8f0; margin:15px 0;">
+            
+            <h3>Presupuesto Mensual por Categoría</h3>
+            <div id="budgets-forms"></div>
+        </div>
+        
+        <div class="card">
+            <h2>Ejecución vs Presupuesto</h2>
+            <div class="chart-container">
+                <canvas id="budgetChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- PROYECTOS -->
     <div id="proyectos" class="section">
         <div class="card">
-            <h2>Nueva Meta de Ahorro</h2>
+            <h2>Nuevo Proyecto</h2>
             <form id="form-proyecto">
                 <div class="form-group"><label>Nombre</label><input type="text" id="p-name" required></div>
                 <div class="form-group"><label>Meta ($)</label><input type="number" id="p-goal" required></div>
                 <div class="form-group"><label>Ahorro Actual ($)</label><input type="number" id="p-current" value="0"></div>
-                <button type="submit" class="btn">Crear Meta</button>
+                <button type="submit" class="btn">Crear Proyecto</button>
             </form>
         </div>
         <div id="projects-list"></div>
@@ -416,44 +366,31 @@
     <div id="datos" class="section">
         <div class="card">
             <h2>Gestión de Datos</h2>
-            <p style="margin-bottom:15px; font-size:0.9rem;">Tus datos se guardan en la nube (Firebase). Usa estas opciones para respaldos locales.</p>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <button onclick="exportDataJSON()" class="btn btn-secondary">Descargar Backup</button>
-                <button onclick="document.getElementById('file-import').click()" class="btn">Importar Backup</button>
-                <input type="file" id="file-import" style="display:none" accept=".json" onchange="importDataJSON(this)">
-            </div>
-            <div style="margin-top:20px;">
-                <button onclick="resetAllData()" class="btn btn-danger">⚠️ Borrar Todo</button>
-            </div>
-            <div id="connection-status" style="margin-top:15px; font-size:0.8rem; text-align:center;"></div>
+            <button onclick="exportDataJSON()" class="btn btn-secondary" style="margin-bottom:10px;">Descargar Backup JSON</button>
+            <button onclick="document.getElementById('file-import').click()" class="btn" style="margin-bottom:10px;">Importar Backup JSON</button>
+            <input type="file" id="file-import" style="display:none" accept=".json" onchange="importDataJSON(this)">
+            <hr style="margin:15px 0; border:0; border-top:1px solid #e2e8f0;">
+            <button onclick="resetAllData()" class="btn btn-danger">⚠️ Borrar Todo (Nube y Local)</button>
         </div>
     </div>
 </div>
 
-<!-- Modal Liquidacion -->
-<div id="modal-liquidation" class="modal">
+<!-- Modals -->
+<div id="modal-settle" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeModal('modal-liquidation')">&times;</span>
-        <h2>⚖️ Liquidar Cuentas</h2>
-        <p id="liq-description" style="margin-bottom:15px; font-weight:bold;"></p>
-        <div class="form-group">
-            <label>Monto a Transferir ($)</label>
-            <input type="number" id="liq-amount" placeholder="0">
-        </div>
-        <div class="form-group">
-            <label>Fecha</label>
-            <input type="date" id="liq-date">
-        </div>
-        <button onclick="confirmLiquidation()" class="btn">Registrar Pago y Saldar</button>
+        <span class="close-modal" onclick="closeModal('modal-settle')">&times;</span>
+        <h2>Liquidar Deuda entre Pareja</h2>
+        <p id="settle-detail"></p>
+        <div class="form-group"><label>Monto a Pagar ($)</label><input type="number" id="settle-amount"></div>
+        <div class="form-group"><label>Concepto (Opcional)</label><input type="text" id="settle-desc" value="Pago de cuenta pendiente"></div>
+        <button onclick="confirmSettle()" class="btn">Confirmar Pago</button>
     </div>
 </div>
 
-<!-- Modal Abono Capital -->
 <div id="modal-abono" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeModal('modal-abono')">&times;</span>
-        <h2>💰 Abono a Capital</h2>
-        <p>Este pago extra reducirá el saldo y recalcularemos la fecha final.</p>
+        <h2>Abono a Capital</h2>
         <input type="hidden" id="abono-id">
         <div class="form-group"><label>Monto ($)</label><input type="number" id="abono-monto"></div>
         <div class="form-group"><label>Fecha</label><input type="date" id="abono-fecha"></div>
@@ -462,9 +399,9 @@
 </div>
 
 <script>
-    // --- FIREBASE CONFIGURATION ---
+    // --- CONFIGURACIÓN FIREBASE ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB5GHHomIJc2JLzKyfnUntxL_brSiU9gVU",
@@ -476,201 +413,255 @@
     };
 
     let db;
-    let isOffline = false;
-    let appData = { transactions: [], debts: [], projects: [], budgets: [] };
-    let currentSplit = '5050';
-    let currentDate = new Date();
-    let mainChartInstance = null;
-    let catChartInstance = null;
+    let isCloudConnected = false;
+    let unsubscribeTransactions = null;
+    let unsubscribeDebts = null;
+    let unsubscribeProjects = null;
 
-    // Initialize Firebase with Fallback Logic
     try {
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
-        document.getElementById('connection-status').textContent = "✅ Conectado a la Nube";
-        document.getElementById('connection-status').style.color = "var(--success)";
-        initRealtimeListeners();
+        updateStatus('sync', 'Conectando...');
+        
+        // Intentar conectar con timeout
+        const connectionPromise = new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error("Timeout")), 4000);
+            // Prueba de lectura simple
+            getDocs(collection(db, "test")).then(() => {
+                clearTimeout(timeout);
+                resolve();
+            }).catch(e => {
+                // Si falla por permisos pero existe, es buena señal. Si es network, mal.
+                if(e.code === 'permission-denied' || e.code === 'not-found') {
+                     clearTimeout(timeout);
+                     resolve(); // La DB existe, solo faltan reglas o docs
+                } else {
+                    clearTimeout(timeout);
+                    reject(e);
+                }
+            });
+        });
+
+        connectionPromise.then(() => {
+            isCloudConnected = true;
+            updateStatus('ok', 'En Línea');
+            initRealtimeListeners();
+            loadLocalFallback(); // Carga inicial rápida mientras llega la nube
+        }).catch(err => {
+            console.warn("Firebase no disponible o lento, usando modo local:", err);
+            updateStatus('error', 'Modo Local');
+            loadLocalFallback();
+            showNotification('Sin conexión a la nube. Usando memoria del dispositivo.', 'warning');
+        });
+
     } catch (e) {
-        console.error("Firebase error:", e);
-        enableOfflineMode();
+        console.error("Error iniciando Firebase", e);
+        updateStatus('error', 'Error Config');
+        loadLocalFallback();
     }
 
-    // Fallback Timer: If cloud takes > 2.5s, load local to prevent "stuck" screen
-    setTimeout(() => {
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay.style.display !== 'none') {
-            console.warn("Cloud loading slow, switching to local fallback");
-            enableOfflineMode(true); 
-        }
-    }, 2500);
+    function updateStatus(state, text) {
+        const el = document.getElementById('cloud-status');
+        const dot = el.querySelector('span');
+        if(state === 'ok') { dot.className = 'status-ok'; dot.textContent = '●'; }
+        else if(state === 'error') { dot.className = 'status-error'; dot.textContent = '●'; }
+        else { dot.className = 'status-sync'; dot.textContent = '●'; }
+        el.title = text;
+    }
 
-    function enableOfflineMode(forceLoad = false) {
-        isOffline = true;
-        document.getElementById('connection-status').textContent = "⚠️ Modo Local (Sin Nube)";
-        document.getElementById('connection-status').style.color = "var(--warning)";
-        if(forceLoad) {
-            loadDataLocal();
+    // --- ESTADO LOCAL (FALLBACK & CACHE) ---
+    let appData = { transactions: [], debts: [], projects: [], categories: ['hogar','comida','gatos','transporte','ocio','salud','otros'], budgets: {} };
+    let currentMonthOffset = 0; // 0 = este mes
+    let mainChartInstance = null;
+    let budgetChartInstance = null;
+    let currentSettleTarget = ''; // 'pipe' or 'luu'
+
+    // --- INICIALIZACIÓN ---
+    window.onload = function() {
+        document.getElementById('t-date').valueAsDate = new Date();
+        document.getElementById('d-start').valueAsDate = new Date();
+        document.getElementById('abono-fecha').valueAsDate = new Date();
+        
+        renderCategoriesSelect();
+        renderCategoriesList();
+        renderBudgetForms();
+        
+        // Ocultar loading después de un tiempo máximo si no ha cargado antes
+        setTimeout(() => {
             document.getElementById('loading-overlay').style.display = 'none';
-            showNotification('Usando datos locales por lentitud de red', 'warning');
-        }
-    }
+        }, 5000);
+    };
 
-    function loadDataLocal() {
-        const saved = localStorage.getItem('pipeLuuFinanzas_Local');
-        if (saved) appData = JSON.parse(saved);
-        refreshUI();
-    }
-
-    function saveDataLocal() {
-        localStorage.setItem('pipeLuuFinanzas_Local', JSON.stringify(appData));
-    }
-
-    // Realtime Listeners (Cloud)
     function initRealtimeListeners() {
         if(!db) return;
         
         // Transactions
         const qTrans = query(collection(db, "transactions"), orderBy("date", "desc"));
-        onSnapshot(qTrans, (snapshot) => {
-            appData.transactions = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+        unsubscribeTransactions = onSnapshot(qTrans, (snapshot) => {
+            const docs = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+            // Convertir timestamp a string si es necesario
+            appData.transactions = docs.map(t => ({
+                ...t,
+                date: t.date?.toDate ? t.date.toDate().toISOString().split('T')[0] : t.date
+            }));
+            saveLocal();
             refreshUI();
             hideLoading();
-        }, (error) => {
-            console.error("Error listening transactions", error);
-            enableOfflineMode(true);
+        }, (err) => {
+            console.error("Error listening transactions", err);
+            updateStatus('error', 'Error Sync');
         });
 
         // Debts
         const qDebts = query(collection(db, "debts"));
-        onSnapshot(qDebts, (snapshot) => {
-            appData.debts = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-            refreshUI();
+        unsubscribeDebts = onSnapshot(qDebts, (snapshot) => {
+            appData.debts = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+            saveLocal();
+            renderDebts();
+            updateDashboard(); // Para actualizar total deuda
+            hideLoading();
         });
 
         // Projects
         const qProj = query(collection(db, "projects"));
-        onSnapshot(qProj, (snapshot) => {
-            appData.projects = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-            refreshUI();
+        unsubscribeProjects = onSnapshot(qProj, (snapshot) => {
+            appData.projects = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+            saveLocal();
+            renderProjects();
+            hideLoading();
         });
         
-        // Budgets
-        const qBud = query(collection(db, "budgets"));
-        onSnapshot(qBud, (snapshot) => {
-            appData.budgets = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-            renderBudgets();
-        });
+        // Categories/Budgets (Usaremos un doc único de config para esto para simplificar)
+        // Por simplicidad en este ejemplo, las categorías y budgets se guardan en localStorage principalmente 
+        // o se podrían poner en un doc 'config'. Asumiremos localStorage para configs estructurales para evitar complejidad extra.
     }
 
     function hideLoading() {
-        const overlay = document.getElementById('loading-overlay');
-        overlay.style.opacity = '0';
-        setTimeout(() => overlay.style.display = 'none', 500);
+        document.getElementById('loading-overlay').style.display = 'none';
     }
 
-    // --- CORE UI FUNCTIONS ---
-    window.onload = function() {
-        document.getElementById('t-date').valueAsDate = new Date();
-        document.getElementById('d-start').valueAsDate = new Date();
-        document.getElementById('abono-fecha').valueAsDate = new Date();
-        document.getElementById('liq-date').valueAsDate = new Date();
-        updateMonthLabel();
-        
-        // Initial Load (Local fallback if cloud fails quickly)
-        loadDataLocal(); 
-    };
+    function loadLocalFallback() {
+        const saved = localStorage.getItem('pipeLuuFinanzas_v2');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            // Merge inteligente: si viene de la nube ya, no sobreescribir con viejo local a menos que la nube esté vacía
+            if(!isCloudConnected || appData.transactions.length === 0) {
+                appData = { ...appData, ...parsed };
+            }
+        }
+        refreshUI();
+        hideLoading();
+    }
+
+    function saveLocal() {
+        localStorage.setItem('pipeLuuFinanzas_v2', JSON.stringify(appData));
+    }
+
+    async function saveToCloud(colName, data) {
+        if(!db || !isCloudConnected) {
+            saveLocal();
+            refreshUI();
+            return;
+        }
+        try {
+            // Convertir fechas a Timestamp de Firebase si existen
+            const payload = { ...data };
+            if(payload.date) payload.date = new Date(payload.date); 
+            
+            await addDoc(collection(db, colName), payload);
+            // onSnapshot actualizará el estado local automáticamente
+        } catch (e) {
+            console.error("Error guardando en nube: ", e);
+            saveLocal(); // Guardar en local como respaldo
+            showNotification('Error de sincronización. Guardado localmente.', 'error');
+        }
+    }
+
+    async function deleteFromCloud(colName, id) {
+        if(!db || !isCloudConnected) {
+            // Eliminar localmente
+            if(colName === 'transactions') appData.transactions = appData.transactions.filter(i => i.id !== id);
+            // ... otros tipos
+            saveLocal();
+            refreshUI();
+            return;
+        }
+        try {
+            await deleteDoc(doc(db, colName, id));
+        } catch(e) {
+            console.error("Error borrando en nube", e);
+            showNotification('Error al eliminar en la nube', 'error');
+        }
+    }
 
     function refreshUI() {
-        updateDashboard();
         renderTransactions();
         renderDebts();
         renderProjects();
-        renderBudgets();
-        saveDataLocal(); // Sync local backup
+        updateDashboard();
+        renderBudgetForms(); // Actualizar gráficos de budget
     }
 
+    // --- NAVEGACIÓN ---
     function showSection(id) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         document.getElementById('btn-' + id).classList.add('active');
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        
+        // Scroll suave al top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
         if(id === 'dashboard') updateDashboard();
+        if(id === 'presupuestos') renderBudgetForms();
     }
 
     function changeMonth(delta) {
-        currentDate.setMonth(currentDate.getMonth() + delta);
-        updateMonthLabel();
+        currentMonthOffset += delta;
         updateDashboard();
+        renderBudgetForms();
     }
 
-    function updateMonthLabel() {
-        const options = { year: 'numeric', month: 'long' };
-        document.getElementById('current-month-label').textContent = currentDate.toLocaleDateString('es-ES', options);
+    function getCurrentMonthDate() {
+        const d = new Date();
+        d.setMonth(d.getMonth() + currentMonthOffset);
+        return d;
     }
 
-    // --- SPLIT LOGIC ---
+    // --- LÓGICA TRANSACCIONES ---
+    let currentSplit = '5050';
+
     function toggleSplitOptions() {
         const type = document.getElementById('t-type').value;
-        const section = document.getElementById('split-section');
-        const lbl = document.getElementById('lbl-owner');
-        
-        if (type === 'ingreso') {
-            section.style.display = 'none';
-            lbl.textContent = "¿Quién recibe el ingreso?";
+        const group = document.getElementById('split-group');
+        if(type === 'ingreso') {
+            group.style.display = 'none';
         } else {
-            section.style.display = 'block';
-            lbl.textContent = "¿Quién pagó el gasto?";
+            group.style.display = 'block';
         }
     }
 
     function setSplit(type, btnElement) {
         currentSplit = type;
         document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('selected'));
-        btnElement.classList.add('selected');
+        if(btnElement) btnElement.classList.add('selected');
         
         const customDiv = document.getElementById('custom-split-inputs');
         if (type === 'custom') {
-            customDiv.classList.add('show');
+            customDiv.style.display = 'flex';
         } else {
-            customDiv.classList.remove('show');
+            customDiv.style.display = 'none';
             if(type === '5050') { document.getElementById('split-pipe').value = 50; document.getElementById('split-luu').value = 50; }
             if(type === '1000') { document.getElementById('split-pipe').value = 100; document.getElementById('split-luu').value = 0; }
             if(type === '0100') { document.getElementById('split-pipe').value = 0; document.getElementById('split-luu').value = 100; }
         }
     }
 
-    function checkNewCategory(select) {
-        const input = document.getElementById('t-new-category');
-        if(select.value === '_new') {
-            input.style.display = 'block';
-            input.required = true;
-        } else {
-            input.style.display = 'none';
-            input.required = false;
-        }
-    }
-    
-    function checkNewCategoryBudget(select) {
-        const input = document.getElementById('b-new-category');
-        if(select.value === '_new') {
-            input.style.display = 'block';
-            input.required = true;
-        } else {
-            input.style.display = 'none';
-            input.required = false;
-        }
-    }
-
-    // --- TRANSACTIONS ---
-    document.getElementById('form-transaccion').addEventListener('submit', async function(e) {
+    document.getElementById('form-transaccion').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        let category = document.getElementById('t-category').value;
-        if(category === '_new') category = document.getElementById('t-new-category').value.toLowerCase().trim();
-
-        let pipePct = 50, luuPct = 50;
         const type = document.getElementById('t-type').value;
+        let pipePct = 0, luuPct = 0;
 
         if (type === 'gasto') {
             if (currentSplit === 'custom') {
@@ -678,455 +669,293 @@
                 luuPct = parseFloat(document.getElementById('split-luu').value) || 0;
             } else if (currentSplit === '1000') { pipePct = 100; luuPct = 0; }
             else if (currentSplit === '0100') { pipePct = 0; luuPct = 100; }
-        } else {
-            // Ingresos son 100% de quien lo recibe, no hay split
-            pipePct = 0; luuPct = 0; 
+            else { pipePct = 50; luuPct = 50; }
         }
 
-        const newTrans = {
+        const transaction = {
             date: document.getElementById('t-date').value,
             type: type,
             desc: document.getElementById('t-desc').value,
             amount: parseFloat(document.getElementById('t-amount').value),
             payer: document.getElementById('t-payer').value,
-            category: category,
+            category: document.getElementById('t-category').value,
             split: { pipe: pipePct, luu: luuPct },
-            timestamp: Date.now()
+            createdAt: serverTimestamp()
         };
 
-        if(isOffline) {
-            appData.transactions.push(newTrans);
-            refreshUI();
-            this.reset();
-            document.getElementById('t-date').valueAsDate = new Date();
-            toggleSplitOptions();
-            setSplit('5050', document.querySelector('.split-btn')); 
-            showNotification('Guardado localmente (Sin conexión)');
-        } else {
-            try {
-                await addDoc(collection(db, "transactions"), newTrans);
-                showNotification('Guardado en la nube');
-                this.reset();
-                document.getElementById('t-date').valueAsDate = new Date();
-                toggleSplitOptions();
-                setSplit('5050', document.querySelector('.split-btn'));
-            } catch(err) {
-                showNotification('Error al guardar en nube', 'error');
-                console.error(err);
-            }
-        }
+        saveToCloud('transactions', transaction);
+        
+        this.reset();
+        document.getElementById('t-date').valueAsDate = new Date();
+        toggleSplitOptions();
+        setSplit('5050', document.querySelector('.split-btn')); // Reset visual
+        showNotification('Movimiento guardado');
     });
 
     function renderTransactions() {
         const tbody = document.querySelector('#transactions-table tbody');
         tbody.innerHTML = '';
-        // Filter by current month for the list? Or show all recent? Let's show recent 10
-        const sorted = [...appData.transactions].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+        // Filtrar por mes actual si estamos en dashboard? No, en historial mostramos todo o paginado. Mostraremos últimos 50.
+        const list = appData.transactions.slice(0, 50);
         
-        sorted.forEach(t => {
+        list.forEach(t => {
             const tr = document.createElement('tr');
             const isExpense = t.type === 'gasto';
-            const payerName = t.payer === 'pipe' ? 'Pipe' : (t.payer === 'luu' ? 'Luu' : 'Gatos');
-            
             tr.innerHTML = `
-                <td style="color:#64748B">${t.date}</td>
-                <td>
-                    <div style="font-weight:600">${t.desc}</div>
-                    <div style="font-size:0.75rem; color:#94a3b8">${t.category} • ${payerName}</div>
+                <td>${t.date}<br><small style="color:#64748B">${t.desc}</small></td>
+                <td style="font-weight:bold; color:${isExpense ? 'var(--danger)' : 'var(--success)'}">
+                    ${isExpense?'-':'+'}$ ${t.amount.toLocaleString()}
                 </td>
-                <td style="text-align:right; font-weight:bold; color:${isExpense ? 'var(--danger)' : 'var(--success)'}">
-                    ${isExpense ? '-' : '+'}$ ${t.amount.toLocaleString()}
-                </td>
-                <td style="text-align:right">
-                    ${isOffline ? `<button onclick="deleteLocalTrans('${t.desc}', ${t.timestamp})" style="background:none;border:none;color:red">🗑️</button>` : ''}
+                <td style="text-align:right;">
+                    <button onclick="deleteTransaction('${t.id}')" style="color:red; background:none; border:none; cursor:pointer;">🗑️</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    function deleteLocalTrans(desc, ts) {
-        if(confirm('Borrar este movimiento local?')) {
-            appData.transactions = appData.transactions.filter(t => !(t.desc === desc && t.timestamp === ts));
+    function deleteTransaction(id) {
+        if(confirm('¿Borrar movimiento?')) {
+            deleteFromCloud('transactions', id);
+            // La actualización vendrá por onSnapshot, pero si falla, limpiamos local manual
+            appData.transactions = appData.transactions.filter(t => t.id !== id);
+            saveLocal();
             refreshUI();
         }
     }
 
-    // --- DASHBOARD & ANALYTICS ---
+    // --- DASHBOARD & CÁLCULOS ---
     function updateDashboard() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth(); // 0-11
+        const currentD = getCurrentMonthDate();
+        const year = currentD.getFullYear();
+        const month = currentD.getMonth(); // 0-11
+        
+        // Nombre del mes
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        document.getElementById('dash-month-display').textContent = `${monthNames[month]} ${year}`;
 
-        // Filter transactions for selected month
+        // Filtrar transacciones del mes
         const monthTrans = appData.transactions.filter(t => {
             const d = new Date(t.date);
+            // Ajuste de zona horaria simple
             return d.getFullYear() === year && d.getMonth() === month;
         });
 
-        let pipeInc = 0, pipeExp = 0, luuInc = 0, luuExp = 0;
-        let catTotals = {};
+        let income = 0, expense = 0;
+        let pipeNet = 0, luuNet = 0; // Balance real entre ellos
+
+        // Datos para gráfica
+        const catExpenses = {};
 
         monthTrans.forEach(t => {
-            const amt = t.amount;
-            const cat = t.category;
-            catTotals[cat] = (catTotals[cat] || 0) + amt;
-
-            if (t.type === 'ingreso') {
-                if(t.payer === 'pipe') pipeInc += amt;
-                else if(t.payer === 'luu') luuInc += amt;
+            if(t.type === 'ingreso') {
+                income += t.amount;
+                // Ingresos no se dividen, son de quien los recibe
+                if(t.payer === 'pipe') pipeNet += t.amount;
+                else if(t.payer === 'luu') luuNet += t.amount;
             } else {
-                // Gastos
-                if(t.payer === 'pipe') pipeExp += amt;
-                else if(t.payer === 'luu') luuExp += amt;
-                else if(t.payer === 'gatos') { 
-                    // Gatos expense logic: usually shared or assigned. Assuming shared 50/50 for net calculation unless specified
-                    pipeExp += (amt * (t.split.pipe/100));
-                    luuExp += (amt * (t.split.luu/100));
-                }
-            }
-        });
+                expense += t.amount;
+                
+                // Registrar por categoría
+                catExpenses[t.category] = (catExpenses[t.category] || 0) + t.amount;
 
-        // Calculate Imbalance (Who owes whom based on spending vs share)
-        // Simplified: (Pipe Paid - Pipe Share) vs (Luu Paid - Luu Share)
-        // Better: Net Flow. 
-        let pipeNetFlow = 0; 
-        // Positive means Pipe has surplus (others owe him), Negative means deficit.
-        
-        monthTrans.forEach(t => {
-            if(t.type === 'gasto') {
+                // Lógica Splitwise
                 const pipeShare = (t.split.pipe / 100) * t.amount;
                 const luuShare = (t.split.luu / 100) * t.amount;
-                
+
                 if(t.payer === 'pipe') {
-                    pipeNetFlow += (t.amount - pipeShare); // Pipe paid full, subtract his share -> positive (Luu owes)
-                    // Actually simpler: Pipe paid X. His cost is Y. Balance += (X-Y).
+                    // Pipe pagó todo. Luu le debe su parte.
+                    pipeNet += luuShare; // Pipe recuperará esto
+                    luuNet -= luuShare;  // Luu debe esto
                 } else if (t.payer === 'luu') {
-                    pipeNetFlow -= pipeShare; // Luu paid. Pipe owes his share.
+                    luuNet += pipeShare;
+                    pipeNet -= pipeShare;
                 }
+                // Si pagan gatos o conjunto, no afecta el balance interpersonal directo asumimos fondo común o externo
             }
         });
 
-        const totalBalance = (pipeInc + luuInc) - (pipeExp + luuExp);
+        const balance = income - expense;
+        const diff = pipeNet + luuNet; // Debería ser 0 matemáticamente si sumamos ambos lados, pero pipeNet representa lo que Luu le debe.
+        // Corrección: pipeNet es el balance de Pipe. Si es positivo, Luu le debe. Si es negativo, Pipe debe.
+        // En mi lógica anterior: 
+        // Pipe pagó 100 (50/50). PipeNet += 50. LuuNet -= 50. Suma = 0. Correcto.
+        // El valor absoluto de pipeNet es la deuda.
         
-        // Update DOM
-        document.getElementById('dash-balance').textContent = `$ ${totalBalance.toLocaleString()}`;
-        document.getElementById('dash-balance').style.color = totalBalance >= 0 ? 'white' : '#fca5a5';
-        
-        document.getElementById('pipe-income').textContent = `$ ${pipeInc.toLocaleString()}`;
-        document.getElementById('pipe-expense').textContent = `$ ${pipeExp.toLocaleString()}`;
-        document.getElementById('pipe-net').textContent = `$ ${(pipeInc - pipeExp).toLocaleString()}`;
-        
-        document.getElementById('luu-income').textContent = `$ ${luuInc.toLocaleString()}`;
-        document.getElementById('luu-expense').textContent = `$ ${luuExp.toLocaleString()}`;
-        document.getElementById('luu-net').textContent = `$ ${(luuInc - luuExp).toLocaleString()}`;
+        const debtAmount = Math.abs(pipeNet);
+        const whoOwes = pipeNet > 0 ? "Luu le debe a Pipe" : (pipeNet < 0 ? "Pipe le debe a Luu" : "Cuentas claras");
 
-        // Imbalance Display
-        const liqArea = document.getElementById('liquidation-area');
-        const imbalText = document.getElementById('dash-imbalance-text');
-        const imbalVal = document.getElementById('dash-imbalance');
+        // Render Stats
+        document.getElementById('dash-balance').textContent = `$ ${balance.toLocaleString()}`;
+        document.getElementById('dash-balance-sub').textContent = `Ing: $${income.toLocaleString()} | Eg: $${expense.toLocaleString()}`;
         
-        if (Math.abs(pipeNetFlow) > 1000) { // Threshold
-            liqArea.style.display = 'block';
-            imbalVal.textContent = `$ ${Math.abs(pipeNetFlow).toLocaleString()}`;
-            if(pipeNetFlow > 0) {
-                imbalText.textContent = "Luu le debe a Pipe";
-                imbalText.style.color = "var(--success)";
-            } else {
-                imbalText.textContent = "Pipe le debe a Luu";
-                imbalText.style.color = "var(--danger)";
-            }
+        const diffEl = document.getElementById('dash-diff');
+        const diffText = document.getElementById('dash-diff-text');
+        diffEl.textContent = `$ ${Math.round(debtAmount).toLocaleString()}`;
+        diffText.textContent = whoOwes;
+        diffEl.style.color = debtAmount > 0 ? 'var(--warning)' : 'var(--success)';
+
+        // Mostrar botón liquidar
+        const settleSec = document.getElementById('settle-section');
+        if(debtAmount > 1000) { // Umbral mínimo
+            settleSec.style.display = 'block';
+            document.getElementById('settle-msg').textContent = `${whoOwes}. ¿Quieres registrar un pago para saldar esta cuenta?`;
+            currentSettleTarget = pipeNet > 0 ? 'luu' : 'pipe'; // Quien debe paga
         } else {
-            liqArea.style.display = 'none';
-            imbalVal.textContent = "$0";
-            imbalText.textContent = "✅ Cuentas Claras";
-            imbalText.style.color = "var(--text-light)";
+            settleSec.style.display = 'none';
         }
 
-        // Future Debt Projection
-        let monthlyDebtOutflow = 0;
-        appData.debts.forEach(d => {
-            // Simple projection: if debt is active, add payment + adjustment
-            if(d.currentBalance > 0) {
-                monthlyDebtOutflow += (d.payment + (parseFloat(d.adjustment)||0));
-            }
-        });
-        document.getElementById('future-debt-outflow').textContent = `$ ${monthlyDebtOutflow.toLocaleString()}`;
+        // Total Deudas
+        const totalDebt = appData.debts.reduce((sum, d) => sum + (d.currentBalance || 0), 0);
+        document.getElementById('dash-debt-total').textContent = `$ ${totalDebt.toLocaleString()}`;
 
-        renderCharts(monthTrans, catTotals, pipeInc, luuInc, pipeExp, luuExp, monthlyDebtOutflow);
+        // Tabla recientes
+        const dashTbody = document.querySelector('#dash-table tbody');
+        dashTbody.innerHTML = '';
+        monthTrans.slice(0, 5).forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${t.desc}</td><td style="color:${t.type==='gasto'?'var(--danger)':'var(--success)'}">${t.type==='gasto'?'-':'+'}$${t.amount.toLocaleString()}</td><td>${t.payer}</td>`;
+            dashTbody.appendChild(tr);
+        });
+
+        // Gráfica Principal
+        renderMainChart(income, expense, totalDebt); // Simplificado para demo
     }
 
-    function renderCharts(transactions, cats, pInc, lInc, pExp, lExp, debtOut) {
-        const ctx1 = document.getElementById('mainChart').getContext('2d');
-        const ctx2 = document.getElementById('categoryChart').getContext('2d');
-
+    function renderMainChart(inc, exp, debt) {
+        const ctx = document.getElementById('mainChart').getContext('2d');
         if(mainChartInstance) mainChartInstance.destroy();
-        if(catChartInstance) catChartInstance.destroy();
-
-        // Bar Chart: Income vs Expense vs Debt
-        mainChartInstance = new Chart(ctx1, {
+        
+        mainChartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Ingresos', 'Gastos', 'Deudas Futuras'],
+                labels: ['Ingresos', 'Gastos', 'Deudas Pend.'],
                 datasets: [{
-                    label: 'Flujo del Mes',
-                    data: [pInc+lInc, pExp+lExp, debtOut],
+                    label: 'Mes Actual',
+                    data: [inc, exp, debt],
                     backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
-                    borderRadius: 6
+                    borderRadius: 5
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display:false} } }
-        });
-
-        // Doughnut Chart: Categories
-        const catLabels = Object.keys(cats);
-        const catData = Object.values(cats);
-        
-        catChartInstance = new Chart(ctx2, {
-            type: 'doughnut',
-            data: {
-                labels: catLabels,
-                datasets: [{
-                    data: catData,
-                    backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#64748B', '#0EA5E9'],
-                    borderWidth: 0
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {position:'right', labels:{boxWidth:10, font:{size:10}} } } }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
     }
 
-    // --- LIQUIDATION MODAL ---
-    function openLiquidationModal() {
-        // Recalculate who owes whom globally (not just this month) for the button action
-        let pipeNet = 0;
-        appData.transactions.forEach(t => {
-            if(t.type === 'gasto') {
-                const pipeShare = (t.split.pipe / 100) * t.amount;
-                if(t.payer === 'pipe') pipeNet += (t.amount - pipeShare);
-                else if(t.payer === 'luu') pipeNet -= pipeShare;
-            }
-        });
-
-        const modal = document.getElementById('modal-liquidation');
-        const desc = document.getElementById('liq-description');
-        const input = document.getElementById('liq-amount');
-        
-        if(pipeNet > 0) {
-            desc.textContent = "Luu le debe a Pipe. Registrar pago de Luu a Pipe:";
-            input.dataset.to = 'pipe';
-        } else {
-            desc.textContent = "Pipe le debe a Luu. Registrar pago de Pipe a Luu:";
-            input.dataset.to = 'luu';
-        }
-        
-        input.value = Math.abs(pipeNet).toFixed(0); // Suggest full amount
-        modal.style.display = 'flex';
+    // --- LIQUIDACIÓN ---
+    function openSettleModal() {
+        document.getElementById('modal-settle').style.display = 'flex';
+        const isLuuOwes = currentSettleTarget === 'luu';
+        document.getElementById('settle-detail').textContent = isLuuOwes ? "Luu paga a Pipe" : "Pipe paga a Luu";
+        document.getElementById('settle-amount').value = '';
     }
 
-    function confirmLiquidation() {
-        const amount = parseFloat(document.getElementById('liq-amount').value);
-        const date = document.getElementById('liq-date').value;
-        const to = document.getElementById('liq-amount').dataset.to;
-        
+    function confirmSettle() {
+        const amount = parseFloat(document.getElementById('settle-amount').value);
+        const desc = document.getElementById('settle-desc').value;
         if(!amount) return;
 
-        const desc = to === 'pipe' ? "Liquidación de cuentas (Pago a Pipe)" : "Liquidación de cuentas (Pago a Luu)";
-        const payer = to === 'pipe' ? 'luu' : 'pipe';
+        // Crear transacción especial de ajuste
+        // Si Luu paga a Pipe: Luu "gasta" (sale de su bolsillo) dinero para pagar deuda. Pipe "recibe".
+        // Pero para no ensuciar stats de gastos reales, usamos tipo 'ajuste' o 'transferencia'.
+        // Aquí lo haremos como un Gasto de quien paga con categoría 'Ajuste Cuenta' y 100% a favor del otro.
+        
+        const payer = currentSettleTarget; // Quien paga
+        const receiver = payer === 'pipe' ? 'luu' : 'pipe';
 
-        const newTrans = {
-            date: date,
-            type: 'gasto', // Technically an expense for the payer to balance out
-            desc: desc,
+        const transaction = {
+            date: new Date().toISOString().split('T')[0],
+            type: 'gasto', // Técnicamente es salida de dinero de uno
+            desc: desc || `Liquidación a ${receiver}`,
             amount: amount,
             payer: payer,
-            category: 'ajuste',
-            split: { pipe: 0, luu: 0 }, // This is a direct transfer, no split logic needed really, but effectively balances the net flow
-            timestamp: Date.now()
-        };
-        
-        // Note: The logic for direct transfer in Splitwise style is tricky. 
-        // A simpler way in this app: Just record it as an expense paid by debtor, assigned 100% to creditor? 
-        // No, let's keep it simple: It reduces the imbalance calculated in dashboard.
-        // By adding a transaction where Debtor pays Creditor, the next calc will fix itself.
-        
-        if(isOffline) {
-            appData.transactions.push(newTrans);
-            refreshUI();
-            closeModal('modal-liquidation');
-            showNotification('Liquidación registrada');
-        } else {
-            addDoc(collection(db, "transactions"), newTrans).then(() => {
-                closeModal('modal-liquidation');
-                showNotification('Liquidación registrada en nube');
-            });
-        }
-    }
-
-    // --- BUDGETS ---
-    document.getElementById('form-budget').addEventListener('submit', async function(e){
-        e.preventDefault();
-        let cat = document.getElementById('b-category').value;
-        if(cat === '_new') cat = document.getElementById('b-new-category').value.toLowerCase().trim();
-        
-        const budget = {
-            category: cat,
-            limit: parseFloat(document.getElementById('b-limit').value),
-            month: `${currentDate.getFullYear()}-${currentDate.getMonth()+1}` // Simple YYYY-M key
+            category: 'ajuste_cuenta', // Categoría especial
+            // El 100% de este "gasto" beneficia al otro (reduce la deuda interpersonal)
+            // Lógica: Payer pone dinero. ¿Cómo se divide? 
+            // En realidad esto no es un gasto compartido, es una transferencia.
+            // Para que el cálculo de Splitwise funcione:
+            // Si Luu paga 100 a Pipe. Luu puso 100. 
+            // Queremos que el balance de Luu suba (porque estaba negativo) y el de Pipe baje.
+            // Mi lógica anterior: Gasto -> Payer pierde, Share gana.
+            // Si Luu paga 100 (Gasto). Split: 0% Luu, 100% Pipe.
+            // LuuNet -= 0 (no asume costo). PipeNet -= 100 (asume costo?? No).
+            // Revisemos: 
+            // Gasto 100. Payer: Luu. Split: 100% Pipe.
+            // Luu pagó 100. Pipe debía asumir 100.
+            // Luu recupera 100 de Pipe. 
+            // Balance Luu: -100 (pagó) + 100 (Pipe le debe) = 0 cambio neto en caja, pero ajusta la deuda.
+            // Exacto. Esto funciona.
+            split: { pipe: payer === 'pipe' ? 0 : 100, luu: payer === 'luu' ? 0 : 100 },
+            createdAt: serverTimestamp()
         };
 
-        if(isOffline) {
-            appData.budgets.push(budget);
-            renderBudgets();
-            showNotification('Presupuesto guardado local');
-        } else {
-            await addDoc(collection(db, "budgets"), budget);
-            showNotification('Presupuesto guardado');
-        }
-        this.reset();
-    });
-
-    function renderBudgets() {
-        const list = document.getElementById('budgets-list');
-        list.innerHTML = '';
-        const currentKey = `${currentDate.getFullYear()}-${currentDate.getMonth()+1}`;
-        
-        // Calculate actual spend per category for this month
-        const spends = {};
-        appData.transactions.forEach(t => {
-            if(t.type === 'gasto' && `${new Date(t.date).getFullYear()}-${new Date(t.date).getMonth()+1}` === currentKey) {
-                spends[t.category] = (spends[t.category] || 0) + t.amount;
-            }
-        });
-
-        appData.budgets.forEach(b => {
-            if(b.month === currentKey) {
-                const spent = spends[b.category] || 0;
-                const pct = Math.min(100, (spent / b.limit) * 100);
-                const color = pct > 90 ? 'var(--danger)' : 'var(--success)';
-                
-                const div = document.createElement('div');
-                div.className = 'card';
-                div.style.padding = '15px';
-                div.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; font-weight:bold;">
-                        <span>${b.category.toUpperCase()}</span>
-                        <span>$${spent} / $${b.limit}</span>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width:${pct}%; background-color:${color}"></div>
-                    </div>
-                    ${pct >= 100 ? '<div style="color:var(--danger); font-size:0.8rem; margin-top:5px;">⚠️ Presupuesto excedido</div>' : ''}
-                `;
-                list.appendChild(div);
-            }
-        });
-        
-        if(list.innerHTML === '') list.innerHTML = '<p style="text-align:center; color:#94a3b8; font-style:italic;">No hay presupuestos para este mes.</p>';
+        saveToCloud('transactions', transaction);
+        closeModal('modal-settle');
+        showNotification('Liquidación registrada');
     }
 
-    // --- DEBTS LOGIC WITH PROJECTION & ADJUSTMENT ---
-    document.getElementById('form-deuda').addEventListener('submit', async function(e){
+    // --- DEUDAS ---
+    document.getElementById('form-deuda').addEventListener('submit', function(e) {
         e.preventDefault();
         const total = parseFloat(document.getElementById('d-total').value);
-        const adj = parseFloat(document.getElementById('d-adjustment').value) || 0;
-        
         const debt = {
             name: document.getElementById('d-name').value,
             originalAmount: total,
             currentBalance: total,
-            rate: parseFloat(document.getElementById('d-rate').value)/100,
-            payment: parseFloat(document.getElementById('d-payment').value),
-            adjustment: adj,
+            rate: parseFloat(document.getElementById('d-rate').value) / 100,
+            basePayment: parseFloat(document.getElementById('d-payment').value),
+            adjustment: parseFloat(document.getElementById('d-adjustment').value) || 0,
             startDate: document.getElementById('d-start').value,
             owner: document.getElementById('d-owner').value,
             payments: []
         };
-        
         calculateProjection(debt);
-
-        if(isOffline) {
-            appData.debts.push(debt);
-            refreshUI();
-            showNotification('Crédito agregado local');
-        } else {
-            await addDoc(collection(db, "debts"), debt);
-            showNotification('Crédito agregado');
-        }
+        saveToCloud('debts', debt);
         this.reset();
         document.getElementById('d-start').valueAsDate = new Date();
+        showNotification('Deuda agregada');
     });
 
     function calculateProjection(debt) {
-        let bal = debt.currentBalance;
+        let balance = debt.currentBalance;
         let date = new Date(debt.startDate);
         let months = 0;
-        let totalInt = 0;
-        const effectivePayment = debt.payment + debt.adjustment;
+        const effectivePayment = debt.basePayment + debt.adjustment; // Cuota real estimada
 
-        while(bal > 0 && months < 360) {
-            const interest = bal * debt.rate;
+        while (balance > 0 && months < 360) {
+            const interest = balance * debt.rate;
             const principal = effectivePayment - interest;
-            if(principal <= 0) { debt.status = "La cuota no cubre intereses"; break; }
-            bal -= principal;
-            totalInt += interest;
+            if (principal <= 0) { debt.status = "La cuota no cubre intereses"; break; }
+            balance -= principal;
             months++;
-            date.setMonth(date.getMonth()+1);
+            date.setMonth(date.getMonth() + 1);
         }
         debt.monthsRemaining = months;
         debt.endDate = date.toISOString().split('T')[0];
-        debt.totalInterest = totalInt;
-        debt.status = bal <= 0 ? "Al día" : "Activo";
-        debt.effectivePayment = effectivePayment;
+        debt.status = balance <= 0 ? "Al día" : "En curso";
     }
 
     function renderDebts() {
         const container = document.getElementById('debts-list');
         container.innerHTML = '';
         appData.debts.forEach(d => {
-            const pct = ((d.originalAmount - d.currentBalance) / d.originalAmount) * 100;
+            const pct = Math.min(100, ((d.originalAmount - d.currentBalance) / d.originalAmount) * 100);
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <div style="display:flex; justify-content:space-between;">
-                    <h3>${d.name}</h3>
-                    <span class="badge ${d.status==='Al día'?'badge-ingreso':'badge-egreso'}">${d.status}</span>
-                </div>
-                <div style="font-size:2rem; font-weight:bold; color:var(--primary-dark); margin:10px 0;">
-                    $ ${d.currentBalance.toLocaleString()}
-                </div>
-                <div class="debt-info-grid">
-                    <span>Cuota Base: $${d.payment}</span>
-                    <span>Ajuste: $${d.adjustment}</span>
-                    <span>Total Mensual: <strong>$${(d.payment+d.adjustment).toLocaleString()}</strong></span>
-                    <span>Fin Proyectado: ${d.endDate}</span>
+                <h3>${d.name} <small style="font-size:0.8rem; color:#64748B">(${d.owner})</small></h3>
+                <div style="display:flex; justify-content:space-between; margin:5px 0;">
+                    <span>Pendiente: <strong>$${Math.round(d.currentBalance).toLocaleString()}</strong></span>
+                    <span>Cuota Est.: $${(d.basePayment + d.adjustment).toLocaleString()}</span>
                 </div>
                 <div class="progress-container"><div class="progress-bar" style="width:${pct}%"></div></div>
-                <div class="debt-controls">
-                    <button onclick="openAbonoModal('${d.id}')" class="btn btn-secondary btn-small">💰 Abonar Capital</button>
-                    <button onclick="updateManualAdjustment('${d.id}')" class="btn btn-small" style="background:#64748B">✏️ Ajustar Cuota</button>
+                <div style="font-size:0.8rem; color:var(--text-light); margin-top:5px;">Fin proy: ${d.endDate}</div>
+                <div style="margin-top:10px; display:flex; gap:10px;">
+                    <button onclick="openAbonoModal('${d.id}')" class="btn btn-sm btn-secondary">Abonar</button>
+                    <button onclick="deleteDebt('${d.id}')" class="btn btn-sm btn-danger">Borrar</button>
                 </div>
             `;
             container.appendChild(card);
         });
-    }
-
-    function updateManualAdjustment(id) {
-        const debt = appData.debts.find(d => d.id === id || d.name === id); // Fuzzy match for local
-        if(!debt) return;
-        const newVal = prompt("Nuevo valor de ajuste (Seguros/Variaciones):", debt.adjustment);
-        if(newVal !== null) {
-            debt.adjustment = parseFloat(newVal) || 0;
-            calculateProjection(debt);
-            if(!isOffline) {
-                updateDoc(doc(db, "debts", id), { adjustment: debt.adjustment }).then(() => {
-                    showNotification('Ajuste actualizado');
-                    renderDebts();
-                    updateDashboard();
-                });
-            } else {
-                refreshUI();
-            }
-        }
     }
 
     function openAbonoModal(id) {
@@ -1136,115 +965,256 @@
 
     function confirmarAbono() {
         const id = document.getElementById('abono-id').value;
-        const amt = parseFloat(document.getElementById('abono-monto').value);
-        const debt = appData.debts.find(d => d.id === id || d.name === id);
-        
-        if(debt && amt) {
-            debt.currentBalance -= amt;
-            debt.payments.push({date: new Date().toISOString(), amount: amt});
+        const amount = parseFloat(document.getElementById('abono-monto').value);
+        const debt = appData.debts.find(d => d.id === id);
+        if(debt && amount > 0) {
+            debt.currentBalance -= amount;
+            debt.payments.push({date: new Date().toISOString(), amount});
             calculateProjection(debt);
             
-            if(!isOffline) {
-                updateDoc(doc(db, "debts", id), { currentBalance: debt.currentBalance, payments: debt.payments }).then(() => {
-                    closeModal('modal-abono');
-                    showNotification('Abono aplicado. Proyección actualizada.');
-                    renderDebts();
-                    updateDashboard();
-                });
+            if(db && isCloudConnected) {
+                updateDoc(doc(db, "debts", id), { currentBalance: debt.currentBalance, payments: debt.payments });
             } else {
-                refreshUI();
-                closeModal('modal-abono');
+                saveLocal();
+                renderDebts();
+                updateDashboard();
             }
+            closeModal('modal-abono');
+            showNotification('Abono aplicado');
         }
     }
 
-    // --- PROJECTS ---
-    document.getElementById('form-proyecto').addEventListener('submit', async function(e){
+    function deleteDebt(id) {
+        if(confirm("¿Eliminar deuda?")) {
+            deleteFromCloud('debts', id);
+            appData.debts = appData.debts.filter(d => d.id !== id);
+            saveLocal();
+            renderDebts();
+            updateDashboard();
+        }
+    }
+
+    // --- PRESUPUESTOS & CATEGORÍAS ---
+    function renderCategoriesSelect() {
+        const sel = document.getElementById('t-category');
+        sel.innerHTML = '';
+        appData.categories.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c.charAt(0).toUpperCase() + c.slice(1);
+            sel.appendChild(opt);
+        });
+    }
+
+    function renderCategoriesList() {
+        const div = document.getElementById('categories-list');
+        div.innerHTML = '';
+        appData.categories.forEach(c => {
+            const tag = document.createElement('div');
+            tag.className = 'category-tag';
+            tag.innerHTML = `${c} <span onclick="removeCategory('${c}')">&times;</span>`;
+            div.appendChild(tag);
+        });
+    }
+
+    function addCategory() {
+        const name = document.getElementById('new-cat-name').value.toLowerCase().trim();
+        if(name && !appData.categories.includes(name)) {
+            appData.categories.push(name);
+            appData.budgets[name] = 0; // Init budget
+            saveLocal(); // Categorías se guardan local por simplicidad estructural
+            renderCategoriesSelect();
+            renderCategoriesList();
+            renderBudgetForms();
+            document.getElementById('new-cat-name').value = '';
+            showNotification('Categoría creada');
+        }
+    }
+
+    function removeCategory(name) {
+        if(confirm(`¿Eliminar categoría ${name}?`)) {
+            appData.categories = appData.categories.filter(c => c !== name);
+            delete appData.budgets[name];
+            saveLocal();
+            renderCategoriesSelect();
+            renderCategoriesList();
+            renderBudgetForms();
+        }
+    }
+
+    function renderBudgetForms() {
+        const container = document.getElementById('budgets-forms');
+        container.innerHTML = '';
+        appData.categories.forEach(cat => {
+            if(cat === 'ajuste_cuenta') return;
+            const currentBudget = appData.budgets[cat] || 0;
+            const div = document.createElement('div');
+            div.style.marginBottom = '10px';
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="margin:0; text-transform:capitalize;">${cat}</label>
+                    <input type="number" value="${currentBudget}" onchange="updateBudget('${cat}', this.value)" 
+                           style="width:120px; padding:5px; text-align:right;" placeholder="Presupuesto">
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        renderBudgetChart();
+    }
+
+    function updateBudget(cat, val) {
+        appData.budgets[cat] = parseFloat(val) || 0;
+        saveLocal();
+        renderBudgetChart();
+    }
+
+    function renderBudgetChart() {
+        const currentD = getCurrentMonthDate();
+        const year = currentD.getFullYear();
+        const month = currentD.getMonth();
+        
+        const monthTrans = appData.transactions.filter(t => {
+            const d = new Date(t.date);
+            return d.getFullYear() === year && d.getMonth() === month && t.type === 'gasto';
+        });
+
+        const spent = {};
+        monthTrans.forEach(t => {
+            spent[t.category] = (spent[t.category] || 0) + t.amount;
+        });
+
+        const labels = [];
+        const dataBudget = [];
+        const dataSpent = [];
+
+        appData.categories.forEach(c => {
+            if(c === 'ajuste_cuenta') return;
+            labels.push(c);
+            dataBudget.push(appData.budgets[c] || 0);
+            dataSpent.push(spent[c] || 0);
+        });
+
+        const ctx = document.getElementById('budgetChart').getContext('2d');
+        if(budgetChartInstance) budgetChartInstance.destroy();
+
+        budgetChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Presupuesto', data: dataBudget, backgroundColor: '#CBD5E1' },
+                    { label: 'Gastado', data: dataSpent, backgroundColor: (ctx) => {
+                        const val = ctx.raw;
+                        const idx = ctx.dataIndex;
+                        return val > dataBudget[idx] ? '#EF4444' : '#3B82F6';
+                    }}
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: false }, y: { beginAtZero: true } } }
+        });
+    }
+
+    // --- PROYECTOS ---
+    document.getElementById('form-proyecto').addEventListener('submit', function(e) {
         e.preventDefault();
         const proj = {
             name: document.getElementById('p-name').value,
             goal: parseFloat(document.getElementById('p-goal').value),
             current: parseFloat(document.getElementById('p-current').value)
         };
-        if(isOffline) { appData.projects.push(proj); refreshUI(); }
-        else { await addDoc(collection(db, "projects"), proj); showNotification('Meta creada'); }
+        saveToCloud('projects', proj);
         this.reset();
+        showNotification('Proyecto creado');
     });
 
     function renderProjects() {
-        const list = document.getElementById('projects-list');
-        list.innerHTML = '';
+        const container = document.getElementById('projects-list');
+        container.innerHTML = '';
         appData.projects.forEach(p => {
-            const pct = Math.min(100, (p.current/p.goal)*100);
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerHTML = `
+            const pct = Math.min(100, (p.current / p.goal) * 100);
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
                 <h3>${p.name}</h3>
-                <div class="progress-container"><div class="progress-bar" style="width:${pct}%">${Math.round(pct)}%</div></div>
-                <div style="margin-top:10px; display:flex; justify-content:space-between;">
-                    <span>$${p.current} / $${p.goal}</span>
-                    <button onclick="addProjectFund('${p.id}', '${p.name}')" class="btn btn-small btn-secondary">+ Ahorrar</button>
+                <div class="progress-container"><div class="progress-bar" style="width:${pct}%"></div></div>
+                <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                    <span>$${p.current.toLocaleString()}</span><span>$${p.goal.toLocaleString()}</span>
+                </div>
+                <div style="margin-top:10px; display:flex; gap:5px;">
+                    <input type="number" id="fund-${p.id}" placeholder "+" style="width:80px; padding:5px;">
+                    <button onclick="addFund('${p.id}')" class="btn btn-sm">Añadir</button>
                 </div>
             `;
-            list.appendChild(div);
+            container.appendChild(card);
         });
     }
-    
-    function addProjectFund(id, name) {
-        const amt = prompt(`Cuánto quieres añadir a "${name}"?`);
-        if(amt) {
-            const p = appData.projects.find(x => x.id === id || x.name === name);
-            if(p) {
-                p.current += parseFloat(amt);
-                if(!isOffline) updateDoc(doc(db, "projects", id), {current: p.current});
-                refreshUI();
-            }
+
+    function addFund(id) {
+        const val = parseFloat(document.getElementById(`fund-${id}`).value);
+        const p = appData.projects.find(x => x.id === id);
+        if(p && val) {
+            p.current += val;
+            if(db && isCloudConnected) updateDoc(doc(db, "projects", id), { current: p.current });
+            else saveLocal();
+            renderProjects();
+            document.getElementById(`fund-${id}`).value = '';
         }
     }
 
     // --- UTILS ---
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    
     function showNotification(msg, type='success') {
+        const container = document.getElementById('alertContainer');
         const div = document.createElement('div');
         div.className = `alert alert-${type}`;
         div.textContent = msg;
-        document.getElementById('alertContainer').appendChild(div);
+        container.appendChild(div);
         setTimeout(() => div.remove(), 3000);
     }
-    
+
     function exportDataJSON() {
-        const blob = new Blob([JSON.stringify(appData)], {type:'application/json'});
+        const blob = new Blob([JSON.stringify(appData)], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `backup_pipe_luu_${new Date().toISOString().split('T')[0]}.json`;
+        a.href = url; a.download = `backup_pipe_luu_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
     }
-    
+
     function importDataJSON(input) {
         const file = input.files[0];
         if(!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                appData = JSON.parse(e.target.result);
-                refreshUI();
-                showNotification('Datos importados');
-            } catch(err) { alert('Error en archivo'); }
+                const data = JSON.parse(e.target.result);
+                if(data.transactions) {
+                    // Subir todo a la nube batch? O reemplazar local.
+                    // Por seguridad, reemplazamos local y avisamos que se synceará si hay conexión
+                    appData = data;
+                    saveLocal();
+                    refreshUI();
+                    showNotification('Datos importados. Se sincronizarán si hay conexión.');
+                }
+            } catch(err) { alert("Archivo inválido"); }
         };
         reader.readAsText(file);
     }
 
     function resetAllData() {
-        if(confirm('¿BORRAR TODO? Esta acción es irreversible.')) {
-            appData = {transactions:[], debts:[], projects:[], budgets:[]};
-            localStorage.removeItem('pipeLuuFinanzas_Local');
+        if(confirm("¿BORRAR TODO? Esta acción es irreversible.")) {
+            localStorage.removeItem('pipeLuuFinanzas_v2');
+            appData = { transactions: [], debts: [], projects: [], categories: ['hogar','comida','gatos','transporte','ocio','salud','otros'], budgets: {} };
             refreshUI();
             showNotification('Datos reiniciados', 'warning');
+            // Nota: No borra de Firebase automáticamente para evitar accidentes masivos, 
+            // pero al recargar si hay conexión, Firebase volverá a llenar los datos.
+            // Para borrar Firebase se requiere script administrativo.
         }
     }
 
-    window.onclick = function(e) {
-        if(e.target.classList.contains('modal')) e.target.style.display = 'none';
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) event.target.style.display = "none";
     }
 </script>
 </body>
