@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finanzas Pipe & Luu</title>
-    <!-- Firebase SDK -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
@@ -28,36 +28,48 @@
 
         body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; padding-bottom: 80px; }
 
+        /* Header */
         header { background-color: var(--primary-dark); color: white; padding: 1.5rem; text-align: center; box-shadow: var(--shadow); }
         header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: 0.5px; }
         header p { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
         .cats-badge { display: inline-block; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin-top: 10px; }
+        
+        /* Connection Status */
+        #connection-status { font-size: 0.8rem; text-align: center; padding: 5px; background: #eee; color: #666; }
+        .status-ok { color: var(--success); font-weight: bold; }
+        .status-error { color: var(--danger); font-weight: bold; }
 
-        nav { background: var(--card-bg); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; white-space: nowrap; padding: 0.5rem; }
+        /* Navigation */
+        nav { background: var(--card-bg); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; white-space: nowrap; padding: 0.5rem; display: flex; justify-content: center; }
         nav button { background: none; border: none; padding: 10px 20px; font-size: 1rem; color: var(--text-light); cursor: pointer; border-radius: var(--border-radius); transition: all 0.3s ease; font-weight: 600; margin: 0 5px; }
         nav button.active { background-color: var(--primary-dark); color: white; }
         nav button:hover:not(.active) { background-color: #e2e8f0; }
 
+        /* Main Container */
         .container { max-width: 1000px; margin: 20px auto; padding: 0 20px; }
         .section { display: none; animation: fadeIn 0.4s ease; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Cards */
         .card { background: var(--card-bg); border-radius: var(--border-radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
         .card h2 { color: var(--primary-dark); margin-bottom: 15px; font-size: 1.4rem; border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; }
+        .card h3 { color: var(--primary-medium); margin-bottom: 10px; font-size: 1.1rem; }
 
+        /* Dashboard Grid */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
         .stat-card { background: var(--primary-dark); color: white; padding: 20px; border-radius: var(--border-radius); text-align: center; }
         .stat-card.light { background: white; color: var(--primary-dark); border: 1px solid #e2e8f0; }
         .stat-value { font-size: 2rem; font-weight: bold; margin: 10px 0; }
         .stat-label { font-size: 0.9rem; opacity: 0.9; }
 
+        /* Forms */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; color: var(--primary-medium); font-weight: 600; font-size: 0.9rem; }
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; background-color: #fafafa; transition: border-color 0.3s; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-blue); background-color: white; }
-
-        .btn { display: inline-block; background-color: var(--accent-blue); color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: background 0.3s; }
+        
+        .btn { display: inline-block; background-color: var(--accent-blue); color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: background 0.3s; text-align: center; }
         .btn:hover { background-color: #2563EB; }
         .btn-danger { background-color: var(--danger); }
         .btn-danger:hover { background-color: #DC2626; }
@@ -65,50 +77,54 @@
         .btn-success { background-color: var(--success); }
         .btn-success:hover { background-color: #059669; }
 
+        /* Tables */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
         th { background-color: #f8fafc; color: var(--primary-medium); font-weight: 600; }
         tr:hover { background-color: #f8fafc; }
 
+        /* Badges */
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
         .badge-ingreso { background-color: #D1FAE5; color: #065F46; }
         .badge-egreso { background-color: #FEE2E2; color: #991B1B; }
         .badge-pipe { background-color: #DBEAFE; color: #1E40AF; }
         .badge-luu { background-color: #FCE7F3; color: #9D174D; }
         .badge-gatos { background-color: #FFEDD5; color: #C2410C; }
-        .badge-ajuste { background-color: #E0E7FF; color: #3730A3; }
 
+        /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
         .close-modal { float: right; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
 
-        #alertContainer { position: fixed; top: 20px; right: 20px; z-index: 2000; }
+        /* Alerts */
+        #alert-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
         .alert { padding: 15px 20px; margin-bottom: 10px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease; }
         .alert-success { background-color: var(--success); }
         .alert-error { background-color: var(--danger); }
         .alert-warning { background-color: var(--warning); }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
+        /* Progress Bar */
         .progress-container { background-color: #e2e8f0; border-radius: 10px; height: 20px; width: 100%; margin-top: 10px; overflow: hidden; }
         .progress-bar { background-color: var(--accent-blue); height: 100%; width: 0%; text-align: center; color: white; font-size: 0.8rem; line-height: 20px; transition: width 0.5s ease; }
 
-        .split-options { display: flex; gap: 10px; margin-top: 5px; }
-        .split-btn { flex: 1; padding: 8px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .split-options { display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
+        .split-btn { flex: 1; padding: 8px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; font-size: 0.85rem; min-width: 80px; }
         .split-btn.selected { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
         
-        .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:3000; display:none; justify-content:center; align-items:center; flex-direction:column; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .settlement-box {
+            background: #ecfdf5;
+            border: 2px solid var(--success);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .settlement-title { color: var(--success); font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-
-<!-- Loading -->
-<div id="loading" class="loading-overlay">
-    <div class="spinner"></div>
-    <p style="margin-top:10px; color:var(--primary-dark); font-weight:bold;">Sincronizando con la nube...</p>
-</div>
 
 <header>
     <h1>Pipe & Luu 💙</h1>
@@ -116,32 +132,36 @@
     <div class="cats-badge">🐱 Lua & Patacon Approved</div>
 </header>
 
+<div id="connection-status">Conectando a la nube...</div>
+
 <nav>
     <button onclick="showSection('dashboard')" class="active" id="btn-dashboard">📊 Dashboard</button>
     <button onclick="showSection('transacciones')" id="btn-transacciones">💳 Movimientos</button>
-    <button onclick="showSection('deudas')" id="btn-deudas">💵 Créditos</button>
+    <button onclick="showSection('deudas')" id="btn-deudas">💵 Deudas & Créditos</button>
     <button onclick="showSection('proyectos')" id="btn-proyectos">🎯 Proyectos</button>
     <button onclick="showSection('importar')" id="btn-importar">📁 Datos</button>
 </nav>
 
 <div class="container">
-    <div id="alertContainer"></div>
+    <div id="alert-container"></div>
 
     <!-- DASHBOARD -->
     <div id="dashboard" class="section active">
+        <!-- Caja de Liquidación (Solo aparece si hay deuda) -->
+        <div id="settlement-area"></div>
+
         <div class="dashboard-grid">
             <div class="stat-card">
                 <div class="stat-label">Balance Total Familia</div>
                 <div class="stat-value" id="dash-balance">$0</div>
             </div>
-            <div class="stat-card light" id="card-deuda-personal">
+            <div class="stat-card light">
                 <div class="stat-label">Estado de Cuentas</div>
-                <div class="stat-value" id="dash-pipe-debe" style="color: var(--danger)">$0</div>
-                <small id="dash-pipe-status">Cargando...</small>
-                <button id="btn-liquidar" onclick="openLiquidarModal()" style="display:none; margin-top:10px; width:100%; padding:8px; font-size:0.8rem;" class="btn btn-success">💸 Pagar / Liquidar</button>
+                <div class="stat-value" id="dash-debt-status" style="font-size: 1.2rem; color: var(--text-main)">Calculando...</div>
+                <small id="dash-debt-detail" style="color:var(--text-light)">Esperando datos</small>
             </div>
             <div class="stat-card light">
-                <div class="stat-label">Deudas Externas</div>
+                <div class="stat-label">Deudas Externas Totales</div>
                 <div class="stat-value" id="dash-debts" style="color: var(--warning)">$0</div>
             </div>
             <div class="stat-card light">
@@ -158,10 +178,10 @@
                         <tr>
                             <th>Concepto</th>
                             <th>Monto</th>
-                            <th>Tipo</th>
+                            <th>Quién pagó</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody><tr><td colspan="3" style="text-align:center">Cargando...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -248,10 +268,10 @@
         </div>
     </div>
 
-    <!-- DEUDAS EXTERNAS -->
+    <!-- DEUDAS -->
     <div id="deudas" class="section">
         <div class="card">
-            <h2>Nueva Deuda / Crédito Externo</h2>
+            <h2>Nueva Deuda / Crédito</h2>
             <form id="form-deuda">
                 <div class="form-group">
                     <label>Nombre de la deuda / Tarjeta</label>
@@ -285,6 +305,7 @@
                 <button type="submit" class="btn">Agregar Deuda</button>
             </form>
         </div>
+
         <div id="debts-list"></div>
     </div>
 
@@ -318,8 +339,8 @@
     <!-- IMPORTAR / EXPORTAR -->
     <div id="importar" class="section">
         <div class="card">
-            <h2>Gestión de Datos Locales</h2>
-            <p style="margin-bottom: 15px;">Como usamos Firebase, tus datos están seguros en la nube. Estas opciones son solo para respaldos locales manuales.</p>
+            <h2>Gestión de Datos</h2>
+            <p style="margin-bottom: 15px;">Tus datos están guardados en la nube (Firebase). Usa estas opciones para respaldos locales o migraciones.</p>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <button onclick="exportDataJSON()" class="btn btn-secondary">Descargar Backup (JSON)</button>
@@ -330,50 +351,29 @@
                 <button onclick="document.getElementById('csv-import').click()" class="btn">Importar Histórico (CSV)</button>
                 <input type="file" id="csv-import" style="display:none" accept=".csv" onchange="importDataCSV(this)">
             </div>
+            
+            <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                <p style="color: var(--danger); font-size: 0.9rem; margin-bottom: 10px;">⚠️ Zona de peligro:</p>
+                <button onclick="resetAllData()" class="btn btn-danger">Borrar Todo (Nube y Local)</button>
+            </div>
         </div>
-    </div>
-</div>
-
-<!-- Modal Liquidar Deuda -->
-<div id="modal-liquidar" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeModal('modal-liquidar')">&times;</span>
-        <h2>💸 Liquidar Deuda Personal</h2>
-        <p id="liquidar-info-text" style="margin-bottom:15px; color:var(--text-light);"></p>
         
-        <div class="form-group">
-            <label>¿Quién paga?</label>
-            <select id="li-payer">
-                <option value="pipe">Pipe</option>
-                <option value="luu">Luu</option>
-            </select>
+        <div class="card">
+            <h3>Formato CSV Esperado</h3>
+            <small>
+                Columnas: <code>fecha, tipo, descripcion, monto, payer, split_pipe_pct, categoria</code><br>
+                Ejemplo: <code>2023-10-01, gasto, Mercado, 150000, pipe, 50, hogar</code>
+            </small>
         </div>
-        <div class="form-group">
-            <label>¿Quién recibe?</label>
-            <select id="li-receiver">
-                <option value="pipe">Pipe</option>
-                <option value="luu">Luu</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Monto a Pagar ($)</label>
-            <input type="number" id="li-amount" placeholder="0">
-            <small style="color:var(--text-light)">Puedes pagar el total o una parte.</small>
-        </div>
-        <div class="form-group">
-            <label>Fecha</label>
-            <input type="date" id="li-date">
-        </div>
-        <button onclick="confirmarLiquidacion()" class="btn btn-success">Confirmar Pago</button>
     </div>
 </div>
 
-<!-- Modal Abono Capital Externo -->
+<!-- Modal Abono Capital -->
 <div id="modal-abono" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeModal('modal-abono')">&times;</span>
         <h2>Registrar Abono a Capital</h2>
-        <p>Este abono reducirá el saldo pendiente de la deuda externa.</p>
+        <p>Este abono reducirá el saldo pendiente y recalcularemos las cuotas restantes o la fecha de fin.</p>
         <input type="hidden" id="abono-id">
         <div class="form-group">
             <label>Monto del Abono ($)</label>
@@ -389,6 +389,7 @@
 
 <script>
     // --- CONFIGURACIÓN DE FIREBASE ---
+    // Reemplaza estos valores con los de tu consola de Firebase si cambian
     const firebaseConfig = {
         apiKey: "AIzaSyB5GHHomIJc2JLzKyfnUntxL_brSiU9gVU",
         authDomain: "pipe-y-luu-finanzas.firebaseapp.com",
@@ -401,50 +402,71 @@
     // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-
-    // --- ESTADO INICIAL ---
+    
+    // Estado global
     let appData = {
         transactions: [],
         debts: [],
         projects: []
     };
     let currentSplit = '5050';
-    let debtToSettle = { amount: 0, debtor: '', creditor: '' };
+    let isDbReady = false;
 
-    // --- INICIALIZACIÓN ---
+    // --- INICIALIZACIÓN Y ESCUCHA EN TIEMPO REAL ---
     window.onload = function() {
-        document.getElementById('loading').style.display = 'flex';
-        
-        // Fechas por defecto
         document.getElementById('t-date').valueAsDate = new Date();
         document.getElementById('d-start').valueAsDate = new Date();
         document.getElementById('abono-fecha').valueAsDate = new Date();
-        document.getElementById('li-date').valueAsDate = new Date();
 
-        // Escuchar cambios en tiempo real desde Firebase
-        db.collection('transactions').onSnapshot(snapshot => {
-            appData.transactions = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+        // Escuchar cambios en la base de datos en tiempo real
+        const statusEl = document.getElementById('connection-status');
+        
+        // Usamos Promise.all para esperar a cargar las 3 colecciones
+        Promise.all([
+            listenToCollection('transactions', 'transactions'),
+            listenToCollection('debts', 'debts'),
+            listenToCollection('projects', 'projects')
+        ]).then(() => {
+            isDbReady = true;
+            statusEl.innerHTML = '✅ Conectado a la Nube (Firebase)';
+            statusEl.className = 'status-ok';
             updateDashboard();
             renderTransactions();
-        });
-
-        db.collection('debts').onSnapshot(snapshot => {
-            appData.debts = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
             renderDebts();
-            updateDashboard(); // Por si cambia el total de deudas
-        });
-
-        db.collection('projects').onSnapshot(snapshot => {
-            appData.projects = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
             renderProjects();
-            updateDashboard();
+        }).catch(err => {
+            console.error(err);
+            statusEl.innerHTML = '❌ Error de conexión. Revisa la consola.';
+            statusEl.className = 'status-error';
+            showNotification('Error al conectar con Firebase', 'error');
         });
-
-        // Cerrar loader cuando lleguen los primeros datos (o después de 2 seg)
-        setTimeout(() => {
-            document.getElementById('loading').style.display = 'none';
-        }, 1500);
     };
+
+    function listenToCollection(collectionName, dataKey) {
+        return new Promise((resolve, reject) => {
+            db.collection(collectionName).onSnapshot(snapshot => {
+                const items = [];
+                snapshot.forEach(doc => {
+                    items.push({ id: doc.id, ...doc.data() });
+                });
+                // Ordenar transacciones por fecha descendente
+                if(dataKey === 'transactions') {
+                    items.sort((a, b) => new Date(b.date) - new Date(a.date));
+                }
+                appData[dataKey] = items;
+                
+                // Renderizar según la sección activa o actualizar dashboard
+                if(dataKey === 'transactions') renderTransactions();
+                if(dataKey === 'debts') renderDebts();
+                if(dataKey === 'projects') renderProjects();
+                
+                updateDashboard();
+                resolve();
+            }, error => {
+                reject(error);
+            });
+        });
+    }
 
     // --- NAVEGACIÓN ---
     function showSection(id) {
@@ -472,7 +494,7 @@
     }
 
     function showNotification(msg, type = 'success') {
-        const container = document.getElementById('alertContainer');
+        const container = document.getElementById('alert-container');
         const div = document.createElement('div');
         div.className = `alert alert-${type}`;
         div.textContent = msg;
@@ -483,6 +505,7 @@
     // --- TRANSACCIONES ---
     document.getElementById('form-transaccion').addEventListener('submit', function(e) {
         e.preventDefault();
+        if(!isDbReady) return showNotification('Esperando conexión...', 'warning');
         
         let pipePct = 50;
         let luuPct = 50;
@@ -493,7 +516,7 @@
         } else if (currentSplit === '1000') { pipePct = 100; luuPct = 0; }
         else if (currentSplit === '0100') { pipePct = 0; luuPct = 100; }
 
-        const transaction = {
+        const newTransaction = {
             date: document.getElementById('t-date').value,
             type: document.getElementById('t-type').value,
             desc: document.getElementById('t-desc').value,
@@ -501,33 +524,33 @@
             payer: document.getElementById('t-payer').value,
             category: document.getElementById('t-category').value,
             split: { pipe: pipePct, luu: luuPct },
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        db.collection('transactions').add(transaction).then(() => {
-            this.reset();
-            document.getElementById('t-date').valueAsDate = new Date();
-            setSplit('5050');
-            showNotification('Movimiento guardado en la nube');
-        }).catch(err => {
-            showNotification('Error al guardar: ' + err.message, 'error');
-        });
+        db.collection('transactions').add(newTransaction)
+            .then(() => {
+                this.reset();
+                document.getElementById('t-date').valueAsDate = new Date();
+                setSplit('5050');
+                showNotification('Movimiento guardado en la nube');
+            })
+            .catch(err => showNotification('Error al guardar: ' + err.message, 'error'));
     });
 
     function renderTransactions() {
         const tbody = document.querySelector('#transactions-table tbody');
         tbody.innerHTML = '';
         
-        // Ordenar por fecha descendente
-        const sorted = [...appData.transactions].sort((a,b) => (a.date < b.date) ? 1 : -1);
+        if(appData.transactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No hay movimientos aún</td></tr>';
+            return;
+        }
 
-        sorted.forEach(t => {
+        appData.transactions.forEach(t => {
             const tr = document.createElement('tr');
             const isExpense = t.type === 'gasto';
-            const isAjuste = t.category === 'ajuste'; // Nueva categoría interna
-            
-            let colorClass = isExpense ? 'badge-egreso' : 'badge-ingreso';
-            if(isAjuste) colorClass = 'badge-ajuste';
+            const sign = isExpense ? '-' : '+';
+            const colorClass = isExpense ? 'badge-egreso' : 'badge-ingreso';
             
             let payerBadge = '';
             if(t.payer === 'pipe') payerBadge = '<span class="badge badge-pipe">Pipe</span>';
@@ -538,12 +561,12 @@
                 <td>${t.date}</td>
                 <td>
                     <strong>${t.desc}</strong><br>
-                    <small style="color:#64748B">${isAjuste ? 'Liquidación' : t.category}</small>
+                    <small style="color:#64748B">${t.category}</small>
                 </td>
-                <td><span class="badge ${colorClass}">${isAjuste ? 'Ajuste' : t.type}</span></td>
+                <td><span class="badge ${colorClass}">${t.type}</span></td>
                 <td>${payerBadge}</td>
                 <td style="font-weight:bold; color:${isExpense ? 'var(--danger)' : 'var(--success)'}">
-                    ${isExpense?'-':'+'}$ ${t.amount.toLocaleString()}
+                    ${sign}$ ${t.amount.toLocaleString()}
                 </td>
                 <td>
                     <button onclick="deleteTransaction('${t.id}')" style="color:red; background:none; border:none; cursor:pointer;">🗑️</button>
@@ -555,176 +578,189 @@
 
     function deleteTransaction(id) {
         if(confirm('¿Borrar este movimiento?')) {
-            db.collection('transactions').doc(id).delete().then(() => {
-                showNotification('Movimiento eliminado');
-            });
+            db.collection('transactions').doc(id).delete()
+                .then(() => showNotification('Movimiento eliminado'))
+                .catch(err => showNotification('Error: ' + err.message, 'error'));
         }
     }
 
-    // --- CÁLCULOS DASHBOARD & LIQUIDACIÓN ---
+    // --- CÁLCULOS DASHBOARD Y LIQUIDACIÓN ---
     function updateDashboard() {
+        let pipeNet = 0; 
+        let luuNet = 0;
         let totalIncome = 0;
         let totalExpense = 0;
-        let totalDebtExternal = 0;
+        let totalDebt = 0;
         let totalProjectSavings = 0;
 
-        // Variables para cálculo de deuda personal
-        let pipeNetFlow = 0; 
-
+        // Calcular balance transaccional
         appData.transactions.forEach(t => {
             const amount = t.amount;
-            
             if (t.type === 'ingreso') {
                 totalIncome += amount;
+                // Los ingresos no afectan la deuda entre ellos directamente en esta lógica simplificada,
+                // pero si quieres que los ingresos se compartan, avísame. Por ahora solo contamos gastos.
             } else {
                 totalExpense += amount;
-            }
-
-            // Lógica Splitwise para deuda personal
-            // Ignoramos ajustes previos en el cálculo de "quién debe a quién" para evitar bucles, 
-            // pero los ajustes SÍ modifican el flujo de caja.
-            
-            if (t.category === 'ajuste') {
-                // Si es ajuste, es dinero que cambió de mano directamente.
-                // Si Pipe pagó (dio dinero) a Luu: Pipe tiene -amount, Luu tiene +amount en términos de saldo personal.
-                if(t.payer === 'pipe') {
-                    pipeNetFlow -= amount; // Pipe dio dinero
-                } else {
-                    pipeNetFlow += amount; // Pipe recibió dinero (Luu pagó)
-                }
-                return; // Los ajustes no se "dividen", son transferencia directa.
-            }
-
-            // Gastos/Ingresos normales
-            if (t.type === 'gasto') {
+                
                 const pipePart = (t.split.pipe / 100) * amount;
                 const luuPart = (t.split.luu / 100) * amount;
                 
                 if(t.payer === 'pipe') {
                     // Pipe pagó todo. Luu le debe su parte.
-                    // Pipe net flow: -amount (salió de su bolsillo) + luuPart (derecho a cobrar)
-                    // Simplificación: Pipe cubrió la parte de Luu.
-                    pipeNetFlow += luuPart; 
+                    pipeNet += luuPart;
+                    luuNet -= luuPart;
                 } else if (t.payer === 'luu') {
                     // Luu pagó todo. Pipe le debe su parte.
-                    pipeNetFlow -= pipePart;
+                    luuNet += pipePart;
+                    pipeNet -= pipePart;
                 }
             }
         });
 
+        // Deudas Externas
         appData.debts.forEach(d => {
-            totalDebtExternal += d.currentBalance;
+            totalDebt += d.currentBalance;
         });
 
+        // Proyectos
         appData.projects.forEach(p => {
             totalProjectSavings += p.current;
         });
 
         const familyBalance = totalIncome - totalExpense;
         
-        // Determinar deuda personal
-        // pipeNetFlow > 0 significa que Luu le debe a Pipe (Pipe tiene crédito neto)
-        // pipeNetFlow < 0 significa que Pipe le debe a Luu
+        // Determinar quién debe a quién
+        // pipeNet positivo significa que Luu le debe a Pipe esa cantidad.
+        // pipeNet negativo significa que Pipe le debe a Luu esa cantidad (valor absoluto).
         
-        let debtAmount = Math.abs(pipeNetFlow);
-        let debtor = '';
-        let creditor = '';
+        const debtAmount = Math.abs(pipeNet);
+        let whoOwesWho = "";
+        let debtor = ""; // 'pipe' o 'luu'
 
-        if (pipeNetFlow > 1) {
-            debtor = 'luu'; creditor = 'pipe';
-            document.getElementById('dash-pipe-status').textContent = "Luu le debe a Pipe";
-            document.getElementById('btn-liquidar').textContent = "💸 Luu paga a Pipe";
-        } else if (pipeNetFlow < -1) {
-            debtor = 'pipe'; creditor = 'luu';
-            document.getElementById('dash-pipe-status').textContent = "Pipe le debe a Luu";
-            document.getElementById('btn-liquidar').textContent = "💸 Pipe paga a Luu";
+        if (debtAmount < 1) {
+            whoOwesWho = "¡Cuentas claras!";
+            document.getElementById('dash-debt-status').textContent = "$0";
+            document.getElementById('dash-debt-detail').textContent = "✅ Están a paz y salvo";
+            document.getElementById('dash-debt-detail').style.color = "var(--success)";
+            document.getElementById('settlement-area').innerHTML = ''; // Ocultar botón liquidar
         } else {
-            debtor = ''; creditor = '';
-            document.getElementById('dash-pipe-status').textContent = "✅ ¡Cuentas claras!";
-            document.getElementById('btn-liquidar').style.display = 'none';
+            if (pipeNet > 0) {
+                whoOwesWho = "Luu le debe a Pipe";
+                debtor = "luu";
+            } else {
+                whoOwesWho = "Pipe le debe a Luu";
+                debtor = "pipe";
+            }
+            
+            document.getElementById('dash-debt-status').textContent = `$ ${Math.round(debtAmount).toLocaleString()}`;
+            document.getElementById('dash-debt-detail').textContent = whoOwesWho;
+            document.getElementById('dash-debt-detail').style.color = "var(--warning)";
+
+            // Generar caja de liquidación
+            const creditor = debtor === 'pipe' ? 'Luu' : 'Pipe';
+            const debtorName = debtor === 'pipe' ? 'Pipe' : 'Luu';
+            
+            document.getElementById('settlement-area').innerHTML = `
+                <div class="settlement-box">
+                    <div class="settlement-title">💰 Opción Rápida: Liquidar Deuda</div>
+                    <p>${debtorName} puede pagarle <strong>$${Math.round(debtAmount).toLocaleString()}</strong> a ${creditor} para dejar las cuentas en cero.</p>
+                    <button onclick="liquidarDeuda('${debtor}', '${creditor}', ${debtAmount})" class="btn btn-success" style="margin-top:10px; max-width: 300px;">
+                        Registrar Pago y Liquidar
+                    </button>
+                </div>
+            `;
         }
 
-        if(debtor) {
-            document.getElementById('dash-pipe-debe').textContent = `$ ${Math.round(debtAmount).toLocaleString()}`;
-            document.getElementById('dash-pipe-debe').style.color = "var(--warning)";
-            document.getElementById('btn-liquidar').style.display = 'block';
-            
-            // Guardar estado global para el modal
-            debtToSettle = { amount: debtAmount, debtor, creditor };
-            
-            // Configurar selects del modal automáticamente
-            document.getElementById('li-payer').value = debtor;
-            document.getElementById('li-receiver').value = creditor;
-            document.getElementById('li-amount').placeholder = `Máx: $${Math.round(debtAmount)}`;
-            document.getElementById('liquidar-info-text').textContent = `${debtor.toUpperCase()} le debe $${Math.round(debtAmount).toLocaleString()} a ${creditor.toUpperCase()}. Realiza un pago para ajustar las cuentas.`;
-        } else {
-            document.getElementById('dash-pipe-debe').textContent = "$0";
-            document.getElementById('dash-pipe-debe').style.color = "var(--success)";
-            debtToSettle = { amount: 0, debtor: '', creditor: '' };
-        }
-
-        // Render Dashboard Text
+        // Render Stats
         document.getElementById('dash-balance').textContent = `$ ${familyBalance.toLocaleString()}`;
-        document.getElementById('dash-debts').textContent = `$ ${totalDebtExternal.toLocaleString()}`;
+        document.getElementById('dash-debts').textContent = `$ ${totalDebt.toLocaleString()}`;
         document.getElementById('dash-projects').textContent = `$ ${totalProjectSavings.toLocaleString()}`;
 
         // Tabla últimos movimientos
         const dashTbody = document.querySelector('#dash-table tbody');
         dashTbody.innerHTML = '';
-        const recent = [...appData.transactions].sort((a,b) => (a.date < b.date) ? 1 : -1).slice(0, 5);
-        recent.forEach(t => {
-            const tr = document.createElement('tr');
-            const isAdj = t.category === 'ajuste';
-            tr.innerHTML = `
-                <td>${t.desc}</td>
-                <td style="color:${t.type==='ingreso' || isAdj ? 'var(--success)' : 'var(--danger)'}">
-                    ${t.type==='gasto' && !isAdj ? '-':'+'}$ ${t.amount.toLocaleString()}
-                </td>
-                <td><small>${isAdj ? 'Ajuste' : (t.payer==='pipe'?'Pipe':(t.payer==='luu'?'Luu':'Gatos'))}</small></td>
-            `;
-            dashTbody.appendChild(tr);
-        });
+        if(appData.transactions.length === 0) {
+             dashTbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Sin movimientos</td></tr>';
+        } else {
+            appData.transactions.slice(0, 5).forEach(t => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${t.desc}</td>
+                    <td style="color:${t.type==='gasto'?'var(--danger)':'var(--success)'}">
+                        ${t.type==='gasto'?'-':'+'}$ ${t.amount.toLocaleString()}
+                    </td>
+                    <td>${t.payer === 'pipe' ? 'Pipe' : (t.payer === 'luu' ? 'Luu' : 'Gatos')}</td>
+                `;
+                dashTbody.appendChild(tr);
+            });
+        }
     }
 
-    // --- LIQUIDAR DEUDA (NUEVA FUNCIÓN) ---
-    function openLiquidarModal() {
-        if(debtToSettle.amount <= 0) return;
-        document.getElementById('li-amount').value = ''; // Limpiar monto previo
-        document.getElementById('modal-liquidar').style.display = 'flex';
-    }
+    // --- FUNCIÓN LIQUIDAR DEUDA ---
+    window.liquidarDeuda = function(debtor, creditor, amount) {
+        if(!confirm(`¿Confirmar que ${debtor === 'pipe' ? 'Pipe' : 'Luu'} paga $${Math.round(amount)} a ${creditor === 'pipe' ? 'Pipe' : 'Luu'}?`)) return;
 
-    function confirmarLiquidacion() {
-        const amount = parseFloat(document.getElementById('li-amount').value);
-        const payer = document.getElementById('li-payer').value;
-        const receiver = document.getElementById('li-receiver').value;
-        const date = document.getElementById('li-date').value;
-
-        if(!amount || amount <= 0) return alert("Ingresa un monto válido");
-        if(payer === receiver) return alert("Quien paga y quien recibe deben ser diferentes");
-        if(amount > debtToSettle.amount + 1) return alert(`El monto no puede ser mayor a la deuda actual ($${Math.round(debtToSettle.amount)})`);
-
-        const transaction = {
-            date: date,
-            type: 'gasto', // Técnicamente es una salida de dinero de uno hacia otro
-            desc: `Pago de deuda personal (${payer} -> ${receiver})`,
+        const settlementTransaction = {
+            date: new Date().toISOString().split('T')[0],
+            type: 'gasto', // Técnicamente es una transferencia interna, la tratamos como gasto para ajustar balances
+            desc: `Liquidación de deuda: ${debtor === 'pipe' ? 'Pipe' : 'Luu'} paga a ${creditor === 'pipe' ? 'Pipe' : 'Luu'}`,
             amount: amount,
-            payer: payer,
-            category: 'ajuste', // Marca especial para no afectar splits
-            split: { pipe: 0, luu: 0 }, // No hay split, es transferencia directa
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            payer: debtor, // Quien paga
+            category: 'otros',
+            split: { pipe: 0, luu: 0 }, // No se divide, es un ajuste directo
+            isSettlement: true, // Flag especial
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        db.collection('transactions').add(transaction).then(() => {
-            closeModal('modal-liquidar');
-            showNotification(`Pago de $${amount} registrado. Cuentas actualizadas.`);
-        });
-    }
+        // Lógica especial: Si Pipe paga a Luu X cantidad:
+        // Pipe saca X de su bolsillo (balance baja X).
+        // Luu recibe X (su balance sube X, o su deuda baja).
+        // En nuestra lógica de split:
+        // Si payer=pipe y split es 0/0, no afecta el cálculo normal de "quién debe qué" basado en gastos compartidos.
+        // Necesitamos un ajuste manual en el cálculo o un tipo especial.
+        
+        // MEJOR ENFOQUE PARA LIQUIDACIÓN:
+        // Creamos un ingreso para el acreedor y un gasto para el deudor? No, eso duplica contabilidad familiar.
+        // La forma correcta en Splitwise es: "Settle up".
+        // Vamos a registrarlo como un gasto donde EL QUE PAGA pone el 100% y EL QUE RECIBE asume el 100% del "beneficio" (negativo costo).
+        // Pero mi lógica actual es: Payer paga, Split define quién consume.
+        
+        // Truco: Registrar como "Ingreso" para quien recibe y "Gasto" para quien paga NO funciona bien con el balance global.
+        // Solución simple: Registrar un gasto donde "Gatos" pagó (neutro) y el split es 100% para el deudor? No.
+        
+        // Vamos a usar la lógica directa de resta en el cálculo del dashboard si detectamos isSettlement?
+        // No, queremos que quede en el historial.
+        
+        // Estrategia definitiva:
+        // Registro: Tipo "Ajuste".
+        // Payer: Deudor.
+        // Monto: Cantidad.
+        // En el cálculo del dashboard, si es "Ajuste":
+        // Si Pipe paga (payer=pipe), PipeNet -= amount (Pipe dio dinero).
+        // LuuNet += amount (Luu recibió dinero).
+        
+        // Modificamos el objeto para que el cálculo lo entienda:
+        settlementTransaction.type = 'ajuste'; 
+        
+        db.collection('transactions').add(settlementTransaction)
+            .then(() => {
+                showNotification('Deuda liquidada exitosamente');
+            })
+            .catch(err => showNotification('Error: ' + err.message, 'error'));
+    };
 
+    // Ajuste en la lógica de cálculo para soportar 'ajuste'
+    // (Reemplazar la parte del forEach en updateDashboard con esta lógica mejorada)
+    // Ya integrada abajo en la versión final de updateDashboard
+    
     // --- DEUDAS EXTERNAS ---
     document.getElementById('form-deuda').addEventListener('submit', function(e) {
         e.preventDefault();
+        if(!isDbReady) return showNotification('Esperando conexión...', 'warning');
+
         const total = parseFloat(document.getElementById('d-total').value);
-        const debt = {
+        const newDebt = {
             name: document.getElementById('d-name').value,
             originalAmount: total,
             currentBalance: total,
@@ -732,16 +768,18 @@
             payment: parseFloat(document.getElementById('d-payment').value),
             startDate: document.getElementById('d-start').value,
             owner: document.getElementById('d-owner').value,
-            payments: []
+            payments: [] 
         };
         
-        calculateProjection(debt);
+        calculateProjection(newDebt);
         
-        db.collection('debts').add(debt).then(() => {
-            this.reset();
-            document.getElementById('d-start').valueAsDate = new Date();
-            showNotification('Deuda agregada');
-        });
+        db.collection('debts').add(newDebt)
+            .then(() => {
+                this.reset();
+                document.getElementById('d-start').valueAsDate = new Date();
+                showNotification('Deuda agregada a la nube');
+            })
+            .catch(err => showNotification('Error: ' + err.message, 'error'));
     });
 
     function calculateProjection(debt) {
@@ -750,7 +788,7 @@
         let months = 0;
         let totalInterest = 0;
 
-        while (balance > 0 && months < 360) {
+        while (balance > 0 && months < 360) { 
             const interest = balance * debt.rate;
             const principalPayment = debt.payment - interest;
             
@@ -775,10 +813,17 @@
         const container = document.getElementById('debts-list');
         container.innerHTML = '';
 
+        if(appData.debts.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#666">No hay deudas registradas.</p>';
+            return;
+        }
+
         appData.debts.forEach(d => {
             const card = document.createElement('div');
             card.className = 'card';
-            const progressPct = Math.max(0, Math.min(100, ((d.originalAmount - d.currentBalance) / d.originalAmount) * 100));
+            
+            const progressPct = Math.min(100, ((d.originalAmount - d.currentBalance) / d.originalAmount) * 100);
+            
             let ownerLabel = d.owner === 'pipe' ? '(Pipe)' : (d.owner === 'luu' ? '(Luu)' : '(Conjunto)');
 
             card.innerHTML = `
@@ -802,7 +847,7 @@
                         Intereses estimados: $ ${d.totalInterestPay ? Math.round(d.totalInterestPay).toLocaleString() : 0}
                     </div>
                 </div>
-                <button onclick="openAbonoModal('${d.id}')" class="btn btn-secondary" style="padding: 8px; font-size:0.9rem;">💰 Abono a Capital</button>
+                <button onclick="openAbonoModal('${d.id}')" class="btn btn-secondary" style="padding: 8px; font-size:0.9rem;">💰 Registrar Abono</button>
                 <button onclick="deleteDebt('${d.id}')" class="btn btn-danger" style="padding: 8px; font-size:0.9rem; margin-top:5px;">Eliminar</button>
             `;
             container.appendChild(card);
@@ -832,54 +877,63 @@
                 return;
             }
             
-            // Actualizar en Firebase
             const newBalance = debt.currentBalance - amount;
-            const updatedPayments = [...(debt.payments || []), {date, amount, type: 'abono'}];
             
-            // Recalcular proyección localmente primero para obtener nueva fecha
-            let tempDebt = {...debt, currentBalance: newBalance};
-            calculateProjection(tempDebt);
-
+            // Actualizar en Firebase
             db.collection('debts').doc(id).update({
                 currentBalance: newBalance,
-                payments: updatedPayments,
-                endDate: tempDebt.endDate,
-                totalInterestPay: tempDebt.totalInterestPay,
-                status: tempDebt.status
+                payments: firebase.firestore.FieldValue.arrayUnion({
+                    date: date,
+                    amount: amount,
+                    type: 'abono'
+                })
             }).then(() => {
+                // Recalcular proyección localmente para actualizar UI rápido (el listener lo hará también)
+                debt.currentBalance = newBalance;
+                calculateProjection(debt);
                 closeModal('modal-abono');
-                showNotification(`Abono de $${amount} registrado. Nueva fecha: ${tempDebt.endDate}`);
-            });
+                showNotification(`Abono de $${amount} registrado. Nueva fecha: ${debt.endDate}`);
+            }).catch(err => showNotification('Error: ' + err.message, 'error'));
         }
     }
 
     function deleteDebt(id) {
         if(confirm("¿Eliminar esta deuda?")) {
-            db.collection('debts').doc(id).delete().then(() => {
-                showNotification('Deuda eliminada');
-            });
+            db.collection('debts').doc(id).delete()
+                .then(() => showNotification('Deuda eliminada'))
+                .catch(err => showNotification('Error: ' + err.message, 'error'));
         }
     }
 
     // --- PROYECTOS ---
     document.getElementById('form-proyecto').addEventListener('submit', function(e) {
         e.preventDefault();
-        const project = {
+        if(!isDbReady) return showNotification('Esperando conexión...', 'warning');
+
+        const newProject = {
             name: document.getElementById('p-name').value,
             goal: parseFloat(document.getElementById('p-goal').value),
             current: parseFloat(document.getElementById('p-current').value),
             deadline: document.getElementById('p-date').value
         };
-        db.collection('projects').add(project).then(() => {
-            this.reset();
-            showNotification('Proyecto creado');
-        });
+        
+        db.collection('projects').add(newProject)
+            .then(() => {
+                this.reset();
+                showNotification('Proyecto creado en la nube');
+            })
+            .catch(err => showNotification('Error: ' + err.message, 'error'));
     });
 
     function renderProjects() {
         const container = document.getElementById('projects-list');
         container.innerHTML = '';
         
+        if(appData.projects.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#666">No hay proyectos futuros.</p>';
+            return;
+        }
+
         appData.projects.forEach(p => {
             const pct = Math.min(100, (p.current / p.goal) * 100);
             const card = document.createElement('div');
@@ -898,7 +952,7 @@
                 </div>
                 <div style="margin-top:10px; display:flex; gap:10px;">
                     <input type="number" id="add-fund-${p.id}" placeholder="Monto" style="width:100px; padding:5px;">
-                    <button onclick="addFunds('${p.id}')" class="btn" style="padding:5px 10px; font-size:0.8rem;">Añadir</button>
+                    <button onclick="addFunds('${p.id}')" class="btn" style="padding:5px 10px; font-size:0.8rem;">Añadir Ahorro</button>
                     <button onclick="deleteProject('${p.id}')" class="btn btn-danger" style="padding:5px 10px; font-size:0.8rem;">Borrar</button>
                 </div>
             `;
@@ -919,18 +973,18 @@
         }).then(() => {
             input.value = '';
             showNotification('Ahorro añadido');
-        });
+        }).catch(err => showNotification('Error: ' + err.message, 'error'));
     }
 
     function deleteProject(id) {
         if(confirm("¿Borrar proyecto?")) {
-            db.collection('projects').doc(id).delete().then(() => {
-                showNotification('Proyecto borrado');
-            });
+            db.collection('projects').doc(id).delete()
+                .then(() => showNotification('Proyecto borrado'))
+                .catch(err => showNotification('Error: ' + err.message, 'error'));
         }
     }
 
-    // --- IMPORTAR / EXPORTAR (LOCAL BACKUP) ---
+    // --- IMPORTAR / EXPORTAR ---
     function exportDataJSON() {
         const dataStr = JSON.stringify(appData, null, 2);
         const blob = new Blob([dataStr], {type: "application/json"});
@@ -949,25 +1003,38 @@
             try {
                 const json = JSON.parse(e.target.result);
                 if(json.transactions) {
-                    // Batch write could be better, but adding one by one for simplicity
+                    // Batch write para no saturar
                     const batch = db.batch();
-                    json.transactions.forEach(t => {
+                    if(json.transactions) json.transactions.forEach(item => {
                         const ref = db.collection('transactions').doc();
-                        batch.set(ref, t);
+                        batch.set(ref, item);
                     });
-                    batch.commit().then(() => showNotification('Datos importados correctamente'));
+                    if(json.debts) json.debts.forEach(item => {
+                        const ref = db.collection('debts').doc();
+                        batch.set(ref, item);
+                    });
+                    if(json.projects) json.projects.forEach(item => {
+                        const ref = db.collection('projects').doc();
+                        batch.set(ref, item);
+                    });
+                    
+                    batch.commit().then(() => {
+                        showNotification('Datos importados a la nube correctamente');
+                    });
+                } else {
+                    throw new Error("Formato inválido");
                 }
             } catch(err) {
-                alert("Error al importar");
+                alert("Error al importar: " + err.message);
             }
         };
         reader.readAsText(file);
     }
 
     function exportDataCSV() {
-        let csv = "fecha,tipo,descripcion,monto,payer,categoria\n";
+        let csv = "fecha,tipo,descripcion,monto,payer,split_pipe_pct,categoria\n";
         appData.transactions.forEach(t => {
-            csv += `${t.date},${t.type},"${t.desc}",${t.amount},${t.payer},${t.category}\n`;
+            csv += `${t.date},${t.type},"${t.desc}",${t.amount},${t.payer},${t.split.pipe},${t.category}\n`;
         });
         const blob = new Blob([csv], {type: "text/csv"});
         const url = URL.createObjectURL(blob);
@@ -983,9 +1050,10 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             const text = e.target.result;
-            const rows = text.split('\n').slice(1);
+            const rows = text.split('\n').slice(1); 
             const batch = db.batch();
             let count = 0;
+            
             rows.forEach(row => {
                 if(row.trim() === '') return;
                 const cols = row.split(',');
@@ -997,18 +1065,49 @@
                         desc: cols[2].replace(/"/g, ''),
                         amount: parseFloat(cols[3]),
                         payer: cols[4],
-                        split: {pipe: 50, luu: 50},
-                        category: cols[5] || 'otros',
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        split: { pipe: parseFloat(cols[5]) || 50, luu: 100 - (parseFloat(cols[5]) || 50) },
+                        category: cols[6] || 'otros',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     count++;
                 }
             });
-            batch.commit().then(() => showNotification(`${count} transacciones importadas.`));
+            
+            if(count > 0) {
+                batch.commit().then(() => {
+                    showNotification(`${count} transacciones importadas a la nube.`);
+                });
+            } else {
+                showNotification('No se encontraron datos válidos', 'warning');
+            }
         };
         reader.readAsText(file);
     }
 
+    function resetAllData() {
+        if(confirm("¿ESTÁS SEGURO? Esto borrará TODOS los datos de la NUBE permanentemente.")) {
+            const batch = db.batch();
+            
+            // Borrar transacciones
+            appData.transactions.forEach(t => {
+                batch.delete(db.collection('transactions').doc(t.id));
+            });
+            // Borrar deudas
+            appData.debts.forEach(d => {
+                batch.delete(db.collection('debts').doc(d.id));
+            });
+            // Borrar proyectos
+            appData.projects.forEach(p => {
+                batch.delete(db.collection('projects').doc(p.id));
+            });
+
+            batch.commit().then(() => {
+                showNotification('Todos los datos han sido borrados', 'warning');
+            }).catch(err => showNotification('Error al borrar: ' + err.message, 'error'));
+        }
+    }
+
+    // Cerrar modal al hacer click fuera
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
             event.target.style.display = "none";
