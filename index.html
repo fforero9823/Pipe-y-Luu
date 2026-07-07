@@ -1,22 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-        <!-- PWA META TAGS -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0F172A">
-    
-    <!-- Soporte para iPhone (iOS) -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Pipe & Luu">
-    <link rel="apple-touch-icon" href="icon-192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pipe & Luu - Finanzas</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-            <!-- FIREBASE -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --bg-color: #F5F5F0;
@@ -103,6 +91,7 @@
         .bg-gatos { background: #FFEDD5; color: #C2410C; }
         .bg-success { background: #D1FAE5; color: #065F46; }
         .bg-danger { background: #FEE2E2; color: #991B1B; }
+        .bg-completed { background: #10B981; color: white; font-size: 0.8rem; padding: 4px 10px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
@@ -139,197 +128,125 @@
             z-index: 999;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .fab-add:active {
-            transform: scale(0.9);
-            box-shadow: 0 3px 10px rgba(59, 130, 246, 0.5);
-        }
-        .fab-add:hover {
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
-        }
+        .fab-add:active { transform: scale(0.9); box-shadow: 0 3px 10px rgba(59, 130, 246, 0.5); }
+        .fab-add:hover { box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6); }
 
         .toast-container {
-            position: fixed;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-            width: 90%;
-            max-width: 350px;
+            position: fixed; top: 100px; left: 50%; transform: translateX(-50%);
+            z-index: 2000; display: flex; flex-direction: column; gap: 10px;
+            pointer-events: none; width: 90%; max-width: 350px;
         }
         .toast-msg {
-            background: rgba(30, 30, 30, 0.95);
-            color: white;
-            padding: 14px 20px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            text-align: center;
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            font-weight: 500;
+            background: rgba(30, 30, 30, 0.95); color: white; padding: 14px 20px;
+            border-radius: 12px; font-size: 0.9rem; text-align: center; opacity: 0;
+            transform: translateY(-20px); transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: 500;
         }
-        .toast-msg.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .toast-msg.show { opacity: 1; transform: translateY(0); }
         .toast-msg.success { background: rgba(16, 185, 129, 0.95); }
         .toast-msg.warning { background: rgba(245, 158, 11, 0.95); color: #1a1a1a; }
         .toast-msg.error { background: rgba(239, 68, 68, 0.95); }
 
         .btn-liquidate {
             background: linear-gradient(135deg, var(--success), #059669);
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            width: 100%;
-            margin-top: 10px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-            transition: all 0.2s;
+            color: white; padding: 12px; border-radius: 8px; border: none;
+            width: 100%; margin-top: 10px; font-weight: 600; font-size: 0.95rem;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); transition: all 0.2s;
         }
-        .btn-liquidate:active {
-            transform: scale(0.98);
-        }
+        .btn-liquidate:active { transform: scale(0.98); }
 
-        .budget-item {
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #f8fafc;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        .budget-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-        .budget-header strong {
-            color: var(--primary-dark);
-        }
-        .budget-values {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: var(--text-light);
-            margin-top: 5px;
-        }
-        .budget-bar-bg {
-            background: #e2e8f0;
-            height: 10px;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-top: 5px;
-        }
-        .budget-bar-fill {
-            height: 100%;
-            transition: width 0.5s ease;
-            border-radius: 5px;
-        }
+        .budget-item { margin-bottom: 15px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .budget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 0.9rem; }
+        .budget-header strong { color: var(--primary-dark); }
+        .budget-values { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-light); margin-top: 5px; }
+        .budget-bar-bg { background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 5px; }
+        .budget-bar-fill { height: 100%; transition: width 0.5s ease; border-radius: 5px; }
         .budget-bar-fill.ok { background: var(--success); }
         .budget-bar-fill.warn { background: var(--warning); }
         .budget-bar-fill.over { background: var(--danger); }
 
-        .settlement-form {
-            display: flex;
-            flex-direction: column; /* CLAVE: Cambia de horizontal a vertical */
-            gap: 10px;
-            margin-top: 12px;
-            width: 100%;
-        }
-        .settlement-form input {
-            width: 100%;
-            padding: 14px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-align: center;
-            border: 2px dashed var(--accent-blue); /* Borde punteado azul para resaltar */
-            border-radius: 8px;
-            background: #f0f9ff; /* Fondito azul suave */
-            color: var(--primary-dark);
-            margin: 0;
-        }
-        .settlement-form input:focus {
-            border-style: solid;
-            background: white;
-        }
+        .settlement-form { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; width: 100%; }
+        .settlement-form input { width: 100%; padding: 14px; font-size: 1.1rem; font-weight: 600; text-align: center; border: 2px dashed var(--accent-blue); border-radius: 8px; background: #f0f9ff; color: var(--primary-dark); margin: 0; }
+        .settlement-form input:focus { border-style: solid; background: white; }
 
-        .credit-status-paid {
-            background: #D1FAE5 !important;
-            color: #065F46 !important;
-        }
+        .credit-status-paid { background: #D1FAE5 !important; color: #065F46 !important; }
+
+        .project-locations { margin-top: 15px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .location-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .location-item:last-child { border-bottom: none; }
+        .location-info { flex: 1; }
+        .location-name { font-weight: 600; color: var(--primary-dark); }
+        .location-details { font-size: 0.8rem; color: var(--text-light); }
+        .location-amount { font-weight: bold; color: var(--accent-blue); }
+        .yield-badge { background: #D1FAE5; color: #065F46; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 5px; }
 
         /* =========================================
-           NUEVOS ESTILOS: PROYECTOS CON UBICACIONES
+           NUEVOS ESTILOS: POPUP FELICITACIONES Y COMPRA A CRÉDITO
            ========================================= */
-        
-        .project-locations {
-            margin-top: 15px;
-            padding: 10px;
+        .congrats-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 3000;
+            display: flex; justify-content: center; align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .congrats-modal {
+            background: white; padding: 40px 30px; border-radius: 20px;
+            text-align: center; max-width: 350px; width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: bounceIn 0.5s ease;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.95); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .congrats-icon { font-size: 4rem; margin-bottom: 15px; }
+        .congrats-title { font-size: 1.5rem; font-weight: bold; color: var(--success); margin-bottom: 10px; }
+        .congrats-text { font-size: 1rem; color: var(--text-main); margin-bottom: 20px; }
+        .congrats-btn {
+            background: var(--success); color: white; padding: 12px 30px;
+            border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+            cursor: pointer;
+        }
+
+        .credit-card-completed {
+            border: 2px solid var(--success) !important;
+            background: linear-gradient(135deg, #f0fdf4, #ffffff) !important;
+        }
+        .credit-card-completed h3 {
+            color: var(--success) !important;
+        }
+
+        .debt-history-box {
             background: #f8fafc;
+            padding: 12px;
             border-radius: 8px;
+            margin-top: 10px;
             border: 1px solid #e2e8f0;
         }
-        .location-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 0.9rem;
-        }
-        .location-item:last-child {
-            border-bottom: none;
-        }
-        .location-info {
-            flex: 1;
-        }
-        .location-name {
-            font-weight: 600;
-            color: var(--primary-dark);
-        }
-        .location-details {
-            font-size: 0.8rem;
+        .debt-history-title {
+            font-size: 0.75rem;
             color: var(--text-light);
-        }
-        .location-amount {
-            font-weight: bold;
-            color: var(--accent-blue);
-        }
-        .yield-badge {
-            background: #D1FAE5;
-            color: #065F46;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-left: 5px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
     </style>
-    <!-- FIREBASE -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
 <header>
-    <h1>Pipe & Luu 💙</h1>
+    <h1>Pipe & Luu </h1>
     <p>Finanzas Familiares</p>
     <div id="connection-status" class="status-badge"><i class="fas fa-circle"></i> Local</div>
 </header>
 
 <nav>
-    <button onclick="navTo('dashboard')" class="active" id="nav-dashboard">📊 Dashboard</button>
+    <button onclick="navTo('dashboard')" class="active" id="nav-dashboard"> Dashboard</button>
     <button onclick="navTo('movimientos')" id="nav-movimientos">💳 Movimientos</button>
     <button onclick="navTo('creditos')" id="nav-creditos">💵 Créditos</button>
+    <button onclick="navTo('compras-credito')" id="nav-compras-credito">🛒 Compras a Crédito</button>
     <button onclick="navTo('proyectos')" id="nav-proyectos">🎯 Proyectos</button>
     <button onclick="navTo('config')" id="nav-config">⚙️ Config</button>
 </nav>
@@ -360,8 +277,13 @@
             </div>
             
             <div class="stat-box" style="grid-column: span 2;">
-                <div class="stat-lbl">Estado entre Pipe y Luu</div>
+                <div class="stat-lbl">Estado entre Pipe y Luu (Este Mes)</div>
                 <div id="dash-settlement-container"></div>
+            </div>
+
+            <div class="stat-box" style="grid-column: span 2;">
+                <div class="stat-lbl">Deuda Histórica Acumulada</div>
+                <div id="dash-debt-history-container"></div>
             </div>
 
             <div class="stat-box" style="grid-column: span 2;">
@@ -371,7 +293,7 @@
         </div>
 
         <div class="card">
-            <h2>📊 Presupuestos del Mes</h2>
+            <h2> Presupuestos del Mes</h2>
             <div id="dash-budgets-summary">No hay presupuestos configurados.</div>
         </div>
 
@@ -496,6 +418,62 @@
         <div id="creditos-list"></div>
     </div>
 
+    <!-- COMPRAS A CRÉDITO (NUEVO) -->
+    <div id="compras-credito" class="section">
+        <div class="card">
+            <h2>Nueva Compra a Crédito</h2>
+            <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:15px;">Para compras a plazos sin interés bancario (ej: carro, moto, electrodoméstico)</p>
+            <form id="form-compra-credito">
+                <div class="form-group">
+                    <label>¿Qué compraste?</label>
+                    <input type="text" id="cc-item" required placeholder="Ej: Carro Mazda 2020">
+                </div>
+                <div class="form-group">
+                    <label>¿A quién le debes? (Tienda/Persona)</label>
+                    <input type="text" id="cc-creditor" required placeholder="Ej: Concesionario XYZ">
+                </div>
+                <div class="form-group">
+                    <label>Precio Total ($)</label>
+                    <input type="number" id="cc-total" required inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div class="form-group">
+                    <label>Cuota Inicial / Pie ($)</label>
+                    <input type="number" id="cc-downpayment" value="0" inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div class="form-group">
+                    <label>Número de Cuotas</label>
+                    <input type="number" id="cc-installments" required inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div class="form-group">
+                    <label>Valor de cada Cuota ($)</label>
+                    <input type="number" id="cc-installment-value" required inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Inicio</label>
+                    <input type="date" id="cc-start" required>
+                </div>
+                <div class="form-group">
+                    <label>Día de Pago</label>
+                    <input type="number" id="cc-day" min="1" max="31" value="5" required inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div class="form-group">
+                    <label>Responsable</label>
+                    <select id="cc-owner">
+                        <option value="pipe">Pipe</option>
+                        <option value="luu">Luu</option>
+                        <option value="conjunto">Conjunto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>¿Cuántas cuotas YA has pagado?</label>
+                    <input type="number" id="cc-paid" value="0" min="0" inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <button type="submit" class="btn">Registrar Compra a Crédito</button>
+            </form>
+        </div>
+        <div id="compras-credito-list"></div>
+    </div>
+
     <!-- PROYECTOS -->
     <div id="proyectos" class="section">
         <div class="card">
@@ -553,7 +531,7 @@
 
         <div class="card">
             <h2>Datos</h2>
-            <button onclick="exportCSV()" class="btn btn-secondary" style="margin-bottom:10px;">📥 Descargar CSV</button>
+            <button onclick="exportCSV()" class="btn btn-secondary" style="margin-bottom:10px;"> Descargar CSV</button>
             
             <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
                 <label>Importar CSV Histórico</label>
@@ -562,7 +540,7 @@
             </div>
 
             <div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
-                <button onclick="resetAll()" class="btn btn-danger">⚠️ Borrar Todo (Reset)</button>
+                <button onclick="resetAll()" class="btn btn-danger">️ Borrar Todo (Reset)</button>
             </div>
         </div>
     </div>
@@ -680,23 +658,6 @@
 <button id="fabAdd" class="fab-add" aria-label="Agregar Movimiento">+</button>
 
 <script>
-    // --- ESTADO GLOBAL ---
-    let dbData = {
-        movimientos: [],
-        creditos: [],
-        proyectos: [],
-        categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Deudas', 'Otros'],
-        lugares: ['Efectivo', 'Cuenta Ahorros', 'Nequi', 'Daviplata', 'Tarjeta Pipe', 'Tarjeta Luu'],
-        presupuestos: {}
-    };
-    
-    let currentMonthOffset = 0;
-    let currentProjectId = null;
-    let currentCreditId = null;
-    let splitMode = '5050';
-    let isCapitalAbonoMode = false;
-    let currentPayCreditId = null;
-
     // --- FIREBASE CONFIGURATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyB5GHHomIJc2JLzKyfnUntxL_brSiU9gVU",
@@ -711,12 +672,28 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // --- ESTADO GLOBAL ---
+    let dbData = {
+        movimientos: [],
+        creditos: [],
+        comprasCredito: [],
+        proyectos: [],
+        categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Deudas', 'Otros'],
+        lugares: ['Efectivo', 'Cuenta Ahorros', 'Nequi', 'Daviplata', 'Tarjeta Pipe', 'Tarjeta Luu'],
+        presupuestos: {}
+    };
+    
+    let currentMonthOffset = 0;
+    let currentProjectId = null;
+    let currentCreditId = null;
+    let splitMode = '5050';
+    let isCapitalAbonoMode = false;
+    let currentPayCreditId = null;
+
     // --- INICIALIZACIÓN CON FIREBASE ---
     window.addEventListener('DOMContentLoaded', async () => {
-        // Primero cargar datos locales como respaldo
         loadLocalData();
         
-        // Luego intentar cargar desde Firebase
         try {
             const doc = await db.collection('finanzas').doc('datos').get();
             if (doc.exists) {
@@ -724,6 +701,7 @@
                 dbData = {
                     movimientos: firebaseData.movimientos || [],
                     creditos: firebaseData.creditos || [],
+                    comprasCredito: firebaseData.comprasCredito || [],
                     proyectos: firebaseData.proyectos || [],
                     categorias: firebaseData.categorias || dbData.categorias,
                     lugares: firebaseData.lugares || dbData.lugares,
@@ -740,30 +718,28 @@
             mostrarToast('⚠️ Usando datos locales (sin conexión)', 'warning');
         }
 
-        // Escuchar cambios en tiempo real (sincronización automática)
         db.collection('finanzas').doc('datos').onSnapshot(doc => {
             if (doc.exists) {
                 const firebaseData = doc.data();
                 dbData = {
                     movimientos: firebaseData.movimientos || [],
                     creditos: firebaseData.creditos || [],
+                    comprasCredito: firebaseData.comprasCredito || [],
                     proyectos: firebaseData.proyectos || [],
                     categorias: firebaseData.categorias || dbData.categorias,
                     lugares: firebaseData.lugares || dbData.lugares,
                     presupuestos: firebaseData.presupuestos || {}
                 };
                 saveLocalData();
-                
-                // Actualizar todo lo que se ve en pantalla
                 renderCategories();
                 renderPlaces();
                 renderBudgetsConfig();
                 updateDashboard();
                 renderMovimientos();
                 renderCreditos();
+                renderComprasCredito();
                 renderProyectos();
-                
-                console.log('🔄 Datos sincronizados desde Firebase');
+                console.log(' Datos sincronizados desde Firebase');
             }
         });
 
@@ -772,26 +748,23 @@
         renderBudgetsConfig();
         document.getElementById('m-date').valueAsDate = new Date();
         document.getElementById('c-start').valueAsDate = new Date();
+        document.getElementById('cc-start').valueAsDate = new Date();
         
         updateDashboard();
         renderMovimientos();
         renderCreditos();
+        renderComprasCredito();
         renderProyectos();
         
-        setTimeout(() => {
-            updateConnectionStatus(true);
-        }, 1000);
+        setTimeout(() => { updateConnectionStatus(true); }, 1000);
 
         setupConnectionListener();
         setupFAB();
     });
 
-    // --- GESTIÓN DE DATOS HÍBRIDA (FIREBASE + LOCAL) ---
+    // --- GESTIÓN DE DATOS HÍBRIDA ---
     async function saveData() {
-        // Guardar en local inmediatamente (para que funcione rápido)
         saveLocalData();
-        
-        // Intentar guardar en Firebase
         if (navigator.onLine) {
             try {
                 await db.collection('finanzas').doc('datos').set(dbData);
@@ -804,7 +777,6 @@
         } else {
             updateConnectionStatus(false);
         }
-        
         updateDashboard();
     }
 
@@ -818,15 +790,12 @@
             dbData = JSON.parse(saved);
             if (!dbData.lugares) dbData.lugares = ['Efectivo', 'Cuenta Ahorros', 'Nequi', 'Daviplata', 'Tarjeta Pipe', 'Tarjeta Luu'];
             if (!dbData.presupuestos) dbData.presupuestos = {};
+            if (!dbData.comprasCredito) dbData.comprasCredito = [];
             
             if (dbData.proyectos) {
                 dbData.proyectos.forEach(p => {
                     if (!p.locations) {
-                        p.locations = [{
-                            name: 'General',
-                            amount: p.current || 0,
-                            yield: 0
-                        }];
+                        p.locations = [{ name: 'General', amount: p.current || 0, yield: 0 }];
                     }
                 });
             }
@@ -838,11 +807,8 @@
         const toast = document.createElement('div');
         toast.className = `toast-msg ${tipo}`;
         toast.textContent = mensaje;
-        
         container.appendChild(toast);
-        
         setTimeout(() => toast.classList.add('show'), 10);
-        
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => container.removeChild(toast), 300);
@@ -868,21 +834,13 @@
     function setupFAB() {
         const fab = document.getElementById('fabAdd');
         fab.addEventListener('click', () => {
-            if ('vibrate' in navigator) {
-                navigator.vibrate(30);
-            }
-            
+            if ('vibrate' in navigator) navigator.vibrate(30);
             navTo('movimientos');
-            
             setTimeout(() => {
                 const form = document.getElementById('form-movimiento');
                 form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                
-                setTimeout(() => {
-                    document.getElementById('m-desc').focus();
-                }, 300);
+                setTimeout(() => { document.getElementById('m-desc').focus(); }, 300);
             }, 100);
-            
             mostrarToast('✨ ¿Qué vamos a registrar?', 'success');
         });
     }
@@ -905,12 +863,9 @@
         if(sectionId === 'dashboard') updateDashboard();
         if(sectionId === 'movimientos') renderMovimientos();
         if(sectionId === 'creditos') renderCreditos();
+        if(sectionId === 'compras-credito') renderComprasCredito();
         if(sectionId === 'proyectos') renderProyectos();
-        if(sectionId === 'config') {
-            renderCategories();
-            renderPlaces();
-            renderBudgetsConfig();
-        }
+        if(sectionId === 'config') { renderCategories(); renderPlaces(); renderBudgetsConfig(); }
     }
 
     function getTargetDate(offset) {
@@ -949,11 +904,13 @@
             const amount = parseFloat(m.amount);
             if (m.type === 'ingreso') {
                 income += amount;
-                // LOS INGRESOS NO AFECTAN LA DEUDA ENTRE LA PAREJA
-                // Solo suman al balance general, pero no generan obligación
             } else {
                 expense += amount;
                 if (m.type === 'gasto') {
+                    if (m.category && m.category !== 'Deudas' && m.category !== 'Ahorro/Proyecto') {
+                        gastosPorCategoria[m.category] = (gastosPorCategoria[m.category] || 0) + amount;
+                    }
+
                     let pipeShare = 0;
                     let luuShare = 0;
                     
@@ -968,11 +925,9 @@
                     }
 
                     if (m.payer === 'pipe') {
-                        // Pipe pagó todo. Luu le debe su parte.
                         pipeNet += luuShare; 
                         luuNet -= luuShare;
                     } else if (m.payer === 'luu') {
-                        // Luu pagó todo. Pipe le debe su parte.
                         luuNet += pipeShare;
                         pipeNet -= pipeShare;
                     }
@@ -984,6 +939,7 @@
         document.getElementById('dash-expense').textContent = `$ ${expense.toLocaleString()}`;
         document.getElementById('dash-balance').textContent = `$ ${(income - expense).toLocaleString()}`;
 
+        // Estado del mes
         let debtAmount = 0;
         let debtText = "";
         let showLiquidateForm = false;
@@ -1000,33 +956,77 @@
             debtText = `¡Cuentas claras! 😎`;
         }
 
-                let htmlSettlement = `<div class="settlement-box"><strong>${debtText}</strong>`;
+        let htmlSettlement = `<div class="settlement-box"><strong>${debtText}</strong>`;
         if(showLiquidateForm) {
             const payer = pipeNet > 0 ? 'luu' : 'pipe';
             const receiver = pipeNet > 0 ? 'pipe' : 'luu';
-            
-            // Formulario vertical: Input arriba, Botón abajo, texto de ayuda al final
             htmlSettlement += `
                 <div class="settlement-form">
-                    <input type="number" id="settlement-amount" value="${Math.round(debtAmount)}" placeholder="Monto a abonar" inputmode="numeric" pattern="[0-9]*">
-                    <button onclick="liquidarDeuda('${payer}', '${receiver}')" class="btn-liquidate" style="margin:0; width:100%;">💸 Abonar</button>
-                    <small style="color:var(--text-light); display:block; text-align:center; margin-top:2px;">Deuda total: $${Math.round(debtAmount).toLocaleString()} (Edita el monto si es un abono parcial)</small>
+                    <input type="number" id="settlement-amount" value="${Math.round(debtAmount)}" placeholder="Monto" inputmode="numeric" pattern="[0-9]*">
+                    <button onclick="liquidarDeuda('${payer}', '${receiver}')" class="btn-liquidate" style="margin:0;">💸 Abonar</button>
                 </div>
+                <small style="color:var(--text-light); margin-top:8px; display:block; text-align:center;">Puedes modificar el monto para hacer un abono parcial</small>
             `;
         }
         htmlSettlement += `</div>`;
         document.getElementById('dash-settlement-container').innerHTML = htmlSettlement;
 
-        const totalProj = dbData.proyectos.reduce((sum, p) => {
-            if (p.locations) {
-                return sum + p.locations.reduce((s, loc) => s + parseFloat(loc.amount), 0);
+        // DEUDA HISTÓRICA ACUMULADA
+        let histPipeNet = 0;
+        let histLuuNet = 0;
+        
+        dbData.movimientos.forEach(m => {
+            const amount = parseFloat(m.amount);
+            if (m.type === 'gasto') {
+                let pipeShare = 0;
+                let luuShare = 0;
+                
+                if (m.splitType === '5050') { pipeShare = amount/2; luuShare = amount/2; }
+                else if (m.splitType === '1000') { pipeShare = amount; luuShare = 0; }
+                else if (m.splitType === '0100') { pipeShare = 0; luuShare = amount; }
+                else { 
+                    const pPct = parseFloat(m.splitP) || 50;
+                    const lPct = parseFloat(m.splitL) || 50;
+                    pipeShare = (pPct/100)*amount;
+                    luuShare = (lPct/100)*amount;
+                }
+
+                if (m.payer === 'pipe') {
+                    histPipeNet += luuShare; 
+                    histLuuNet -= luuShare;
+                } else if (m.payer === 'luu') {
+                    histLuuNet += pipeShare;
+                    histPipeNet -= pipeShare;
+                }
             }
+        });
+
+        let histDebtText = "";
+        if (histPipeNet > 1) {
+            histDebtText = `Luu le debe a Pipe: <strong>$${Math.round(histPipeNet).toLocaleString()}</strong> (acumulado)`;
+        } else if (histPipeNet < -1) {
+            histDebtText = `Pipe le debe a Luu: <strong>$${Math.round(Math.abs(histPipeNet)).toLocaleString()}</strong> (acumulado)`;
+        } else {
+            histDebtText = `¡Sin deudas acumuladas! `;
+        }
+
+        document.getElementById('dash-debt-history-container').innerHTML = `
+            <div class="debt-history-box">
+                <div class="debt-history-title">Desde el inicio</div>
+                <div style="font-size:1rem; color:var(--primary-dark);">${histDebtText}</div>
+            </div>
+        `;
+
+        // Total Proyectos
+        const totalProj = dbData.proyectos.reduce((sum, p) => {
+            if (p.locations) return sum + p.locations.reduce((s, loc) => s + parseFloat(loc.amount), 0);
             return sum + parseFloat(p.current || 0);
         }, 0);
         document.getElementById('dash-projects-total').textContent = `$ ${totalProj.toLocaleString()}`;
 
         renderDashboardBudgets(gastosPorCategoria);
 
+        // Resumen Créditos
         let creditsHtml = '';
         dbData.creditos.forEach(c => {
             const startDate = new Date(c.startDate);
@@ -1076,7 +1076,7 @@
 
             let statusText = '';
             if (pctReal >= 100) statusText = `<span style="color:var(--danger); font-weight:bold;">⚠️ Excedido</span>`;
-            else if (pctReal >= 80) statusText = `<span style="color:var(--warning); font-weight:bold;">⚡ Cerca del límite</span>`;
+            else if (pctReal >= 80) statusText = `<span style="color:var(--warning); font-weight:bold;"> Cerca del límite</span>`;
             else statusText = `<span style="color:var(--success);">✓ En rango</span>`;
 
             html += `
@@ -1111,9 +1111,6 @@
         const confirmed = confirm(`¿Confirmar que ${payer.toUpperCase()} abona $${amount.toLocaleString()} a ${receiver.toUpperCase()}?`);
         if(!confirmed) return;
 
-        // Lógica de Splitwise para abonos de deuda:
-        // Si Pipe paga (payer='pipe'), el gasto se asigna 100% a Luu (0100) para reducir la deuda de Luu.
-        // Si Luu paga (payer='luu'), el gasto se asigna 100% a Pipe (1000) para reducir la deuda de Pipe.
         const isPipePaying = payer === 'pipe';
 
         const mov = {
@@ -1133,7 +1130,7 @@
         
         dbData.movimientos.unshift(mov);
         saveData();
-        updateDashboard(); // Esto recalculará el saldo y actualizará el input con la nueva deuda restante
+        updateDashboard();
         
         if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
         mostrarToast('✅ Abono registrado correctamente', 'success');
@@ -1228,14 +1225,31 @@
 
     function deleteMov(id) {
         if(confirm('¿Borrar movimiento?')) {
+            const mov = dbData.movimientos.find(m => m.id === id);
+            
+            // Si es un pago de crédito, actualizar el crédito
+            if (mov && mov.desc && mov.desc.toLowerCase().includes('pago cuota:')) {
+                const creditoName = mov.desc.replace('Pago cuota: ', '').trim();
+                const credito = dbData.creditos.find(c => c.name.toLowerCase() === creditoName.toLowerCase());
+                if (credito) {
+                    credito.paidMonths = Math.max(0, credito.paidMonths - 1);
+                    // Recalcular saldo (aproximado)
+                    const interest = credito.currentBalance * credito.rate;
+                    credito.currentBalance += (parseFloat(mov.amount) - interest);
+                    mostrarToast('⚠️ Crédito actualizado (pago revertido)', 'warning');
+                }
+            }
+            
             dbData.movimientos = dbData.movimientos.filter(m => m.id !== id);
             saveData();
             renderMovimientos();
             updateDashboard();
+            renderCreditos();
             mostrarToast('🗑️ Movimiento eliminado', 'warning');
         }
     }
 
+    // --- CRÉDITOS ---
     document.getElementById('form-credito').addEventListener('submit', (e) => {
         e.preventDefault();
         const total = parseFloat(document.getElementById('c-total').value);
@@ -1281,7 +1295,8 @@
                         splitType: '1000',
                         splitP: owner==='pipe'?100:0,
                         splitL: owner==='luu'?100:0,
-                        lugar: 'Efectivo'
+                        lugar: 'Efectivo',
+                        creditoId: Date.now()
                     });
                 }
             }
@@ -1298,7 +1313,8 @@
             startDate: document.getElementById('c-start').value,
             day: day,
             owner: owner,
-            paidMonths: paidMonths
+            paidMonths: paidMonths,
+            completed: false
         };
 
         dbData.creditos.push(credito);
@@ -1316,14 +1332,24 @@
         
         dbData.creditos.forEach(c => {
             const pct = ((c.originalAmount - c.currentBalance) / c.originalAmount) * 100;
+            const isCompleted = c.currentBalance <= 0 || c.paidMonths >= c.term;
+            
+            if (isCompleted && !c.completed) {
+                c.completed = true;
+                saveData();
+            }
+            
             const div = document.createElement('div');
-            div.className = 'card';
+            div.className = 'card' + (isCompleted ? ' credit-card-completed' : '');
             div.innerHTML = `
-                <div style="display:flex; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h3>${c.name} <small style="font-size:0.8rem; color:var(--text-light)">(${c.owner})</small></h3>
-                    <button class="delete-btn" onclick="deleteCredito(${c.id})"><i class="fas fa-trash"></i></button>
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        ${isCompleted ? '<span class="badge bg-completed">✅ COMPLETADO</span>' : ''}
+                        <button class="delete-btn" onclick="deleteCredito(${c.id})"><i class="fas fa-trash"></i></button>
+                    </div>
                 </div>
-                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${Math.min(100,pct)}%; ${isCompleted ? 'background:var(--success);' : ''}"></div></div>
                 <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:10px;">
                     <span>Pendiente: <strong>$${Math.round(c.currentBalance).toLocaleString()}</strong></span>
                     <span>Cuota: $${Math.round(c.cuota).toLocaleString()}</span>
@@ -1344,11 +1370,14 @@
         nextPayDate.setMonth(nextPayDate.getMonth() + c.paidMonths + 1);
         nextPayDate.setDate(c.day);
 
+        const isCompleted = c.currentBalance <= 0 || c.paidMonths >= c.term;
+
         document.getElementById('modal-c-body').innerHTML = `
             <p><strong>Saldo Pendiente:</strong> $${Math.round(c.currentBalance).toLocaleString()}</p>
             <p><strong>Cuota Fija:</strong> $${Math.round(c.cuota).toLocaleString()}</p>
             <p><strong>Meses Restantes:</strong> ${remainingMonths}</p>
             <p><strong>Próximo Pago:</strong> ${nextPayDate.toLocaleDateString()}</p>
+            ${isCompleted ? '<p style="color:var(--success); font-weight:bold; margin-top:10px;">🎉 ¡Crédito completado!</p>' : ''}
             <p style="font-size:0.8rem; color:var(--text-light); margin-top:10px;">
                 * Al pagar, se registrará un gasto a nombre de <strong>${c.owner}</strong>.
             </p>
@@ -1374,7 +1403,6 @@
             payAmountInput.value = Math.round(c.cuota);
         }
         
-        // Llenar selector de lugares
         const placeSelect = document.getElementById('pay-place');
         placeSelect.innerHTML = '';
         dbData.lugares.forEach(lugar => {
@@ -1433,7 +1461,8 @@
             splitType: '1000',
             splitP: c.owner === 'pipe' ? 100 : 0,
             splitL: c.owner === 'luu' ? 100 : 0,
-            lugar: lugar || 'Efectivo'
+            lugar: lugar || 'Efectivo',
+            creditoId: c.id
         });
 
         saveData();
@@ -1442,14 +1471,49 @@
         
         if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
         mostrarToast(isAbono ? '✅ Abono registrado' : '✅ Pago registrado', 'success');
+        
+        // Verificar si se completó el crédito
+        const isCompleted = c.currentBalance <= 0 || c.paidMonths >= c.term;
+        if (isCompleted && !c.completed) {
+            c.completed = true;
+            saveData();
+            renderCreditos();
+            mostrarCongratulaciones(c.name);
+        }
+    }
+
+    function mostrarCongratulaciones(creditoName) {
+        const overlay = document.createElement('div');
+        overlay.className = 'congrats-overlay';
+        overlay.innerHTML = `
+            <div class="congrats-modal">
+                <div class="congrats-icon">🎉</div>
+                <div class="congrats-title">¡Felicidades!</div>
+                <div class="congrats-text">Has terminado de pagar <strong>${creditoName}</strong>. ¡Un paso más hacia la libertad financiera! 💪</div>
+                <button class="congrats-btn" onclick="this.parentElement.parentElement.remove()">¡Genial!</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        
+        if ('vibrate' in navigator) navigator.vibrate([100, 50, 100, 50, 200]);
     }
 
     function deleteCredito(id) {
-        if(confirm('¿Eliminar crédito?')) {
+        if(confirm('¿Eliminar crédito? Se borrarán también todos los movimientos de pago asociados.')) {
+            const credito = dbData.creditos.find(c => c.id === id);
+            if (credito) {
+                // Borrar movimientos asociados
+                dbData.movimientos = dbData.movimientos.filter(m => 
+                    !(m.desc && m.desc.toLowerCase().includes(credito.name.toLowerCase()) && 
+                      (m.desc.toLowerCase().includes('pago cuota') || m.desc.toLowerCase().includes('abono a capital')))
+                );
+            }
             dbData.creditos = dbData.creditos.filter(c => c.id !== id);
             saveData();
             renderCreditos();
-            mostrarToast('🗑️ Crédito eliminado', 'warning');
+            renderMovimientos();
+            updateDashboard();
+            mostrarToast('️ Crédito y sus pagos eliminados', 'warning');
         }
     }
 
@@ -1460,6 +1524,172 @@
         }
     }
 
+    // --- COMPRAS A CRÉDITO ---
+    document.getElementById('form-compra-credito').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const total = parseFloat(document.getElementById('cc-total').value);
+        const downpayment = parseFloat(document.getElementById('cc-downpayment').value) || 0;
+        const installments = parseInt(document.getElementById('cc-installments').value);
+        const installmentValue = parseFloat(document.getElementById('cc-installment-value').value);
+        const paid = parseInt(document.getElementById('cc-paid').value) || 0;
+        
+        const owner = document.getElementById('cc-owner').value;
+        const startDate = new Date(document.getElementById('cc-start').value);
+        const day = parseInt(document.getElementById('cc-day').value);
+
+        const compra = {
+            id: Date.now(),
+            item: document.getElementById('cc-item').value,
+            creditor: document.getElementById('cc-creditor').value,
+            total: total,
+            downpayment: downpayment,
+            installments: installments,
+            installmentValue: installmentValue,
+            paid: paid,
+            startDate: document.getElementById('cc-start').value,
+            day: day,
+            owner: owner,
+            completed: false
+        };
+
+        // Generar movimientos históricos si hay cuotas pagadas
+        if(paid > 0) {
+            if(confirm(`Se generarán ${paid} movimientos de pago históricos. ¿Continuar?`)) {
+                for(let i=1; i<=paid; i++) {
+                    const payDate = new Date(startDate);
+                    payDate.setMonth(startDate.getMonth() + i);
+                    payDate.setDate(day); 
+                    
+                    dbData.movimientos.push({
+                        id: Date.now() + i,
+                        date: payDate.toISOString().split('T')[0],
+                        desc: `Cuota ${i}/${installments}: ${compra.item} (${compra.creditor})`,
+                        amount: installmentValue,
+                        category: 'Deudas',
+                        type: 'gasto',
+                        payer: owner,
+                        splitType: '1000',
+                        splitP: owner==='pipe'?100:0,
+                        splitL: owner==='luu'?100:0,
+                        lugar: 'Efectivo',
+                        compraCreditoId: compra.id
+                    });
+                }
+            }
+        }
+
+        dbData.comprasCredito.push(compra);
+        saveData();
+        renderComprasCredito();
+        e.target.reset();
+        document.getElementById('cc-start').valueAsDate = new Date();
+        
+        if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
+        mostrarToast('✅ Compra a crédito registrada', 'success');
+    });
+
+    function renderComprasCredito() {
+        const list = document.getElementById('compras-credito-list');
+        list.innerHTML = '';
+        
+        if (dbData.comprasCredito.length === 0) {
+            list.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:20px;">No hay compras a crédito registradas.</p>';
+            return;
+        }
+        
+        dbData.comprasCredito.forEach(cc => {
+            const remaining = cc.installments - cc.paid;
+            const pct = (cc.paid / cc.installments) * 100;
+            const isCompleted = cc.paid >= cc.installments;
+            
+            if (isCompleted && !cc.completed) {
+                cc.completed = true;
+                saveData();
+            }
+            
+            const div = document.createElement('div');
+            div.className = 'card' + (isCompleted ? ' credit-card-completed' : '');
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>${cc.item} <small style="font-size:0.8rem; color:var(--text-light)">(${cc.owner})</small></h3>
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        ${isCompleted ? '<span class="badge bg-completed">✅ PAGADO</span>' : ''}
+                        <button class="delete-btn" onclick="deleteCompraCredito(${cc.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:10px;">A: ${cc.creditor}</p>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${Math.min(100,pct)}%; ${isCompleted ? 'background:var(--success);' : ''}"></div></div>
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:10px;">
+                    <span>Cuotas: <strong>${cc.paid}/${cc.installments}</strong></span>
+                    <span>Restantes: ${remaining}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-light);">
+                    <span>Total: $${cc.total.toLocaleString()}</span>
+                    <span>Cuota: $${cc.installmentValue.toLocaleString()}</span>
+                </div>
+                ${!isCompleted ? `<button onclick="pagarCuotaCompra(${cc.id})" class="btn btn-sm" style="margin-top:10px;">💰 Pagar Cuota</button>` : ''}
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function pagarCuotaCompra(id) {
+        const cc = dbData.comprasCredito.find(x => x.id === id);
+        if (!cc) return;
+        
+        const confirmed = confirm(`¿Pagar cuota de $${cc.installmentValue.toLocaleString()} de "${cc.item}"?`);
+        if (!confirmed) return;
+        
+        cc.paid++;
+        
+        dbData.movimientos.unshift({
+            id: Date.now(),
+            date: new Date().toISOString().split('T')[0],
+            desc: `Cuota ${cc.paid}/${cc.installments}: ${cc.item} (${cc.creditor})`,
+            amount: cc.installmentValue,
+            category: 'Deudas',
+            type: 'gasto',
+            payer: cc.owner,
+            splitType: '1000',
+            splitP: cc.owner === 'pipe' ? 100 : 0,
+            splitL: cc.owner === 'luu' ? 100 : 0,
+            lugar: 'Efectivo',
+            compraCreditoId: cc.id
+        });
+        
+        saveData();
+        renderComprasCredito();
+        renderMovimientos();
+        
+        if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
+        mostrarToast('✅ Cuota pagada', 'success');
+        
+        if (cc.paid >= cc.installments && !cc.completed) {
+            cc.completed = true;
+            saveData();
+            renderComprasCredito();
+            mostrarCongratulaciones(cc.item);
+        }
+    }
+
+    function deleteCompraCredito(id) {
+        if(confirm('¿Eliminar esta compra a crédito? Se borrarán también los pagos asociados.')) {
+            const cc = dbData.comprasCredito.find(x => x.id === id);
+            if (cc) {
+                dbData.movimientos = dbData.movimientos.filter(m => 
+                    !(m.desc && m.desc.includes(cc.item) && m.desc.includes(cc.creditor))
+                );
+            }
+            dbData.comprasCredito = dbData.comprasCredito.filter(x => x.id !== id);
+            saveData();
+            renderComprasCredito();
+            renderMovimientos();
+            updateDashboard();
+            mostrarToast('🗑️ Compra a crédito eliminada', 'warning');
+        }
+    }
+
+    // --- PROYECTOS ---
     document.getElementById('form-proyecto').addEventListener('submit', (e) => {
         e.preventDefault();
         const proj = {
@@ -1472,12 +1702,7 @@
         };
         
         if(proj.current > 0) {
-            proj.locations.push({
-                name: 'General',
-                amount: proj.current,
-                yield: 0
-            });
-            
+            proj.locations.push({ name: 'General', amount: proj.current, yield: 0 });
             dbData.movimientos.unshift({
                 id: Date.now(),
                 date: new Date().toISOString().split('T')[0],
@@ -1537,10 +1762,8 @@
         document.getElementById('modal-p-progress').style.width = pct + '%';
         document.getElementById('modal-p-stats').textContent = `${pct.toFixed(1)}% completado - $${totalCurrent.toLocaleString()} de $${p.goal.toLocaleString()}`;
         
-        // Renderizar ubicaciones
         renderProjectLocations(p);
         
-        // Llenar selector de ubicaciones para ahorro rápido
         const select = document.getElementById('modal-p-location-select');
         select.innerHTML = '';
         if (p.locations && p.locations.length > 0) {
@@ -1603,11 +1826,7 @@
         const p = dbData.proyectos.find(x => x.id === currentProjectId);
         if (!p.locations) p.locations = [];
         
-        p.locations.push({
-            name: name,
-            amount: amount,
-            yield: yieldPct
-        });
+        p.locations.push({ name: name, amount: amount, yield: yieldPct });
         
         saveData();
         renderProjectLocations(p);
@@ -1640,11 +1859,7 @@
             p.locations[locationIdx].amount += amount;
         } else {
             if (!p.locations) p.locations = [];
-            p.locations.push({
-                name: 'General',
-                amount: amount,
-                yield: 0
-            });
+            p.locations.push({ name: 'General', amount: amount, yield: 0 });
         }
 
         dbData.movimientos.unshift({
@@ -1674,7 +1889,7 @@
             saveData();
             renderProyectos();
             closeModal('modal-proyecto');
-            mostrarToast('🗑️ Proyecto eliminado', 'warning');
+            mostrarToast('️ Proyecto eliminado', 'warning');
         }
     }
     
@@ -1683,10 +1898,11 @@
             dbData.proyectos = dbData.proyectos.filter(p => p.id !== id);
             saveData();
             renderProyectos();
-            mostrarToast('🗑️ Proyecto eliminado', 'warning');
+            mostrarToast('️ Proyecto eliminado', 'warning');
         }
     }
 
+    // --- CONFIG ---
     function renderCategories() {
         const select = document.getElementById('m-category');
         const list = document.getElementById('config-categories-list');
@@ -1831,14 +2047,26 @@
             delete dbData.presupuestos[cat];
             saveData();
             renderBudgetsConfig();
-            mostrarToast('🗑️ Presupuesto eliminado', 'warning');
+            mostrarToast('️ Presupuesto eliminado', 'warning');
         }
     }
 
     function resetAll() {
-        if(confirm('¿ESTÁS SEGURO? Se borrará TODO.')) {
-            localStorage.removeItem('pipeLuuData_v2');
-            location.reload();
+        if(confirm('⚠️ ¿ESTÁS SEGURO? Se borrará TODA la información de la app. Esta acción no se puede deshacer.')) {
+            if(confirm(' ÚLTIMA OPORTUNIDAD: ¿Realmente quieres borrar TODO?')) {
+                localStorage.removeItem('pipeLuuData_v2');
+                dbData = {
+                    movimientos: [],
+                    creditos: [],
+                    comprasCredito: [],
+                    proyectos: [],
+                    categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Deudas', 'Otros'],
+                    lugares: ['Efectivo', 'Cuenta Ahorros', 'Nequi', 'Daviplata', 'Tarjeta Pipe', 'Tarjeta Luu'],
+                    presupuestos: {}
+                };
+                saveData();
+                location.reload();
+            }
         }
     }
 
@@ -1897,14 +2125,6 @@
 
     window.onclick = (e) => {
         if(e.target.classList.contains('modal')) e.target.style.display = 'none';
-    }
-        // --- REGISTRO DE PWA (SERVICE WORKER) ---
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('✅ Service Worker registrado'))
-                .catch(err => console.log('❌ Error SW:', err));
-        });
     }
 </script>
 </body>
