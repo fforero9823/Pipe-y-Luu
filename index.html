@@ -161,7 +161,7 @@
                         </div>
                     </div>
                 </div>
-                                <div class="form-group" style="display:flex; align-items:center; gap:10px; background:#f0f9ff; padding:12px; border-radius:8px; border:1px solid #e0f2fe;">
+                <div class="form-group" style="display:flex; align-items:center; gap:10px; background:#f0f9ff; padding:12px; border-radius:8px; border:1px solid #e0f2fe;">
                     <input type="checkbox" id="m-recurrente" style="width:20px; height:20px; cursor:pointer;">
                     <label for="m-recurrente" style="margin:0; cursor:pointer; font-weight:600; color:var(--primary-dark);">🔄 Repetir este movimiento cada mes</label>
                 </div>
@@ -749,32 +749,56 @@
 
     function setSplit(m, b) { splitMode=m; document.querySelectorAll('.split-btn').forEach(x=>x.classList.remove('selected')); b.classList.add('selected'); document.getElementById('custom-split').style.display = m==='custom'?'flex':'none'; }
 
-        document.getElementById('form-movimiento').addEventListener('submit', e => {
+            document.getElementById('form-movimiento').addEventListener('submit', e => {
         e.preventDefault();
+        
         const t = document.getElementById('m-type').value;
-        const esRecurrente = document.getElementById('m-recurrente').checked;
+        
+        // Verificar si el checkbox existe antes de leerlo
+        const checkboxRecurrente = document.getElementById('m-recurrente');
+        const esRecurrente = checkboxRecurrente ? checkboxRecurrente.checked : false;
         
         const mov = {
-            id: Date.now(), date: document.getElementById('m-date').value, desc: document.getElementById('m-desc').value, amount: parseFloat(document.getElementById('m-amount').value),
-            category: t === 'transferencia' ? 'Transferencia' : document.getElementById('m-category').value, type: t,
-            payer: t==='gasto'?document.getElementById('m-payer').value:'pipe',
-            splitType: t==='gasto'?splitMode:null, splitP: t==='gasto'?document.getElementById('split-p').value:null, splitL: t==='gasto'?document.getElementById('split-l').value:null,
-            lugar: document.getElementById('m-place').value||'Efectivo',
+            id: Date.now(), 
+            date: document.getElementById('m-date').value, 
+            desc: document.getElementById('m-desc').value, 
+            amount: parseFloat(document.getElementById('m-amount').value),
+            category: t === 'transferencia' ? 'Transferencia' : document.getElementById('m-category').value, 
+            type: t,
+            payer: t === 'gasto' ? document.getElementById('m-payer').value : 'pipe',
+            splitType: t === 'gasto' ? splitMode : null, 
+            splitP: t === 'gasto' ? document.getElementById('split-p').value : null, 
+            splitL: t === 'gasto' ? document.getElementById('split-l').value : null,
+            lugar: document.getElementById('m-place').value || 'Efectivo',
             lugarDestino: t === 'transferencia' ? (document.getElementById('m-place-dest').value || 'Efectivo') : (document.getElementById('m-place').value || 'Efectivo')
         };
 
-        // --- NUEVA LÓGICA DE RECURRENCIA ---
-        if (esRecurrente) {
-            const diaDelMes = parseInt(document.getElementById('m-date').value.split('-')[2]);
-            dbData.recurrentes.push({ ...mov, id: Date.now(), dayOfMonth: diaDelMes });
-            mostrarToast('🔄 Movimiento recurrente configurado', 'success');
-        }
-        // ----------------------------------
-
+        // Guardar el movimiento SIEMPRE (recurrente o no)
         dbData.movimientos.unshift(mov);
-        saveData(); renderMovimientos(); e.target.reset(); document.getElementById('m-date').valueAsDate = new Date(); toggleSplitOptions();
-        if('vibrate' in navigator) navigator.vibrate([50,30,50]); 
-        if(!esRecurrente) mostrarToast('✅ Guardado', 'success'); // Evitamos doble toast
+
+        // Si es recurrente, añadirlo a la lista de recurrentes
+        if (esRecurrente) {
+            if (!dbData.recurrentes) dbData.recurrentes = [];
+            
+            const diaDelMes = parseInt(document.getElementById('m-date').value.split('-')[2]);
+            dbData.recurrentes.push({ 
+                ...mov, 
+                id: Date.now() + Math.random(), 
+                dayOfMonth: diaDelMes 
+            });
+            
+            mostrarToast('🔄 Movimiento recurrente configurado', 'success');
+        } else {
+            mostrarToast('✅ Movimiento guardado', 'success');
+        }
+
+        saveData(); 
+        renderMovimientos(); 
+        e.target.reset(); 
+        document.getElementById('m-date').valueAsDate = new Date(); 
+        toggleSplitOptions();
+        
+        if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
     });
     function renderMovimientos() {
         const l = document.getElementById('movimientos-list'); l.innerHTML = '';
