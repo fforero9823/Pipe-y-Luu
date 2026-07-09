@@ -276,8 +276,34 @@
 <div id="modal-proyecto" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-proyecto')">&times;</span><h2 id="modal-p-title">Proyecto</h2><div class="progress-bar-bg"><div class="progress-bar-fill" id="modal-p-progress"></div></div><p style="text-align:center; margin:10px 0;" id="modal-p-stats"></p><div id="modal-p-locations-container"></div><button onclick="openAddLocationModal()" class="btn btn-secondary" style="margin-top:15px;">➕ Añadir Ubicación</button><hr style="margin:20px 0;"><h3>Añadir Ahorro Rápido</h3><div class="form-group"><label>Ubicación</label><select id="modal-p-location-select"></select></div><div class="form-group"><label>Monto ($)</label><input type="number" id="modal-p-amount" inputmode="numeric"></div><button onclick="saveProjectFund()" class="btn">Registrar Ahorro</button><button onclick="deleteCurrentProject()" class="btn btn-danger" style="margin-top:20px;">Eliminar Proyecto</button></div></div>
 <div id="modal-add-location" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-add-location')">&times;</span><h2>Nueva Ubicación</h2><div class="form-group"><label>Nombre</label><input type="text" id="loc-name" required></div><div class="form-group"><label>Monto ($)</label><input type="number" id="loc-amount" required inputmode="numeric"></div><div class="form-group"><label>Rendimiento Anual (%)</label><input type="number" id="loc-yield" step="0.01" value="0" inputmode="decimal"></div><button onclick="saveLocation()" class="btn">Guardar</button></div></div>
 <div id="modal-credito" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-credito')">&times;</span><h2 id="modal-c-title">Crédito</h2><div id="modal-c-body"></div><hr style="margin:15px 0;"><h3>Gestionar Pagos</h3><button onclick="openPayModal(false)" class="btn btn-secondary" style="margin-bottom:10px;">💰 Pagar Cuota</button><button onclick="openPayModal(true)" class="btn" style="background-color: var(--success);">📉 Abono a Capital</button><button onclick="deleteCreditoFromModal()" class="btn btn-danger" style="margin-top:20px;">Eliminar Crédito</button></div></div>
-<div id="modal-pay-credit" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-pay-credit')">&times;</span><h2 id="modal-pay-title">Pagar Cuota</h2><div class="form-group"><label>Monto ($)</label><input type="number" id="pay-amount" inputmode="numeric"></div><div class="form-group"><label>¿De dónde sale?</label><select id="pay-place"></select></div><button onclick="confirmPayCredit()" class="btn">Confirmar</button></div></div>
-<div id="modal-budget" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-budget')">&times;</span><h2>Presupuesto</h2><div class="form-group"><label>Categoría</label><select id="budget-category"></select></div><div class="form-group"><label>Límite Mensual ($)</label><input type="number" id="budget-amount" inputmode="numeric"></div><button onclick="saveBudget()" class="btn">Guardar</button></div></div>
+<div id="modal-pay-credit" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('modal-pay-credit')">&times;</span>
+        <h2 id="modal-pay-title">Pagar Cuota</h2>
+        
+        <div class="form-group">
+            <label>Monto a Pagar ($)</label>
+            <input type="number" id="pay-amount" inputmode="numeric">
+        </div>
+        
+        <div class="form-group">
+            <label>¿Quién paga realmente?</label>
+            <select id="pay-payer">
+                <option value="pipe">Pipe</option>
+                <option value="luu">Luu</option>
+            </select>
+            <small style="color:var(--text-light); display:block; margin-top:5px;">Si paga alguien distinto al dueño, se generará una deuda interna.</small>
+        </div>
+        
+        <div class="form-group">
+            <label>¿De qué cuenta sale el dinero?</label>
+            <select id="pay-place"></select>
+        </div>
+        
+        <button onclick="confirmPayCredit()" class="btn">Confirmar Pago</button>
+    </div>
+</div>
+    <div id="modal-budget" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-budget')">&times;</span><h2>Presupuesto</h2><div class="form-group"><label>Categoría</label><select id="budget-category"></select></div><div class="form-group"><label>Límite Mensual ($)</label><input type="number" id="budget-amount" inputmode="numeric"></div><button onclick="saveBudget()" class="btn">Guardar</button></div></div>
 <!-- Modal Editar Movimiento -->
 <div id="modal-edit-movimiento" class="modal">
     <div class="modal-content">
@@ -979,28 +1005,113 @@
         document.getElementById('modal-credito').style.display = 'flex';
     }
 
-    function openPayModal(isAbono) {
-        isCapitalAbonoMode = isAbono; closeModal('modal-credito');
-        const c = dbData.creditos.find(x=>x.id===currentCreditId); currentPayCreditId = currentCreditId;
-        document.getElementById('modal-pay-title').textContent = isAbono?'Abono Capital':'Pagar Cuota';
-        const pa = document.getElementById('pay-amount'); pa.value = isAbono?'':Math.round(c.cuota);
-        const ps = document.getElementById('pay-place'); ps.innerHTML = ''; dbData.lugares.forEach(l => { const o=document.createElement('option'); o.value=l.name; o.textContent=l.name; ps.appendChild(o); });
+        function openPayModal(isAbono) {
+        isCapitalAbonoMode = isAbono; 
+        closeModal('modal-credito');
+        
+        const c = dbData.creditos.find(x => x.id === currentCreditId); 
+        currentPayCreditId = currentCreditId;
+        
+        document.getElementById('modal-pay-title').textContent = isAbono ? 'Abono a Capital' : 'Pagar Cuota';
+        
+        // Monto por defecto
+        const pa = document.getElementById('pay-amount'); 
+        pa.value = isAbono ? '' : Math.round(c.cuota);
+        
+        // Quién paga: por defecto el dueño del crédito
+        const payerSelect = document.getElementById('pay-payer');
+        payerSelect.innerHTML = '<option value="pipe">Pipe</option><option value="luu">Luu</option>';
+        payerSelect.value = c.owner === 'conjunto' ? 'pipe' : c.owner;
+        
+        // Llenar cuentas
+        const ps = document.getElementById('pay-place'); 
+        ps.innerHTML = ''; 
+        dbData.lugares.forEach(l => { 
+            const ownerTag = l.owner === 'pipe' ? ' (Pipe)' : l.owner === 'luu' ? ' (Luu)' : ' (Común)';
+            const o = document.createElement('option'); 
+            o.value = l.name; 
+            o.textContent = l.name + ownerTag; 
+            ps.appendChild(o); 
+        });
+        
         document.getElementById('modal-pay-credit').style.display = 'flex';
     }
 
-    function confirmPayCredit() {
-        const v = parseFloat(document.getElementById('pay-amount').value), l = document.getElementById('pay-place').value;
-        if(isNaN(v)||v<=0) return mostrarToast('❌ Inválido', 'error');
-        const c = dbData.creditos.find(x=>x.id===currentPayCreditId); closeModal('modal-pay-credit'); procesarPagoCredito(c, v, isCapitalAbonoMode, l);
+        function confirmPayCredit() {
+        const v = parseFloat(document.getElementById('pay-amount').value);
+        const payerReal = document.getElementById('pay-payer').value; // Quién paga realmente
+        const lugar = document.getElementById('pay-place').value;
+        
+        if(isNaN(v) || v <= 0) return mostrarToast('❌ Monto inválido', 'error');
+        
+        const c = dbData.creditos.find(x => x.id === currentPayCreditId);
+        closeModal('modal-pay-credit');
+        procesarPagoCredito(c, v, isCapitalAbonoMode, lugar, payerReal);
     }
 
-    function procesarPagoCredito(c, v, isAbono, lugar) {
-        if(isAbono) { c.currentBalance -= v; } else { const i = c.currentBalance*c.rate, p = v-i; if(p>0) c.currentBalance-=p; c.paidMonths++; }
-        if(c.currentBalance<0) c.currentBalance=0;
-        dbData.movimientos.unshift({ id: Date.now(), date: new Date().toISOString().split('T')[0], desc: `${isAbono?'Abono':'Pago cuota'}: ${c.name}`, amount: v, category: 'Deudas', type: 'gasto', payer: c.owner, splitType: '1000', splitP: c.owner==='pipe'?100:0, splitL: c.owner==='luu'?100:0, lugar: lugar||'Efectivo', creditoId: c.id });
-        saveData(); renderCreditos(); renderMovimientos();
-        if('vibrate' in navigator) navigator.vibrate([50,30,50]); mostrarToast(isAbono?'✅ Abono':'✅ Pago', 'success');
-        if((c.currentBalance<=0 || c.paidMonths>=c.term) && !c.completed) { c.completed=true; saveData(); renderCreditos(); mostrarCongratulaciones(c.name); }
+    function procesarPagoCredito(c, v, isAbono, lugar, payerReal) {
+        // Actualizar saldo del crédito
+        if(isAbono) { 
+            c.currentBalance -= v; 
+        } else { 
+            const i = c.currentBalance * c.rate; 
+            const principal = v - i; 
+            if(principal > 0) c.currentBalance -= principal; 
+            c.paidMonths++; 
+        }
+        if(c.currentBalance < 0) c.currentBalance = 0;
+        
+        // Determinar split para generar deuda interna si es necesario
+        // Si quien paga es distinto al dueño, se genera deuda
+        let splitType = '1000';
+        let splitP = 100, splitL = 0;
+        
+        if (c.owner === 'pipe' && payerReal === 'luu') {
+            // Luu paga crédito de Pipe → Pipe le debe a Luu
+            splitType = '0100'; splitP = 0; splitL = 100;
+        } else if (c.owner === 'luu' && payerReal === 'pipe') {
+            // Pipe paga crédito de Luu → Luu le debe a Pipe
+            splitType = '1000'; splitP = 100; splitL = 0;
+        } else if (c.owner === 'conjunto') {
+            // Crédito conjunto: 50/50 por defecto
+            splitType = '5050'; splitP = 50; splitL = 50;
+        }
+        
+        dbData.movimientos.unshift({ 
+            id: Date.now(), 
+            date: new Date().toISOString().split('T')[0], 
+            desc: `${isAbono ? 'Abono' : 'Pago cuota'}: ${c.name}`, 
+            amount: v, 
+            category: 'Deudas', 
+            type: 'gasto', 
+            payer: payerReal, // ¡El que paga realmente!
+            splitType: splitType, 
+            splitP: splitP, 
+            splitL: splitL, 
+            lugar: lugar || 'Efectivo', 
+            creditoId: c.id 
+        });
+        
+        saveData(); 
+        renderCreditos(); 
+        renderMovimientos(); 
+        updateDashboard(); // Actualiza deudas internas
+        
+        if('vibrate' in navigator) navigator.vibrate([50,30,50]); 
+        
+        // Mensaje especial si hubo cruce de pagos
+        if (c.owner !== payerReal && c.owner !== 'conjunto') {
+            mostrarToast(`💸 ${payerReal.toUpperCase()} pagó. ${c.owner.toUpperCase()} ahora le debe.`, 'warning');
+        } else {
+            mostrarToast(isAbono ? '✅ Abono registrado' : '✅ Pago registrado', 'success');
+        }
+        
+        if((c.currentBalance <= 0 || c.paidMonths >= c.term) && !c.completed) { 
+            c.completed = true; 
+            saveData(); 
+            renderCreditos(); 
+            mostrarCongratulaciones(c.name); 
+        }
     }
 
     function deleteCredito(id) {
@@ -1042,14 +1153,103 @@
         });
     }
 
-    function pagarCuotaCompra(id) {
-        const cc = dbData.comprasCredito.find(x=>x.id===id); if(!cc) return;
-        if(!confirm(`¿Pagar cuota de $${cc.installmentValue.toLocaleString()} de "${cc.item}"?`)) return;
+        function pagarCuotaCompra(id) {
+        const cc = dbData.comprasCredito.find(x => x.id === id); 
+        if(!cc) return;
+        
+        // Abrir modal personalizado para esta compra
+        currentPayCompraId = id;
+        
+        document.getElementById('modal-pay-title').textContent = `Pagar Cuota: ${cc.item}`;
+        document.getElementById('pay-amount').value = cc.installmentValue;
+        
+        // Quién paga
+        const payerSelect = document.getElementById('pay-payer');
+        payerSelect.innerHTML = '<option value="pipe">Pipe</option><option value="luu">Luu</option>';
+        payerSelect.value = cc.owner === 'conjunto' ? 'pipe' : cc.owner;
+        
+        // Cuentas
+        const ps = document.getElementById('pay-place'); 
+        ps.innerHTML = ''; 
+        dbData.lugares.forEach(l => { 
+            const ownerTag = l.owner === 'pipe' ? ' (Pipe)' : l.owner === 'luu' ? ' (Luu)' : ' (Común)';
+            const o = document.createElement('option'); 
+            o.value = l.name; 
+            o.textContent = l.name + ownerTag; 
+            ps.appendChild(o); 
+        });
+        
+        // Cambiar el botón para que llame a otra función
+        const btn = document.querySelector('#modal-pay-credit button:last-child');
+        btn.setAttribute('onclick', 'confirmPayCompra()');
+        
+        document.getElementById('modal-pay-credit').style.display = 'flex';
+    }
+
+    // Variable global para compras
+    let currentPayCompraId = null;
+
+    function confirmPayCompra() {
+        const v = parseFloat(document.getElementById('pay-amount').value);
+        const payerReal = document.getElementById('pay-payer').value;
+        const lugar = document.getElementById('pay-place').value;
+        
+        if(isNaN(v) || v <= 0) return mostrarToast('❌ Monto inválido', 'error');
+        
+        const cc = dbData.comprasCredito.find(x => x.id === currentPayCompraId);
+        closeModal('modal-pay-credit');
+        
+        // Restaurar el botón para créditos
+        const btn = document.querySelector('#modal-pay-credit button:last-child');
+        btn.setAttribute('onclick', 'confirmPayCredit()');
+        
         cc.paid++;
-        dbData.movimientos.unshift({ id: Date.now(), date: new Date().toISOString().split('T')[0], desc: `Cuota ${cc.paid}/${cc.installments}: ${cc.item} (${cc.creditor})`, amount: cc.installmentValue, category: 'Deudas', type: 'gasto', payer: cc.owner, splitType: '1000', splitP: cc.owner==='pipe'?100:0, splitL: cc.owner==='luu'?100:0, lugar: 'Efectivo', compraCreditoId: cc.id });
-        saveData(); renderComprasCredito(); renderMovimientos();
-        if('vibrate' in navigator) navigator.vibrate([50,30,50]); mostrarToast('✅ Cuota pagada', 'success');
-        if(cc.paid>=cc.installments && !cc.completed) { cc.completed=true; saveData(); renderComprasCredito(); mostrarCongratulaciones(cc.item); }
+        
+        // Determinar split para deuda interna
+        let splitType = '1000', splitP = 100, splitL = 0;
+        
+        if (cc.owner === 'pipe' && payerReal === 'luu') {
+            splitType = '0100'; splitP = 0; splitL = 100;
+        } else if (cc.owner === 'luu' && payerReal === 'pipe') {
+            splitType = '1000'; splitP = 100; splitL = 0;
+        } else if (cc.owner === 'conjunto') {
+            splitType = '5050'; splitP = 50; splitL = 50;
+        }
+        
+        dbData.movimientos.unshift({ 
+            id: Date.now(), 
+            date: new Date().toISOString().split('T')[0], 
+            desc: `Cuota ${cc.paid}/${cc.installments}: ${cc.item} (${cc.creditor})`, 
+            amount: v, 
+            category: 'Deudas', 
+            type: 'gasto', 
+            payer: payerReal, 
+            splitType: splitType, 
+            splitP: splitP, 
+            splitL: splitL, 
+            lugar: lugar || 'Efectivo', 
+            compraCreditoId: cc.id 
+        });
+        
+        saveData(); 
+        renderComprasCredito(); 
+        renderMovimientos(); 
+        updateDashboard();
+        
+        if('vibrate' in navigator) navigator.vibrate([50,30,50]); 
+        
+        if (cc.owner !== payerReal && cc.owner !== 'conjunto') {
+            mostrarToast(`💸 ${payerReal.toUpperCase()} pagó. ${cc.owner.toUpperCase()} ahora le debe.`, 'warning');
+        } else {
+            mostrarToast('✅ Cuota pagada', 'success');
+        }
+        
+        if(cc.paid >= cc.installments && !cc.completed) { 
+            cc.completed = true; 
+            saveData(); 
+            renderComprasCredito(); 
+            mostrarCongratulaciones(cc.item); 
+        }
     }
 
     function deleteCompraCredito(id) {
