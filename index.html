@@ -264,7 +264,61 @@
 <div id="modal-credito" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-credito')">&times;</span><h2 id="modal-c-title">Crédito</h2><div id="modal-c-body"></div><hr style="margin:15px 0;"><h3>Gestionar Pagos</h3><button onclick="openPayModal(false)" class="btn btn-secondary" style="margin-bottom:10px;">💰 Pagar Cuota</button><button onclick="openPayModal(true)" class="btn" style="background-color: var(--success);">📉 Abono a Capital</button><button onclick="deleteCreditoFromModal()" class="btn btn-danger" style="margin-top:20px;">Eliminar Crédito</button></div></div>
 <div id="modal-pay-credit" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-pay-credit')">&times;</span><h2 id="modal-pay-title">Pagar Cuota</h2><div class="form-group"><label>Monto ($)</label><input type="number" id="pay-amount" inputmode="numeric"></div><div class="form-group"><label>¿De dónde sale?</label><select id="pay-place"></select></div><button onclick="confirmPayCredit()" class="btn">Confirmar</button></div></div>
 <div id="modal-budget" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-budget')">&times;</span><h2>Presupuesto</h2><div class="form-group"><label>Categoría</label><select id="budget-category"></select></div><div class="form-group"><label>Límite Mensual ($)</label><input type="number" id="budget-amount" inputmode="numeric"></div><button onclick="saveBudget()" class="btn">Guardar</button></div></div>
+<!-- Modal Editar Movimiento -->
+<div id="modal-edit-movimiento" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('modal-edit-movimiento')">&times;</span>
+        <h2>️ Editar Movimiento</h2>
+        <div class="form-group">
+            <label>Tipo</label>
+            <select id="edit-m-type" onchange="toggleEditSplitOptions()">
+                <option value="gasto">Gasto</option>
+                <option value="ingreso">Ingreso</option>
+                <option value="transferencia">Transferencia</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Descripción</label><input type="text" id="edit-m-desc" required></div>
+        <div class="form-group"><label>Monto ($)</label><input type="number" id="edit-m-amount" required inputmode="numeric"></div>
+        <div class="form-group"><label>Categoría</label><select id="edit-m-category"></select></div>
+        
+        <div class="form-group" id="edit-lugar-origen-group">
+            <label>¿De dónde sale/entra?</label>
+            <select id="edit-m-place"></select>
+        </div>
+        <div class="form-group" id="edit-lugar-destino-group" style="display:none;">
+            <label>¿A dónde va el dinero?</label>
+            <select id="edit-m-place-dest"></select>
+        </div>
 
+        <div class="form-group"><label>Fecha</label><input type="date" id="edit-m-date" required></div>
+
+        <div id="edit-split-section">
+            <div class="form-group">
+                <label>¿Quién pagó?</label>
+                <select id="edit-m-payer">
+                    <option value="pipe">Pipe</option>
+                    <option value="luu">Luu</option>
+                    <option value="gatos">Lua & Patacon </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>¿Cómo se divide?</label>
+                <div class="split-container">
+                    <div class="split-btn" onclick="setEditSplit('5050', this)" id="edit-split-5050">50/50</div>
+                    <div class="split-btn" onclick="setEditSplit('1000', this)" id="edit-split-1000">100% Pipe</div>
+                    <div class="split-btn" onclick="setEditSplit('0100', this)" id="edit-split-0100">100% Luu</div>
+                    <div class="split-btn" onclick="setEditSplit('custom', this)" id="edit-split-custom">Personalizado</div>
+                </div>
+                <div id="edit-custom-split" style="display:none; margin-top:10px; display:flex; gap:10px;">
+                    <input type="number" id="edit-split-p" placeholder="% Pipe" inputmode="numeric">
+                    <input type="number" id="edit-split-l" placeholder="% Luu" inputmode="numeric">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="saveEditMovement()" class="btn" style="background-color: var(--success);">💾 Guardar Cambios</button>
+    </div>
+</div>
 <div id="toastContainer" class="toast-container"></div>
 <button id="fabAdd" class="fab-add">+</button>
 
@@ -608,7 +662,9 @@
             let pi = x.payer==='pipe'?'<i class="fas fa-male" style="color:#3B82F6"></i>':x.payer==='luu'?'<i class="fas fa-female" style="color:#EC4899"></i>':'<i class="fas fa-paw" style="color:#F59E0B"></i>';
             const lb = x.lugar?`<span class="badge" style="background:#e0e7ff; color:#3730a3; margin-left:5px;">${x.lugar}</span>`:'';
             const lbDest = x.type==='transferencia' && x.lugarDestino?`<span class="badge" style="background:#D1FAE5; color:#065F46; margin-left:5px;">→ ${x.lugarDestino}</span>`:'';
-            l.innerHTML += `<div class="list-item"><div class="item-info"><div class="item-title">${x.desc} <span class="badge" style="background:#eee; color:#333; margin-left:5px;">${x.category}</span>${lb}${lbDest}</div><div class="item-sub">${x.date} ${pi}</div></div><div style="text-align:right"><div style="font-weight:bold; color:${col}">${sign}$${parseFloat(x.amount).toLocaleString()}</div><button class="delete-btn" onclick="deleteMov(${x.id})"><i class="fas fa-trash"></i></button></div></div>`;
+            
+            // AÑADIDO: Botón de editar (lápiz)
+            l.innerHTML += `<div class="list-item"><div class="item-info"><div class="item-title">${x.desc} <span class="badge" style="background:#eee; color:#333; margin-left:5px;">${x.category}</span>${lb}${lbDest}</div><div class="item-sub">${x.date} ${pi}</div></div><div style="text-align:right; display:flex; gap:10px; align-items:center;"><div style="font-weight:bold; color:${col}">${sign}$${parseFloat(x.amount).toLocaleString()}</div><button class="delete-btn" onclick="openEditModal(${x.id})" style="color:var(--accent-blue);"><i class="fas fa-edit"></i></button><button class="delete-btn" onclick="deleteMov(${x.id})"><i class="fas fa-trash"></i></button></div></div>`;
         });
     }
 
@@ -624,7 +680,119 @@
         saveData(); renderMovimientos(); updateDashboard(); renderCreditos();
         mostrarToast('️ Eliminado', 'warning');
     }
+        // --- LÓGICA DE EDICIÓN ---
+    let editingMovId = null;
+    let editSplitMode = '5050';
 
+    function toggleEditSplitOptions() {
+        const type = document.getElementById('edit-m-type').value;
+        const splitSection = document.getElementById('edit-split-section');
+        const lugarDestGroup = document.getElementById('edit-lugar-destino-group');
+        if (type === 'transferencia') { splitSection.style.display = 'none'; lugarDestGroup.style.display = 'block'; } 
+        else if (type === 'ingreso') { splitSection.style.display = 'none'; lugarDestGroup.style.display = 'none'; } 
+        else { splitSection.style.display = 'block'; lugarDestGroup.style.display = 'none'; }
+    }
+
+    function setEditSplit(m, btn) { 
+        editSplitMode = m; 
+        document.querySelectorAll('#modal-edit-movimiento .split-btn').forEach(x=>x.classList.remove('selected')); 
+        btn.classList.add('selected'); 
+        document.getElementById('edit-custom-split').style.display = m==='custom'?'flex':'none'; 
+    }
+
+    function openEditModal(id) {
+        const mov = dbData.movimientos.find(x => x.id === id);
+        if (!mov) return;
+        editingMovId = id;
+
+        // Llenar selects de lugares y categorías primero
+        renderEditSelects();
+
+        document.getElementById('edit-m-type').value = mov.type;
+        document.getElementById('edit-m-desc').value = mov.desc;
+        document.getElementById('edit-m-amount').value = mov.amount;
+        document.getElementById('edit-m-date').value = mov.date;
+        
+        // Manejo seguro de categorías y lugares
+        const catSelect = document.getElementById('edit-m-category');
+        if ([...catSelect.options].some(o => o.value === mov.category)) catSelect.value = mov.category;
+        
+        const placeSelect = document.getElementById('edit-m-place');
+        if ([...placeSelect.options].some(o => o.value === mov.lugar)) placeSelect.value = mov.lugar;
+
+        toggleEditSplitOptions();
+
+        if (mov.type === 'transferencia') {
+            const destSelect = document.getElementById('edit-m-place-dest');
+            if ([...destSelect.options].some(o => o.value === mov.lugarDestino)) destSelect.value = mov.lugarDestino;
+        } else {
+            document.getElementById('edit-m-payer').value = mov.payer || 'pipe';
+            editSplitMode = mov.splitType || '5050';
+            
+            // Actualizar UI de botones de split
+            document.querySelectorAll('#modal-edit-movimiento .split-btn').forEach(b => b.classList.remove('selected'));
+            const activeBtn = document.getElementById(`edit-split-${mov.splitType || '5050'}`);
+            if(activeBtn) activeBtn.classList.add('selected');
+            
+            document.getElementById('edit-split-p').value = mov.splitP || 50;
+            document.getElementById('edit-split-l').value = mov.splitL || 50;
+            document.getElementById('edit-custom-split').style.display = (mov.splitType === 'custom') ? 'flex' : 'none';
+        }
+
+        document.getElementById('modal-edit-movimiento').style.display = 'flex';
+    }
+
+    function renderEditSelects() {
+        const catSelect = document.getElementById('edit-m-category');
+        const placeSelect = document.getElementById('edit-m-place');
+        const destSelect = document.getElementById('edit-m-place-dest');
+        
+        catSelect.innerHTML = ''; placeSelect.innerHTML = ''; destSelect.innerHTML = '';
+        
+        dbData.categorias.forEach(c => { 
+            if(c !== 'Transferencia') { 
+                const o = document.createElement('option'); o.value = c; o.textContent = c; catSelect.appendChild(o); 
+            } 
+        });
+        
+        dbData.lugares.forEach(l => { 
+            const o1 = document.createElement('option'); o1.value = l.name; o1.textContent = l.name; placeSelect.appendChild(o1);
+            const o2 = document.createElement('option'); o2.value = l.name; o2.textContent = l.name; destSelect.appendChild(o2);
+        });
+    }
+
+    function saveEditMovement() {
+        if (!editingMovId) return;
+        
+        const idx = dbData.movimientos.findIndex(x => x.id === editingMovId);
+        if (idx === -1) return;
+
+        const t = document.getElementById('edit-m-type').value;
+        
+        const updatedMov = {
+            id: editingMovId,
+            date: document.getElementById('edit-m-date').value,
+            desc: document.getElementById('edit-m-desc').value,
+            amount: parseFloat(document.getElementById('edit-m-amount').value),
+            category: t === 'transferencia' ? 'Transferencia' : document.getElementById('edit-m-category').value,
+            type: t,
+            payer: t === 'gasto' ? document.getElementById('edit-m-payer').value : 'pipe',
+            splitType: t === 'gasto' ? editSplitMode : null,
+            splitP: t === 'gasto' ? document.getElementById('edit-split-p').value : null,
+            splitL: t === 'gasto' ? document.getElementById('edit-split-l').value : null,
+            lugar: document.getElementById('edit-m-place').value || 'Efectivo',
+            lugarDestino: t === 'transferencia' ? (document.getElementById('edit-m-place-dest').value || 'Efectivo') : (document.getElementById('edit-m-place').value || 'Efectivo')
+        };
+
+        dbData.movimientos[idx] = updatedMov;
+        saveData();
+        renderMovimientos();
+        updateDashboard(); // Actualiza saldos y balance
+        closeModal('modal-edit-movimiento');
+        
+        if('vibrate' in navigator) navigator.vibrate([50,30,50]);
+        mostrarToast('✅ Movimiento actualizado', 'success');
+    }
     document.getElementById('form-credito').addEventListener('submit', e => {
         e.preventDefault();
         const tot = parseFloat(document.getElementById('c-total').value), term = parseInt(document.getElementById('c-term').value), rate = parseFloat(document.getElementById('c-rate').value)/100, pm = parseInt(document.getElementById('c-paid-months').value)||0;
