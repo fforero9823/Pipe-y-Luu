@@ -161,6 +161,10 @@
                         </div>
                     </div>
                 </div>
+                                <div class="form-group" style="display:flex; align-items:center; gap:10px; background:#f0f9ff; padding:12px; border-radius:8px; border:1px solid #e0f2fe;">
+                    <input type="checkbox" id="m-recurrente" style="width:20px; height:20px; cursor:pointer;">
+                    <label for="m-recurrente" style="margin:0; cursor:pointer; font-weight:600; color:var(--primary-dark);">🔄 Repetir este movimiento cada mes</label>
+                </div>
                 <button type="submit" class="btn">Guardar Movimiento</button>
             </form>
         </div>
@@ -247,6 +251,11 @@
             <h2>📊 Presupuestos Mensuales</h2>
             <div id="config-budgets-list"></div>
             <button onclick="openBudgetModal()" class="btn btn-secondary" style="margin-top:10px;">➕ Añadir Presupuesto</button>
+        </div>
+                <div class="card">
+            <h2>🔄 Movimientos Recurrentes</h2>
+            <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:10px;">Se generan automáticamente cada mes.</p>
+            <div id="recurrentes-list"></div>
         </div>
         <div class="card">
             <h2>Datos</h2>
@@ -342,7 +351,7 @@
 
     // --- ESTADO GLOBAL ---
     let dbData = {
-        movimientos: [], creditos: [], comprasCredito: [], proyectos: [],
+        movimientos: [], recurrentes: [], creditos: [], comprasCredito: [], proyectos: [],
         categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Deudas', 'Otros', 'Transferencia'],
         lugares: [{name: 'Efectivo', saldo: 0}, {name: 'Cuenta Ahorros', saldo: 0}, {name: 'Nequi', saldo: 0}, {name: 'Daviplata', saldo: 0}],
         presupuestos: {}
@@ -351,7 +360,7 @@
 
     // --- INICIALIZACIÓN ---
     window.addEventListener('DOMContentLoaded', async () => {
-        loadLocalData();
+        loadLocalData();procesarRecurrentes();
         
         try {
             const doc = await db.collection('finanzas').doc('datos').get();
@@ -427,11 +436,12 @@
         updateDashboard();
     }
     function saveLocalData() { localStorage.setItem('pipeLuuData_v2', JSON.stringify(dbData)); }
-        function loadLocalData() {
+            function loadLocalData() {
         const s = localStorage.getItem('pipeLuuData_v2');
         if (s) {
             dbData = JSON.parse(s);
             
+            if (!dbData.recurrentes) dbData.recurrentes = []; 
             // Migración de Lugares (Cuentas) para añadir el 'owner'
             if (dbData.lugares && dbData.lugares.length > 0) {
                 // Si es la versión antigua (solo strings)
@@ -457,7 +467,42 @@
             if (dbData.proyectos) dbData.proyectos.forEach(p => { if (!p.locations) p.locations = [{ name: 'General', amount: p.current || 0, yield: 0 }]; });
         }
     }
+    function procesarRecurrentes() {
+        let huboCambios = false;
+        const td = getTargetDate(currentMonthOffset);
+        const y = td.getFullYear(), m = td.getMonth();
+        const diasEnMes = new Date(y, m+1, 0).getDate(); // Último día del mes (28, 30 o 31)
 
+        if (!dbData.recurrentes) return;
+
+        dbData.recurrentes.forEach(rec => {
+            // Verificar si ya existe un movimiento con esta descripción en este mes
+            const yaExiste = dbData.movimientos.some(mov =>
+                mov.desc === rec.desc &&
+                new Date(mov.date).getMonth() === m &&
+                new Date(mov.date).getFullYear() === y
+            );
+
+            if (!yaExiste) {
+                // Ajustar el día si el mes es más corto (ej: configurar día 31 en febrero)
+                let dia = rec.dayOfMonth || 1;
+                if (dia > diasEnMes) dia = diasEnMes;
+                
+                const fecha = `${y}-${String(m+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+
+                dbData.movimientos.push({
+                    ...rec,
+                    id: Date.now() + Math.random(), // ID único para el nuevo movimiento
+                    date: fecha
+                });
+                huboCambios = true;
+            }
+        });
+
+        if (huboCambios) {
+            saveData(); // Guarda y actualiza la UI automáticamente
+        }
+    }
     // --- UI HELPERS ---
     function mostrarToast(msg, tipo = 'success') {
         const c = document.getElementById('toastContainer'), t = document.createElement('div');
@@ -494,15 +539,19 @@
         window.scrollTo(0,0);
         if(id==='dashboard') updateDashboard(); if(id==='movimientos') renderMovimientos();
         if(id==='creditos') renderCreditos(); if(id==='compras-credito') renderComprasCredito();
-        if(id==='proyectos') renderProyectos(); if(id==='config') { renderCategories(); renderPlaces(); renderBudgetsConfig(); }
+        if(id==='proyectos') renderProyectos(); if(id==='config') { renderCategories(); renderRecurrentes(); renderPlaces(); renderBudgetsConfig(); }
     }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.style.display = 'none'; }
 
     // --- DASHBOARD ---
     function getTargetDate(offset) { const d = new Date(); d.setMonth(d.getMonth() + offset); return d; }
-    function changeMonth(delta) { currentMonthOffset += delta; updateDashboard(); renderMovimientos(); }
-
+      function changeMonth(delta) { 
+        currentMonthOffset += delta; 
+        procesarRecurrentes(); // <-- AÑADIR
+        updateDashboard(); 
+        renderMovimientos(); 
+    }
     function updateDashboard() {
         const td = getTargetDate(currentMonthOffset);
         const mn = td.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
@@ -700,9 +749,11 @@
 
     function setSplit(m, b) { splitMode=m; document.querySelectorAll('.split-btn').forEach(x=>x.classList.remove('selected')); b.classList.add('selected'); document.getElementById('custom-split').style.display = m==='custom'?'flex':'none'; }
 
-    document.getElementById('form-movimiento').addEventListener('submit', e => {
+        document.getElementById('form-movimiento').addEventListener('submit', e => {
         e.preventDefault();
         const t = document.getElementById('m-type').value;
+        const esRecurrente = document.getElementById('m-recurrente').checked;
+        
         const mov = {
             id: Date.now(), date: document.getElementById('m-date').value, desc: document.getElementById('m-desc').value, amount: parseFloat(document.getElementById('m-amount').value),
             category: t === 'transferencia' ? 'Transferencia' : document.getElementById('m-category').value, type: t,
@@ -711,11 +762,20 @@
             lugar: document.getElementById('m-place').value||'Efectivo',
             lugarDestino: t === 'transferencia' ? (document.getElementById('m-place-dest').value || 'Efectivo') : (document.getElementById('m-place').value || 'Efectivo')
         };
+
+        // --- NUEVA LÓGICA DE RECURRENCIA ---
+        if (esRecurrente) {
+            const diaDelMes = parseInt(document.getElementById('m-date').value.split('-')[2]);
+            dbData.recurrentes.push({ ...mov, id: Date.now(), dayOfMonth: diaDelMes });
+            mostrarToast('🔄 Movimiento recurrente configurado', 'success');
+        }
+        // ----------------------------------
+
         dbData.movimientos.unshift(mov);
         saveData(); renderMovimientos(); e.target.reset(); document.getElementById('m-date').valueAsDate = new Date(); toggleSplitOptions();
-        if('vibrate' in navigator) navigator.vibrate([50,30,50]); mostrarToast('✅ Guardado', 'success');
+        if('vibrate' in navigator) navigator.vibrate([50,30,50]); 
+        if(!esRecurrente) mostrarToast('✅ Guardado', 'success'); // Evitamos doble toast
     });
-
     function renderMovimientos() {
         const l = document.getElementById('movimientos-list'); l.innerHTML = '';
         const td = getTargetDate(currentMonthOffset), y = td.getFullYear(), m = td.getMonth();
@@ -1138,6 +1198,34 @@
             });
             saveData(); renderMovimientos(); mostrarToast(`✅ ${cnt} importados`, 'success');
         }; r.readAsText(f);
+    }
+        function renderRecurrentes() {
+        const l = document.getElementById('recurrentes-list');
+        if(!l) return;
+        l.innerHTML = '';
+        if(!dbData.recurrentes || dbData.recurrentes.length === 0) {
+            l.innerHTML = '<p style="color:var(--text-light); font-size:0.9rem; text-align:center; padding:10px;">No hay movimientos recurrentes configurados.</p>';
+            return;
+        }
+        dbData.recurrentes.forEach((r, idx) => {
+            const icon = r.type === 'ingreso' ? '🟢' : (r.type === 'transferencia' ? '🔵' : '');
+            l.innerHTML += `<div class="list-item">
+                <div class="item-info">
+                    <div class="item-title">${icon} ${r.desc}</div>
+                    <div class="item-sub">$${parseFloat(r.amount).toLocaleString()} | Día: ${r.dayOfMonth} | ${r.category}</div>
+                </div>
+                <button class="delete-btn" onclick="deleteRecurrente(${idx})"><i class="fas fa-trash"></i></button>
+            </div>`;
+        });
+    }
+
+    function deleteRecurrente(idx) {
+        if(confirm('¿Dejar de repetir este movimiento en los próximos meses? (No borra los pasados)')) {
+            dbData.recurrentes.splice(idx, 1);
+            saveData();
+            renderRecurrentes();
+            mostrarToast('🗑️ Recurrente eliminado', 'warning');
+        }
     }
 </script>
 </body>
