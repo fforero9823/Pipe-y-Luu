@@ -6,6 +6,7 @@
     <title>Pipe & Luu - Finanzas</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <!-- FIREBASE SDKs (CLAVE PARA LA SINCRONIZACIÓN) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
@@ -87,8 +88,6 @@
         .account-amount { font-weight: bold; font-size: 1.1rem; }
         .account-amount.positive { color: var(--success); }
         .account-amount.negative { color: var(--danger); }
-        .place-edit-form { display: flex; gap: 10px; align-items: center; margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 8px; }
-        .place-edit-form input { flex: 1; }
     </style>
 </head>
 <body>
@@ -101,11 +100,11 @@
 
 <nav>
     <button onclick="navTo('dashboard')" class="active" id="nav-dashboard">📊 Dashboard</button>
-    <button onclick="navTo('movimientos')" id="nav-movimientos">💳 Movimientos</button>
+    <button onclick="navTo('movimientos')" id="nav-movimientos"> Movimientos</button>
     <button onclick="navTo('creditos')" id="nav-creditos">💵 Créditos</button>
     <button onclick="navTo('compras-credito')" id="nav-compras-credito">🛒 Compras Crédito</button>
     <button onclick="navTo('proyectos')" id="nav-proyectos"> Proyectos</button>
-    <button onclick="navTo('config')" id="nav-config">⚙️ Config</button>
+    <button onclick="navTo('config')" id="nav-config">️ Config</button>
 </nav>
 
 <div class="container">
@@ -115,51 +114,17 @@
             <span class="month-display" id="dash-month-label">Cargando...</span>
             <button class="month-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
         </div>
-
         <div class="stats-grid">
-            <div class="stat-box main">
-                <div class="stat-lbl">Balance del Mes</div>
-                <div class="stat-val" id="dash-balance">$0</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-lbl">Ingresos</div>
-                <div class="stat-val" style="color:var(--success)" id="dash-income">$0</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-lbl">Gastos</div>
-                <div class="stat-val" style="color:var(--danger)" id="dash-expense">$0</div>
-            </div>
-            
-            <div class="stat-box" style="grid-column: span 2;">
-                <div class="stat-lbl">Estado entre Pipe y Luu (Este Mes)</div>
-                <div id="dash-settlement-container"></div>
-            </div>
-
-            <div class="stat-box" style="grid-column: span 2;">
-                <div class="stat-lbl">Deuda Histórica Acumulada</div>
-                <div id="dash-debt-history-container"></div>
-            </div>
-
-            <div class="stat-box" style="grid-column: span 2;">
-                <div class="stat-lbl">Total Ahorrado en Proyectos</div>
-                <div class="stat-val" style="color: var(--accent-blue)" id="dash-projects-total">$0</div>
-            </div>
+            <div class="stat-box main"><div class="stat-lbl">Balance del Mes</div><div class="stat-val" id="dash-balance">$0</div></div>
+            <div class="stat-box"><div class="stat-lbl">Ingresos</div><div class="stat-val" style="color:var(--success)" id="dash-income">$0</div></div>
+            <div class="stat-box"><div class="stat-lbl">Gastos</div><div class="stat-val" style="color:var(--danger)" id="dash-expense">$0</div></div>
+            <div class="stat-box" style="grid-column: span 2;"><div class="stat-lbl">Estado entre Pipe y Luu (Este Mes)</div><div id="dash-settlement-container"></div></div>
+            <div class="stat-box" style="grid-column: span 2;"><div class="stat-lbl">Deuda Histórica Acumulada</div><div id="dash-debt-history-container"></div></div>
+            <div class="stat-box" style="grid-column: span 2;"><div class="stat-lbl">Total Ahorrado en Proyectos</div><div class="stat-val" style="color: var(--accent-blue)" id="dash-projects-total">$0</div></div>
         </div>
-
-        <div class="card">
-            <h2>💰 Saldos por Cuenta</h2>
-            <div id="dash-accounts-container">Calculando saldos...</div>
-        </div>
-
-        <div class="card">
-            <h2>📊 Presupuestos del Mes</h2>
-            <div id="dash-budgets-summary">No hay presupuestos configurados.</div>
-        </div>
-
-        <div class="card">
-            <h2>Resumen de Créditos este Mes</h2>
-            <div id="dash-credits-summary">No hay cuotas este mes.</div>
-        </div>
+        <div class="card"><h2>💰 Saldos por Cuenta</h2><div id="dash-accounts-container">Calculando saldos...</div></div>
+        <div class="card"><h2>📊 Presupuestos del Mes</h2><div id="dash-budgets-summary">No hay presupuestos configurados.</div></div>
+        <div class="card"><h2>Resumen de Créditos este Mes</h2><div id="dash-credits-summary">No hay cuotas este mes.</div></div>
     </div>
 
     <div id="movimientos" class="section">
@@ -174,40 +139,14 @@
                         <option value="transferencia">Transferencia</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <input type="text" id="m-desc" required placeholder="Ej: Supermercado">
-                </div>
-                <div class="form-group">
-                    <label>Monto ($)</label>
-                    <input type="number" id="m-amount" required placeholder="0" inputmode="numeric">
-                </div>
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <select id="m-category"></select>
-                </div>
-                <div class="form-group" id="lugar-origen-group">
-                    <label>¿De dónde sale el dinero?</label>
-                    <select id="m-place"></select>
-                </div>
-                <div class="form-group" id="lugar-destino-group" style="display:none;">
-                    <label>¿A dónde va el dinero?</label>
-                    <select id="m-place-dest"></select>
-                </div>
-                <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" id="m-date" required>
-                </div>
-                
+                <div class="form-group"><label>Descripción</label><input type="text" id="m-desc" required placeholder="Ej: Supermercado"></div>
+                <div class="form-group"><label>Monto ($)</label><input type="number" id="m-amount" required placeholder="0" inputmode="numeric"></div>
+                <div class="form-group"><label>Categoría</label><select id="m-category"></select></div>
+                <div class="form-group" id="lugar-origen-group"><label>¿De dónde sale el dinero?</label><select id="m-place"></select></div>
+                <div class="form-group" id="lugar-destino-group" style="display:none;"><label>¿A dónde va el dinero?</label><select id="m-place-dest"></select></div>
+                <div class="form-group"><label>Fecha</label><input type="date" id="m-date" required></div>
                 <div id="split-section">
-                    <div class="form-group">
-                        <label>¿Quién pagó?</label>
-                        <select id="m-payer">
-                            <option value="pipe">Pipe</option>
-                            <option value="luu">Luu</option>
-                            <option value="gatos">Lua & Patacon 🐱</option>
-                        </select>
-                    </div>
+                    <div class="form-group"><label>¿Quién pagó?</label><select id="m-payer"><option value="pipe">Pipe</option><option value="luu">Luu</option><option value="gatos">Lua & Patacon 🐱</option></select></div>
                     <div class="form-group">
                         <label>¿Cómo se divide?</label>
                         <div class="split-container">
@@ -225,10 +164,7 @@
                 <button type="submit" class="btn">Guardar Movimiento</button>
             </form>
         </div>
-        <div class="card">
-            <h2>Historial <span style="font-size:0.8rem; font-weight:normal; color:var(--text-light)" id="history-filter-label"></span></h2>
-            <div id="movimientos-list"></div>
-        </div>
+        <div class="card"><h2>Historial <span style="font-size:0.8rem; font-weight:normal; color:var(--text-light)" id="history-filter-label"></span></h2><div id="movimientos-list"></div></div>
     </div>
 
     <div id="creditos" class="section">
@@ -309,19 +245,20 @@
         </div>
         <div class="card">
             <h2>Datos</h2>
-            <button onclick="exportCSV()" class="btn btn-secondary" style="margin-bottom:10px;"> Descargar CSV</button>
+            <button onclick="exportCSV()" class="btn btn-secondary" style="margin-bottom:10px;">📥 Descargar CSV</button>
             <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
                 <label>Importar CSV Histórico</label>
                 <input type="file" id="csv-file" accept=".csv" style="margin:10px 0;">
                 <button onclick="importCSV()" class="btn">Subir CSV</button>
             </div>
             <div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
-                <button onclick="resetAll()" class="btn btn-danger">️ Borrar Todo (Reset)</button>
+                <button onclick="resetAll()" class="btn btn-danger">⚠️ Borrar Todo (Reset)</button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- MODALES -->
 <div id="modal-proyecto" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-proyecto')">&times;</span><h2 id="modal-p-title">Proyecto</h2><div class="progress-bar-bg"><div class="progress-bar-fill" id="modal-p-progress"></div></div><p style="text-align:center; margin:10px 0;" id="modal-p-stats"></p><div id="modal-p-locations-container"></div><button onclick="openAddLocationModal()" class="btn btn-secondary" style="margin-top:15px;">➕ Añadir Ubicación</button><hr style="margin:20px 0;"><h3>Añadir Ahorro Rápido</h3><div class="form-group"><label>Ubicación</label><select id="modal-p-location-select"></select></div><div class="form-group"><label>Monto ($)</label><input type="number" id="modal-p-amount" inputmode="numeric"></div><button onclick="saveProjectFund()" class="btn">Registrar Ahorro</button><button onclick="deleteCurrentProject()" class="btn btn-danger" style="margin-top:20px;">Eliminar Proyecto</button></div></div>
 <div id="modal-add-location" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-add-location')">&times;</span><h2>Nueva Ubicación</h2><div class="form-group"><label>Nombre</label><input type="text" id="loc-name" required></div><div class="form-group"><label>Monto ($)</label><input type="number" id="loc-amount" required inputmode="numeric"></div><div class="form-group"><label>Rendimiento Anual (%)</label><input type="number" id="loc-yield" step="0.01" value="0" inputmode="decimal"></div><button onclick="saveLocation()" class="btn">Guardar</button></div></div>
 <div id="modal-credito" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-credito')">&times;</span><h2 id="modal-c-title">Crédito</h2><div id="modal-c-body"></div><hr style="margin:15px 0;"><h3>Gestionar Pagos</h3><button onclick="openPayModal(false)" class="btn btn-secondary" style="margin-bottom:10px;">💰 Pagar Cuota</button><button onclick="openPayModal(true)" class="btn" style="background-color: var(--success);">📉 Abono a Capital</button><button onclick="deleteCreditoFromModal()" class="btn btn-danger" style="margin-top:20px;">Eliminar Crédito</button></div></div>
@@ -332,6 +269,7 @@
 <button id="fabAdd" class="fab-add">+</button>
 
 <script>
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyB5GHHomIJc2JLzKyfnUntxL_brSiU9gVU",
         authDomain: "pipe-y-luu-finanzas.firebaseapp.com",
@@ -343,6 +281,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // --- ESTADO GLOBAL ---
     let dbData = {
         movimientos: [], creditos: [], comprasCredito: [], proyectos: [],
         categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Deudas', 'Otros', 'Transferencia'],
@@ -351,6 +290,7 @@
     };
     let currentMonthOffset = 0, currentProjectId = null, currentCreditId = null, splitMode = '5050', isCapitalAbonoMode = false, currentPayCreditId = null;
 
+    // --- INICIALIZACIÓN ---
     window.addEventListener('DOMContentLoaded', async () => {
         loadLocalData();
         
@@ -358,30 +298,50 @@
             const doc = await db.collection('finanzas').doc('datos').get();
             if (doc.exists) {
                 const fd = doc.data();
+                // Migración de lugares (de strings a objetos)
+                let nuevosLugares = fd.lugares || dbData.lugares;
+                if(nuevosLugares.length > 0 && typeof nuevosLugares[0] === 'string') {
+                    nuevosLugares = nuevosLugares.map(l => ({name: l, saldo: 0}));
+                }
+                
                 dbData = {
                     movimientos: fd.movimientos || [], creditos: fd.creditos || [], comprasCredito: fd.comprasCredito || [],
                     proyectos: fd.proyectos || [], categorias: fd.categorias || dbData.categorias,
-                    lugares: fd.lugares || dbData.lugares, presupuestos: fd.presupuestos || {}
+                    lugares: nuevosLugares, presupuestos: fd.presupuestos || {}
                 };
                 saveLocalData();
-            } else { await saveData(); }
+                updateConnectionStatus(true); // ÉXITO: Cambia a Nube
+            } else { 
+                await saveData(); 
+                updateConnectionStatus(true);
+            }
         } catch (error) {
             console.error('Error Firebase:', error);
-            mostrarToast('️ Usando datos locales', 'warning');
+            mostrarToast('️ Usando datos locales (Error de conexión)', 'warning');
+            updateConnectionStatus(false);
         }
 
+        // Listener en tiempo real
         db.collection('finanzas').doc('datos').onSnapshot(doc => {
             if (doc.exists) {
                 const fd = doc.data();
+                let nuevosLugares = fd.lugares || dbData.lugares;
+                if(nuevosLugares.length > 0 && typeof nuevosLugares[0] === 'string') {
+                    nuevosLugares = nuevosLugares.map(l => ({name: l, saldo: 0}));
+                }
                 dbData = {
                     movimientos: fd.movimientos || [], creditos: fd.creditos || [], comprasCredito: fd.comprasCredito || [],
                     proyectos: fd.proyectos || [], categorias: fd.categorias || dbData.categorias,
-                    lugares: fd.lugares || dbData.lugares, presupuestos: fd.presupuestos || {}
+                    lugares: nuevosLugares, presupuestos: fd.presupuestos || {}
                 };
                 saveLocalData();
                 renderCategories(); renderPlaces(); renderBudgetsConfig();
                 updateDashboard(); renderMovimientos(); renderCreditos(); renderComprasCredito(); renderProyectos();
+                updateConnectionStatus(true);
             }
+        }, (error) => {
+            console.error("Listener error:", error);
+            updateConnectionStatus(false);
         });
 
         renderCategories(); renderPlaces(); renderBudgetsConfig();
@@ -390,15 +350,20 @@
         document.getElementById('cc-start').valueAsDate = new Date();
         
         updateDashboard(); renderMovimientos(); renderCreditos(); renderComprasCredito(); renderProyectos();
-        setTimeout(() => updateConnectionStatus(true), 1000);
         setupConnectionListener(); setupFAB();
     });
 
+    // --- DATOS ---
     async function saveData() {
         saveLocalData();
         if (navigator.onLine) {
-            try { await db.collection('finanzas').doc('datos').set(dbData); updateConnectionStatus(true); } 
-            catch (e) { updateConnectionStatus(false); mostrarToast('⚠️ Guardado solo local', 'warning'); }
+            try { 
+                await db.collection('finanzas').doc('datos').set(dbData); 
+                updateConnectionStatus(true); 
+            } catch (e) { 
+                updateConnectionStatus(false); 
+                mostrarToast('⚠️ Guardado solo local', 'warning'); 
+            }
         } else { updateConnectionStatus(false); }
         updateDashboard();
     }
@@ -414,6 +379,7 @@
         }
     }
 
+    // --- UI HELPERS ---
     function mostrarToast(msg, tipo = 'success') {
         const c = document.getElementById('toastContainer'), t = document.createElement('div');
         t.className = `toast-msg ${tipo}`; t.textContent = msg; c.appendChild(t);
@@ -422,8 +388,13 @@
     }
     function updateConnectionStatus(isOnline) {
         const b = document.getElementById('connection-status');
-        b.innerHTML = isOnline ? '<i class="fas fa-cloud"></i> Firebase (Sync)' : '<i class="fas fa-wifi-slash"></i> Offline';
-        b.className = `status-badge ${isOnline ? 'online' : 'offline'}`;
+        if(isOnline) {
+            b.innerHTML = '<i class="fas fa-cloud"></i> Nube (Sync)';
+            b.className = 'status-badge online';
+        } else {
+            b.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline (Local)';
+            b.className = 'status-badge offline';
+        }
     }
     function setupConnectionListener() {
         window.addEventListener('online', () => updateConnectionStatus(true));
@@ -449,6 +420,7 @@
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.style.display = 'none'; }
 
+    // --- DASHBOARD ---
     function getTargetDate(offset) { const d = new Date(); d.setMonth(d.getMonth() + offset); return d; }
     function changeMonth(delta) { currentMonthOffset += delta; updateDashboard(); renderMovimientos(); }
 
@@ -529,7 +501,7 @@
         }
         document.getElementById('dash-debt-history-container').innerHTML = `<div class="debt-history-box"><div class="debt-history-title">Acumulado histórico total</div><div style="font-size:1rem; color:var(--primary-dark); margin-bottom:5px;">${hDT}</div>${hSForm}</div>`;
 
-        // CÁLCULO DE SALDOS POR CUENTA (CON SALDOS INICIALES)
+        // CÁLCULO DE SALDOS POR CUENTA
         let saldos = {};
         dbData.lugares.forEach(l => saldos[l.name] = parseFloat(l.saldo) || 0);
         
@@ -540,14 +512,9 @@
             if (saldos[lDest] === undefined) saldos[lDest] = 0;
             const amt = parseFloat(x.amount);
 
-            if (x.type === 'ingreso') {
-                saldos[l] += amt;
-            } else if (x.type === 'gasto') {
-                saldos[l] -= amt;
-            } else if (x.type === 'transferencia') {
-                saldos[l] -= amt;
-                saldos[lDest] += amt;
-            }
+            if (x.type === 'ingreso') { saldos[l] += amt; } 
+            else if (x.type === 'gasto') { saldos[l] -= amt; } 
+            else if (x.type === 'transferencia') { saldos[l] -= amt; saldos[lDest] += amt; }
         });
 
         let accountsHtml = '';
@@ -557,12 +524,7 @@
             const icon = l.name.toLowerCase().includes('efectivo') ? 'fa-money-bill-wave' : 
                          l.name.toLowerCase().includes('nequi') || l.name.toLowerCase().includes('daviplata') ? 'fa-mobile-alt' : 'fa-credit-card';
             
-            accountsHtml += `
-                <div class="account-balance-item">
-                    <div class="account-name"><i class="fas ${icon}" style="color:var(--accent-blue);"></i> ${l.name}</div>
-                    <div class="account-amount ${colorClass}">$${balance.toLocaleString()}</div>
-                </div>
-            `;
+            accountsHtml += `<div class="account-balance-item"><div class="account-name"><i class="fas ${icon}" style="color:var(--accent-blue);"></i> ${l.name}</div><div class="account-amount ${colorClass}">$${balance.toLocaleString()}</div></div>`;
         });
         document.getElementById('dash-accounts-container').innerHTML = accountsHtml || '<p style="color:var(--text-light); text-align:center;">No hay cuentas configuradas.</p>';
 
@@ -596,34 +558,14 @@
 
     function liquidarDeuda(payer, receiver, type) {
         let amount, lugar;
-        
-        if (type === 'monthly') {
-            amount = parseFloat(document.getElementById('settlement-amount').value);
-            lugar = document.getElementById('settlement-lugar').value;
-        } else {
-            amount = parseFloat(document.getElementById('hist-settlement-amount').value);
-            lugar = document.getElementById('hist-settlement-lugar').value;
-        }
+        if (type === 'monthly') { amount = parseFloat(document.getElementById('settlement-amount').value); lugar = document.getElementById('settlement-lugar').value; } 
+        else { amount = parseFloat(document.getElementById('hist-settlement-amount').value); lugar = document.getElementById('hist-settlement-lugar').value; }
 
         if(!amount || amount<=0) return mostrarToast('❌ Monto inválido', 'error');
         if(!confirm(`¿${payer.toUpperCase()} abona $${amount.toLocaleString()} a ${receiver.toUpperCase()} desde ${lugar}?`)) return;
         
         const isP = payer==='pipe';
-        dbData.movimientos.unshift({ 
-            id: Date.now(), 
-            date: new Date().toISOString().split('T')[0], 
-            desc: `Abono deuda a ${receiver}`, 
-            amount: amount, 
-            category: 'Otros', 
-            type: 'gasto', 
-            payer: payer, 
-            splitType: isP?'0100':'1000', 
-            splitP: isP?0:100, 
-            splitL: isP?100:0, 
-            lugar: lugar,
-            lugarDestino: lugar
-        });
-        
+        dbData.movimientos.unshift({ id: Date.now(), date: new Date().toISOString().split('T')[0], desc: `Abono deuda a ${receiver}`, amount: amount, category: 'Otros', type: 'gasto', payer: payer, splitType: isP?'0100':'1000', splitP: isP?0:100, splitL: isP?100:0, lugar: lugar, lugarDestino: lugar });
         saveData(); updateDashboard();
         if('vibrate' in navigator) navigator.vibrate([50,30,50]);
         mostrarToast('✅ Abono registrado', 'success');
@@ -633,20 +575,9 @@
         const type = document.getElementById('m-type').value;
         const splitSection = document.getElementById('split-section');
         const lugarDestGroup = document.getElementById('lugar-destino-group');
-        
-        if (type === 'transferencia') {
-            splitSection.style.display = 'none';
-            lugarDestGroup.style.display = 'block';
-            document.getElementById('lugar-origen-group').querySelector('label').textContent = '¿De dónde sale el dinero?';
-        } else if (type === 'ingreso') {
-            splitSection.style.display = 'none';
-            lugarDestGroup.style.display = 'none';
-            document.getElementById('lugar-origen-group').querySelector('label').textContent = '¿A dónde entra el dinero?';
-        } else {
-            splitSection.style.display = 'block';
-            lugarDestGroup.style.display = 'none';
-            document.getElementById('lugar-origen-group').querySelector('label').textContent = '¿De dónde sale el dinero?';
-        }
+        if (type === 'transferencia') { splitSection.style.display = 'none'; lugarDestGroup.style.display = 'block'; document.getElementById('lugar-origen-group').querySelector('label').textContent = '¿De dónde sale el dinero?'; } 
+        else if (type === 'ingreso') { splitSection.style.display = 'none'; lugarDestGroup.style.display = 'none'; document.getElementById('lugar-origen-group').querySelector('label').textContent = '¿A dónde entra el dinero?'; } 
+        else { splitSection.style.display = 'block'; lugarDestGroup.style.display = 'none'; document.getElementById('lugar-origen-group').querySelector('label').textContent = '¿De dónde sale el dinero?'; }
     }
 
     function setSplit(m, b) { splitMode=m; document.querySelectorAll('.split-btn').forEach(x=>x.classList.remove('selected')); b.classList.add('selected'); document.getElementById('custom-split').style.display = m==='custom'?'flex':'none'; }
@@ -691,7 +622,7 @@
         }
         dbData.movimientos = dbData.movimientos.filter(x=>x.id!==id);
         saveData(); renderMovimientos(); updateDashboard(); renderCreditos();
-        mostrarToast('🗑️ Eliminado', 'warning');
+        mostrarToast('️ Eliminado', 'warning');
     }
 
     document.getElementById('form-credito').addEventListener('submit', e => {
@@ -701,7 +632,6 @@
         let bal = tot;
         if(pm>0) bal = rate>0 ? tot*((Math.pow(1+rate,term)-Math.pow(1+rate,pm))/(Math.pow(1+rate,term)-1)) : tot-(cuo*pm);
         const own = document.getElementById('c-owner').value, sd = new Date(document.getElementById('c-start').value), day = parseInt(document.getElementById('c-day').value);
-        
         if(pm>0 && confirm(`Se generarán ${pm} pagos históricos.`)) {
             for(let i=1;i<=pm;i++) {
                 const pd = new Date(sd); pd.setMonth(sd.getMonth()+i); pd.setDate(day);
@@ -744,7 +674,7 @@
 
     function confirmPayCredit() {
         const v = parseFloat(document.getElementById('pay-amount').value), l = document.getElementById('pay-place').value;
-        if(isNaN(v)||v<=0) return mostrarToast(' Inválido', 'error');
+        if(isNaN(v)||v<=0) return mostrarToast('❌ Inválido', 'error');
         const c = dbData.creditos.find(x=>x.id===currentPayCreditId); closeModal('modal-pay-credit'); procesarPagoCredito(c, v, isCapitalAbonoMode, l);
     }
 
@@ -768,7 +698,7 @@
 
     function mostrarCongratulaciones(name) {
         const o = document.createElement('div'); o.className='congrats-overlay';
-        o.innerHTML = `<div class="congrats-modal"><div class="congrats-icon">🎉</div><div class="congrats-title">¡Felicidades!</div><div class="congrats-text">Terminaste de pagar <strong>${name}</strong>. ¡Libertad financiera! </div><button class="congrats-btn" onclick="this.parentElement.parentElement.remove()">¡Genial!</button></div>`;
+        o.innerHTML = `<div class="congrats-modal"><div class="congrats-icon">🎉</div><div class="congrats-title">¡Felicidades!</div><div class="congrats-text">Terminaste de pagar <strong>${name}</strong>. ¡Libertad financiera! 💪</div><button class="congrats-btn" onclick="this.parentElement.parentElement.remove()">¡Genial!</button></div>`;
         document.body.appendChild(o); if('vibrate' in navigator) navigator.vibrate([100,50,100,50,200]);
     }
 
@@ -777,7 +707,6 @@
         const tot = parseFloat(document.getElementById('cc-total').value), dp = parseFloat(document.getElementById('cc-downpayment').value)||0, inst = parseInt(document.getElementById('cc-installments').value), iv = parseFloat(document.getElementById('cc-installment-value').value), paid = parseInt(document.getElementById('cc-paid').value)||0;
         const own = document.getElementById('cc-owner').value, sd = new Date(document.getElementById('cc-start').value), day = parseInt(document.getElementById('cc-day').value);
         const cc = { id: Date.now(), item: document.getElementById('cc-item').value, creditor: document.getElementById('cc-creditor').value, total: tot, downpayment: dp, installments: inst, installmentValue: iv, paid: paid, startDate: document.getElementById('cc-start').value, day: day, owner: own, completed: false };
-        
         if(paid>0 && confirm(`Se generarán ${paid} pagos históricos.`)) {
             for(let i=1;i<=paid;i++) { const pd=new Date(sd); pd.setMonth(sd.getMonth()+i); pd.setDate(day); dbData.movimientos.push({ id: Date.now()+i, date: pd.toISOString().split('T')[0], desc: `Cuota ${i}/${inst}: ${cc.item} (${cc.creditor})`, amount: iv, category: 'Deudas', type: 'gasto', payer: own, splitType: '1000', splitP: own==='pipe'?100:0, splitL: own==='luu'?100:0, lugar: 'Efectivo', compraCreditoId: cc.id }); }
         }
@@ -812,7 +741,7 @@
         const cc = dbData.comprasCredito.find(x=>x.id===id);
         if(cc) dbData.movimientos = dbData.movimientos.filter(m => !(m.desc && m.desc.includes(cc.item) && m.desc.includes(cc.creditor)));
         dbData.comprasCredito = dbData.comprasCredito.filter(x=>x.id!==id);
-        saveData(); renderComprasCredito(); renderMovimientos(); updateDashboard(); mostrarToast('🗑️ Eliminado', 'warning');
+        saveData(); renderComprasCredito(); renderMovimientos(); updateDashboard(); mostrarToast('️ Eliminado', 'warning');
     }
 
     document.getElementById('form-proyecto').addEventListener('submit', e => {
@@ -862,7 +791,7 @@
         const p = dbData.proyectos.find(x=>x.id===currentProjectId); if(!p.locations) p.locations=[];
         p.locations.push({name:n, amount:a, yield:y}); saveData(); renderProjectLocations(p); closeModal('modal-add-location'); mostrarToast('✅ Añadido', 'success');
     }
-    function deleteLocation(i) { if(confirm('¿Eliminar ubicación?')) { const p=dbData.proyectos.find(x=>x.id===currentProjectId); p.locations.splice(i,1); saveData(); renderProjectLocations(p); mostrarToast('️ Eliminado', 'warning'); } }
+    function deleteLocation(i) { if(confirm('¿Eliminar ubicación?')) { const p=dbData.proyectos.find(x=>x.id===currentProjectId); p.locations.splice(i,1); saveData(); renderProjectLocations(p); mostrarToast('🗑️ Eliminado', 'warning'); } }
     function saveProjectFund() {
         const li = parseInt(document.getElementById('modal-p-location-select').value), a = parseFloat(document.getElementById('modal-p-amount').value);
         if(!a||a<=0) return mostrarToast('❌ Inválido', 'error');
@@ -880,7 +809,7 @@
         dbData.categorias.forEach(c => { if(c !== 'Transferencia') { const o=document.createElement('option'); o.value=c; o.textContent=c; s.appendChild(o); l.innerHTML+=`<div class="list-item"><span>${c}</span><button class="delete-btn" onclick="removeCategory('${c}')"><i class="fas fa-times"></i></button></div>`; } });
     }
     function addCategory() { const n = document.getElementById('new-cat-name').value; if(n&&!dbData.categorias.includes(n)) { dbData.categorias.push(n); saveData(); renderCategories(); document.getElementById('new-cat-name').value=''; mostrarToast('✅ Añadida', 'success'); } }
-    function removeCategory(n) { if(confirm('¿Quitar?')) { dbData.categorias=dbData.categorias.filter(x=>x!==n); saveData(); renderCategories(); mostrarToast('🗑️ Quitada', 'warning'); } }
+    function removeCategory(n) { if(confirm('¿Quitar?')) { dbData.categorias=dbData.categorias.filter(x=>x!==n); saveData(); renderCategories(); mostrarToast('️ Quitada', 'warning'); } }
 
     function renderPlaces() {
         const s = document.getElementById('m-place'), sd = document.getElementById('m-place-dest'), l = document.getElementById('config-places-list'); 
@@ -908,9 +837,7 @@
         const nuevoSaldo = prompt(`Saldo inicial de "${p.name}":`, p.saldo || 0);
         if (nuevoSaldo !== null && !isNaN(parseFloat(nuevoSaldo))) {
             p.saldo = parseFloat(nuevoSaldo);
-            saveData();
-            renderPlaces();
-            updateDashboard();
+            saveData(); renderPlaces(); updateDashboard();
             mostrarToast('✅ Saldo actualizado', 'success');
         }
     }
@@ -939,9 +866,7 @@
 
     function exportCSV() {
         let c = "fecha,tipo,descripcion,monto,categoria,lugar,lugarDestino,payer,splitType,splitP,splitL\n";
-        dbData.movimientos.forEach(m => { 
-            c += `${m.date},${m.type},"${m.desc}",${m.amount},${m.category},${m.lugar||''},${m.lugarDestino||''},${m.payer},${m.splitType||''},${m.splitP||''},${m.splitL||''}\n`; 
-        });
+        dbData.movimientos.forEach(m => { c += `${m.date},${m.type},"${m.desc}",${m.amount},${m.category},${m.lugar||''},${m.lugarDestino||''},${m.payer},${m.splitType||''},${m.splitP||''},${m.splitL||''}\n`; });
         const b = new Blob([c], {type:'text/csv'}), u = URL.createObjectURL(b), a = document.createElement('a'); a.href=u; a.download='finanzas_pipe_luu.csv'; a.click(); mostrarToast(' Descargado', 'success');
     }
 
@@ -953,18 +878,9 @@
                 const cols=row.split(','); 
                 if(cols.length>=5) { 
                     dbData.movimientos.push({
-                        id:Date.now()+Math.random(), 
-                        date:cols[0], 
-                        type:cols[1], 
-                        desc:cols[2].replace(/"/g,''), 
-                        amount:parseFloat(cols[3]), 
-                        category:cols[4], 
-                        lugar:cols[5]||'Efectivo', 
-                        lugarDestino:cols[6]||cols[5]||'Efectivo',
-                        payer:cols[7]||'pipe', 
-                        splitType:cols[8]||'1000', 
-                        splitP:cols[9]||100, 
-                        splitL:cols[10]||0
+                        id:Date.now()+Math.random(), date:cols[0], type:cols[1], desc:cols[2].replace(/"/g,''), amount:parseFloat(cols[3]), category:cols[4], 
+                        lugar:cols[5]||'Efectivo', lugarDestino:cols[6]||cols[5]||'Efectivo',
+                        payer:cols[7]||'pipe', splitType:cols[8]||'1000', splitP:cols[9]||100, splitL:cols[10]||0
                     }); 
                     cnt++; 
                 } 
