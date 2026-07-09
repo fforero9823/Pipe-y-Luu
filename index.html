@@ -6,7 +6,6 @@
     <title>Pipe & Luu - Finanzas</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- FIREBASE SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
@@ -64,7 +63,6 @@
         .btn-liquidate { background: linear-gradient(135deg, var(--success), #059669); color: white; padding: 12px; border-radius: 8px; border: none; width: 100%; margin-top: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
         .settlement-form { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; width: 100%; }
         .settlement-form input, .settlement-form select { width: 100%; padding: 12px; font-size: 1rem; border: 1px solid #cbd5e1; border-radius: 8px; background: #fafafa; margin: 0; }
-        .settlement-form input:focus, .settlement-form select:focus { outline: none; border-color: var(--accent-blue); background: white; }
         .credit-card-completed { border: 2px solid var(--success) !important; background: linear-gradient(135deg, #f0fdf4, #ffffff) !important; }
         .congrats-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.3s ease; }
         .congrats-modal { background: white; padding: 40px 30px; border-radius: 20px; text-align: center; max-width: 350px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: bounceIn 0.5s ease; }
@@ -83,14 +81,14 @@
         .budget-bar-fill { height: 100%; transition: width 0.5s ease; border-radius: 5px; }
         .budget-bar-fill.ok { background: var(--success); } .budget-bar-fill.warn { background: var(--warning); } .budget-bar-fill.over { background: var(--danger); }
         .budget-values { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-light); margin-top: 5px; }
-        
-        /* Estilos para Saldos por Cuenta */
         .account-balance-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .account-balance-item:last-child { border-bottom: none; }
         .account-name { font-weight: 600; color: var(--primary-dark); display: flex; align-items: center; gap: 8px; }
         .account-amount { font-weight: bold; font-size: 1.1rem; }
         .account-amount.positive { color: var(--success); }
         .account-amount.negative { color: var(--danger); }
+        .place-edit-form { display: flex; gap: 10px; align-items: center; margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 8px; }
+        .place-edit-form input { flex: 1; }
     </style>
 </head>
 <body>
@@ -106,12 +104,11 @@
     <button onclick="navTo('movimientos')" id="nav-movimientos">💳 Movimientos</button>
     <button onclick="navTo('creditos')" id="nav-creditos">💵 Créditos</button>
     <button onclick="navTo('compras-credito')" id="nav-compras-credito">🛒 Compras Crédito</button>
-    <button onclick="navTo('proyectos')" id="nav-proyectos">🎯 Proyectos</button>
+    <button onclick="navTo('proyectos')" id="nav-proyectos"> Proyectos</button>
     <button onclick="navTo('config')" id="nav-config">⚙️ Config</button>
 </nav>
 
 <div class="container">
-    <!-- DASHBOARD -->
     <div id="dashboard" class="section active">
         <div class="month-selector">
             <button class="month-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
@@ -149,9 +146,8 @@
             </div>
         </div>
 
-        <!-- NUEVA TARJETA: SALDOS POR CUENTA -->
         <div class="card">
-            <h2> Saldos por Cuenta</h2>
+            <h2>💰 Saldos por Cuenta</h2>
             <div id="dash-accounts-container">Calculando saldos...</div>
         </div>
 
@@ -166,7 +162,6 @@
         </div>
     </div>
 
-    <!-- MOVIMIENTOS -->
     <div id="movimientos" class="section">
         <div class="card">
             <h2>Nuevo Movimiento</h2>
@@ -176,6 +171,7 @@
                     <select id="m-type" onchange="toggleSplitOptions()">
                         <option value="gasto">Gasto</option>
                         <option value="ingreso">Ingreso</option>
+                        <option value="transferencia">Transferencia</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -190,9 +186,13 @@
                     <label>Categoría</label>
                     <select id="m-category"></select>
                 </div>
-                <div class="form-group">
-                    <label>¿De dónde sale/entra el dinero?</label>
+                <div class="form-group" id="lugar-origen-group">
+                    <label>¿De dónde sale el dinero?</label>
                     <select id="m-place"></select>
+                </div>
+                <div class="form-group" id="lugar-destino-group" style="display:none;">
+                    <label>¿A dónde va el dinero?</label>
+                    <select id="m-place-dest"></select>
                 </div>
                 <div class="form-group">
                     <label>Fecha</label>
@@ -231,7 +231,6 @@
         </div>
     </div>
 
-    <!-- CREDITOS -->
     <div id="creditos" class="section">
         <div class="card">
             <h2>Nuevo Crédito</h2>
@@ -250,7 +249,6 @@
         <div id="creditos-list"></div>
     </div>
 
-    <!-- COMPRAS A CRÉDITO -->
     <div id="compras-credito" class="section">
         <div class="card">
             <h2>Nueva Compra a Crédito</h2>
@@ -272,7 +270,6 @@
         <div id="compras-credito-list"></div>
     </div>
 
-    <!-- PROYECTOS -->
     <div id="proyectos" class="section">
         <div class="card">
             <h2>Nuevo Proyecto de Ahorro</h2>
@@ -287,7 +284,6 @@
         <div id="proyectos-list"></div>
     </div>
 
-    <!-- CONFIG -->
     <div id="config" class="section">
         <div class="card">
             <h2>Categorías</h2>
@@ -299,6 +295,7 @@
         </div>
         <div class="card">
             <h2>💳 Lugares / Cuentas</h2>
+            <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:10px;">Gestiona tus cuentas y saldos iniciales</p>
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <input type="text" id="new-place-name" placeholder="Nuevo lugar">
                 <button onclick="addPlace()" class="btn btn-sm" style="width:auto;">Añadir</button>
@@ -312,21 +309,20 @@
         </div>
         <div class="card">
             <h2>Datos</h2>
-            <button onclick="exportCSV()" class="btn btn-secondary" style="margin-bottom:10px;">📥 Descargar CSV</button>
+            <button onclick="exportCSV()" class="btn btn-secondary" style="margin-bottom:10px;"> Descargar CSV</button>
             <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
                 <label>Importar CSV Histórico</label>
                 <input type="file" id="csv-file" accept=".csv" style="margin:10px 0;">
                 <button onclick="importCSV()" class="btn">Subir CSV</button>
             </div>
             <div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
-                <button onclick="resetAll()" class="btn btn-danger">⚠️ Borrar Todo (Reset)</button>
+                <button onclick="resetAll()" class="btn btn-danger">️ Borrar Todo (Reset)</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODALES (Sin cambios mayores, omitidos para brevedad, se mantienen los anteriores) -->
-<div id="modal-proyecto" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-proyecto')">&times;</span><h2 id="modal-p-title">Proyecto</h2><div class="progress-bar-bg"><div class="progress-bar-fill" id="modal-p-progress"></div></div><p style="text-align:center; margin:10px 0;" id="modal-p-stats"></p><div id="modal-p-locations-container"></div><button onclick="openAddLocationModal()" class="btn btn-secondary" style="margin-top:15px;"> Añadir Ubicación</button><hr style="margin:20px 0;"><h3>Añadir Ahorro Rápido</h3><div class="form-group"><label>Ubicación</label><select id="modal-p-location-select"></select></div><div class="form-group"><label>Monto ($)</label><input type="number" id="modal-p-amount" inputmode="numeric"></div><button onclick="saveProjectFund()" class="btn">Registrar Ahorro</button><button onclick="deleteCurrentProject()" class="btn btn-danger" style="margin-top:20px;">Eliminar Proyecto</button></div></div>
+<div id="modal-proyecto" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-proyecto')">&times;</span><h2 id="modal-p-title">Proyecto</h2><div class="progress-bar-bg"><div class="progress-bar-fill" id="modal-p-progress"></div></div><p style="text-align:center; margin:10px 0;" id="modal-p-stats"></p><div id="modal-p-locations-container"></div><button onclick="openAddLocationModal()" class="btn btn-secondary" style="margin-top:15px;">➕ Añadir Ubicación</button><hr style="margin:20px 0;"><h3>Añadir Ahorro Rápido</h3><div class="form-group"><label>Ubicación</label><select id="modal-p-location-select"></select></div><div class="form-group"><label>Monto ($)</label><input type="number" id="modal-p-amount" inputmode="numeric"></div><button onclick="saveProjectFund()" class="btn">Registrar Ahorro</button><button onclick="deleteCurrentProject()" class="btn btn-danger" style="margin-top:20px;">Eliminar Proyecto</button></div></div>
 <div id="modal-add-location" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-add-location')">&times;</span><h2>Nueva Ubicación</h2><div class="form-group"><label>Nombre</label><input type="text" id="loc-name" required></div><div class="form-group"><label>Monto ($)</label><input type="number" id="loc-amount" required inputmode="numeric"></div><div class="form-group"><label>Rendimiento Anual (%)</label><input type="number" id="loc-yield" step="0.01" value="0" inputmode="decimal"></div><button onclick="saveLocation()" class="btn">Guardar</button></div></div>
 <div id="modal-credito" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-credito')">&times;</span><h2 id="modal-c-title">Crédito</h2><div id="modal-c-body"></div><hr style="margin:15px 0;"><h3>Gestionar Pagos</h3><button onclick="openPayModal(false)" class="btn btn-secondary" style="margin-bottom:10px;">💰 Pagar Cuota</button><button onclick="openPayModal(true)" class="btn" style="background-color: var(--success);">📉 Abono a Capital</button><button onclick="deleteCreditoFromModal()" class="btn btn-danger" style="margin-top:20px;">Eliminar Crédito</button></div></div>
 <div id="modal-pay-credit" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-pay-credit')">&times;</span><h2 id="modal-pay-title">Pagar Cuota</h2><div class="form-group"><label>Monto ($)</label><input type="number" id="pay-amount" inputmode="numeric"></div><div class="form-group"><label>¿De dónde sale?</label><select id="pay-place"></select></div><button onclick="confirmPayCredit()" class="btn">Confirmar</button></div></div>
@@ -336,7 +332,6 @@
 <button id="fabAdd" class="fab-add">+</button>
 
 <script>
-    // --- FIREBASE CONFIG & INIT ---
     const firebaseConfig = {
         apiKey: "AIzaSyB5GHHomIJc2JLzKyfnUntxL_brSiU9gVU",
         authDomain: "pipe-y-luu-finanzas.firebaseapp.com",
@@ -348,16 +343,14 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- ESTADO GLOBAL ---
     let dbData = {
         movimientos: [], creditos: [], comprasCredito: [], proyectos: [],
-        categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Deudas', 'Otros'],
-        lugares: ['Efectivo', 'Cuenta Ahorros', 'Nequi', 'Daviplata', 'Tarjeta Pipe', 'Tarjeta Luu'],
+        categorias: ['Hogar', 'Comida', 'Transporte', 'Ocio', 'Salud', 'Gatos', 'Ahorro/Proyecto', 'Deudas', 'Otros', 'Transferencia'],
+        lugares: [{name: 'Efectivo', saldo: 0}, {name: 'Cuenta Ahorros', saldo: 0}, {name: 'Nequi', saldo: 0}, {name: 'Daviplata', saldo: 0}],
         presupuestos: {}
     };
     let currentMonthOffset = 0, currentProjectId = null, currentCreditId = null, splitMode = '5050', isCapitalAbonoMode = false, currentPayCreditId = null;
 
-    // --- INICIALIZACIÓN ---
     window.addEventListener('DOMContentLoaded', async () => {
         loadLocalData();
         
@@ -374,7 +367,7 @@
             } else { await saveData(); }
         } catch (error) {
             console.error('Error Firebase:', error);
-            mostrarToast('⚠️ Usando datos locales', 'warning');
+            mostrarToast('️ Usando datos locales', 'warning');
         }
 
         db.collection('finanzas').doc('datos').onSnapshot(doc => {
@@ -401,7 +394,6 @@
         setupConnectionListener(); setupFAB();
     });
 
-    // --- DATOS ---
     async function saveData() {
         saveLocalData();
         if (navigator.onLine) {
@@ -415,14 +407,13 @@
         const s = localStorage.getItem('pipeLuuData_v2');
         if (s) {
             dbData = JSON.parse(s);
-            if (!dbData.lugares) dbData.lugares = ['Efectivo', 'Cuenta Ahorros', 'Nequi', 'Daviplata', 'Tarjeta Pipe', 'Tarjeta Luu'];
+            if (!dbData.lugares) dbData.lugares = [{name: 'Efectivo', saldo: 0}, {name: 'Cuenta Ahorros', saldo: 0}, {name: 'Nequi', saldo: 0}, {name: 'Daviplata', saldo: 0}];
             if (!dbData.presupuestos) dbData.presupuestos = {};
             if (!dbData.comprasCredito) dbData.comprasCredito = [];
             if (dbData.proyectos) dbData.proyectos.forEach(p => { if (!p.locations) p.locations = [{ name: 'General', amount: p.current || 0, yield: 0 }]; });
         }
     }
 
-    // --- UI HELPERS ---
     function mostrarToast(msg, tipo = 'success') {
         const c = document.getElementById('toastContainer'), t = document.createElement('div');
         t.className = `toast-msg ${tipo}`; t.textContent = msg; c.appendChild(t);
@@ -458,7 +449,6 @@
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.style.display = 'none'; }
 
-    // --- DASHBOARD ---
     function getTargetDate(offset) { const d = new Date(); d.setMonth(d.getMonth() + offset); return d; }
     function changeMonth(delta) { currentMonthOffset += delta; updateDashboard(); renderMovimientos(); }
 
@@ -472,18 +462,15 @@
         const mm = dbData.movimientos.filter(x => { const d = new Date(x.date); return d.getFullYear() === y && d.getMonth() === m; });
         let inc = 0, exp = 0, pN = 0, lN = 0, gC = {};
 
-        // Cálculos del mes actual
         mm.forEach(x => {
             const a = parseFloat(x.amount);
             if (x.type === 'ingreso') { inc += a; } 
-            else {
+            else if (x.type === 'gasto') {
                 exp += a;
-                if (x.type === 'gasto') {
-                    if (x.category && !['Deudas','Ahorro/Proyecto'].includes(x.category)) gC[x.category] = (gC[x.category]||0) + a;
-                    let pS=0, lS=0;
-                    if (x.splitType === '5050') { pS=a/2; lS=a/2; } else if (x.splitType === '1000') { pS=a; } else if (x.splitType === '0100') { lS=a; } else { pS=(parseFloat(x.splitP)||50)/100*a; lS=(parseFloat(x.splitL)||50)/100*a; }
-                    if (x.payer === 'pipe') { pN += lS; lN -= lS; } else if (x.payer === 'luu') { lN += pS; pN -= pS; }
-                }
+                if (x.category && !['Deudas','Ahorro/Proyecto','Transferencia'].includes(x.category)) gC[x.category] = (gC[x.category]||0) + a;
+                let pS=0, lS=0;
+                if (x.splitType === '5050') { pS=a/2; lS=a/2; } else if (x.splitType === '1000') { pS=a; } else if (x.splitType === '0100') { lS=a; } else { pS=(parseFloat(x.splitP)||50)/100*a; lS=(parseFloat(x.splitL)||50)/100*a; }
+                if (x.payer === 'pipe') { pN += lS; lN -= lS; } else if (x.payer === 'luu') { lN += pS; pN -= pS; }
             }
         });
 
@@ -491,7 +478,6 @@
         document.getElementById('dash-expense').textContent = `$${exp.toLocaleString()}`;
         document.getElementById('dash-balance').textContent = `$${(inc-exp).toLocaleString()}`;
 
-        // 1. ESTADO DEL MES (Con selector de cuenta)
         let dA=0, dT="", sL=false;
         if (pN > 1) { dA=pN; dT=`Luu le debe a Pipe: $${Math.abs(pN).toLocaleString()}`; sL=true; } 
         else if (pN < -1) { dA=Math.abs(pN); dT=`Pipe le debe a Luu: $${Math.abs(pN).toLocaleString()}`; sL=true; } 
@@ -500,7 +486,7 @@
         let hS = `<div class="settlement-box"><strong>${dT}</strong>`;
         if(sL) {
             const p = pN>0?'luu':'pipe', r = pN>0?'pipe':'luu';
-            let lugarOptions = dbData.lugares.map(l => `<option value="${l}">${l}</option>`).join('');
+            let lugarOptions = dbData.lugares.map(l => `<option value="${l.name}">${l.name}</option>`).join('');
             hS += `<div class="settlement-form">
                         <input type="number" id="settlement-amount" value="${Math.round(dA)}" inputmode="numeric" placeholder="Monto">
                         <select id="settlement-lugar">${lugarOptions}</select>
@@ -510,7 +496,6 @@
         hS += `</div>`;
         document.getElementById('dash-settlement-container').innerHTML = hS;
 
-        // 2. DEUDA HISTÓRICA (Con botón de abono y selector de cuenta)
         let hPN=0;
         dbData.movimientos.forEach(x => {
             if(x.type==='gasto') {
@@ -524,7 +509,7 @@
         if (hPN > 1) { 
             hDT = `Luu le debe a Pipe (Histórico): <strong>$${Math.round(hPN).toLocaleString()}</strong>`; 
             const p='luu', r='pipe';
-            let lugarOptions = dbData.lugares.map(l => `<option value="${l}">${l}</option>`).join('');
+            let lugarOptions = dbData.lugares.map(l => `<option value="${l.name}">${l.name}</option>`).join('');
             hSForm = `<div class="settlement-form" style="margin-top:10px;">
                             <input type="number" id="hist-settlement-amount" value="${Math.round(hPN)}" inputmode="numeric" placeholder="Monto">
                             <select id="hist-settlement-lugar">${lugarOptions}</select>
@@ -533,7 +518,7 @@
         } else if (hPN < -1) { 
             hDT = `Pipe le debe a Luu (Histórico): <strong>$${Math.round(Math.abs(hPN)).toLocaleString()}</strong>`;
             const p='pipe', r='luu';
-            let lugarOptions = dbData.lugares.map(l => `<option value="${l}">${l}</option>`).join('');
+            let lugarOptions = dbData.lugares.map(l => `<option value="${l.name}">${l.name}</option>`).join('');
             hSForm = `<div class="settlement-form" style="margin-top:10px;">
                             <input type="number" id="hist-settlement-amount" value="${Math.round(Math.abs(hPN))}" inputmode="numeric" placeholder="Monto">
                             <select id="hist-settlement-lugar">${lugarOptions}</select>
@@ -544,47 +529,43 @@
         }
         document.getElementById('dash-debt-history-container').innerHTML = `<div class="debt-history-box"><div class="debt-history-title">Acumulado histórico total</div><div style="font-size:1rem; color:var(--primary-dark); margin-bottom:5px;">${hDT}</div>${hSForm}</div>`;
 
-        // 3. SALDOS POR CUENTA (NUEVO)
+        // CÁLCULO DE SALDOS POR CUENTA (CON SALDOS INICIALES)
         let saldos = {};
-        dbData.lugares.forEach(l => saldos[l] = 0);
+        dbData.lugares.forEach(l => saldos[l.name] = parseFloat(l.saldo) || 0);
         
         dbData.movimientos.forEach(x => {
             const l = x.lugar || 'Efectivo';
+            const lDest = x.lugarDestino || l;
             if (saldos[l] === undefined) saldos[l] = 0;
+            if (saldos[lDest] === undefined) saldos[lDest] = 0;
             const amt = parseFloat(x.amount);
 
             if (x.type === 'ingreso') {
                 saldos[l] += amt;
             } else if (x.type === 'gasto') {
-                // Si es liquidación de deuda, el dinero sale de la cuenta del payer y entra en la del receiver
-                if (x.desc && x.desc.toLowerCase().includes('abono deuda')) {
-                    saldos[l] -= amt; // Sale de la cuenta de origen
-                    const lDest = x.lugarDestino || l; // Asumimos misma cuenta para el receiver si no se especifica
-                    if (saldos[lDest] === undefined) saldos[lDest] = 0;
-                    saldos[lDest] += amt; // Entra en la cuenta destino
-                } else {
-                    saldos[l] -= amt;
-                }
+                saldos[l] -= amt;
+            } else if (x.type === 'transferencia') {
+                saldos[l] -= amt;
+                saldos[lDest] += amt;
             }
         });
 
         let accountsHtml = '';
         dbData.lugares.forEach(l => {
-            const balance = saldos[l] || 0;
+            const balance = saldos[l.name] || 0;
             const colorClass = balance >= 0 ? 'positive' : 'negative';
-            const icon = l.toLowerCase().includes('efectivo') ? 'fa-money-bill-wave' : 
-                         l.toLowerCase().includes('nequi') || l.toLowerCase().includes('daviplata') ? 'fa-mobile-alt' : 'fa-credit-card';
+            const icon = l.name.toLowerCase().includes('efectivo') ? 'fa-money-bill-wave' : 
+                         l.name.toLowerCase().includes('nequi') || l.name.toLowerCase().includes('daviplata') ? 'fa-mobile-alt' : 'fa-credit-card';
             
             accountsHtml += `
                 <div class="account-balance-item">
-                    <div class="account-name"><i class="fas ${icon}" style="color:var(--accent-blue);"></i> ${l}</div>
+                    <div class="account-name"><i class="fas ${icon}" style="color:var(--accent-blue);"></i> ${l.name}</div>
                     <div class="account-amount ${colorClass}">$${balance.toLocaleString()}</div>
                 </div>
             `;
         });
         document.getElementById('dash-accounts-container').innerHTML = accountsHtml || '<p style="color:var(--text-light); text-align:center;">No hay cuentas configuradas.</p>';
 
-        // 4. PROYECTOS, PRESUPUESTOS Y CRÉDITOS (Sin cambios)
         const tP = dbData.proyectos.reduce((s,p) => s + (p.locations ? p.locations.reduce((a,loc)=>a+parseFloat(loc.amount),0) : parseFloat(p.current||0)), 0);
         document.getElementById('dash-projects-total').textContent = `$${tP.toLocaleString()}`;
         renderDashboardBudgets(gC);
@@ -613,7 +594,6 @@
         c.innerHTML = h;
     }
 
-    // FUNCIÓN DE LIQUIDACIÓN UNIFICADA (Soporta mensual e histórica + cuenta de origen)
     function liquidarDeuda(payer, receiver, type) {
         let amount, lugar;
         
@@ -640,8 +620,8 @@
             splitType: isP?'0100':'1000', 
             splitP: isP?0:100, 
             splitL: isP?100:0, 
-            lugar: lugar, // Cuenta de origen (de donde sale)
-            lugarDestino: lugar // Cuenta destino (asumimos la misma para simplificar el balance físico)
+            lugar: lugar,
+            lugarDestino: lugar
         });
         
         saveData(); updateDashboard();
@@ -649,20 +629,40 @@
         mostrarToast('✅ Abono registrado', 'success');
     }
 
-    // --- RESTO DE FUNCIONES (Movimientos, Créditos, Compras, Proyectos, Config) ---
-    // Se mantienen exactamente igual que en la versión anterior que funcionaba.
-    function toggleSplitOptions() { document.getElementById('split-section').style.display = document.getElementById('m-type').value === 'gasto' ? 'block' : 'none'; }
+    function toggleSplitOptions() {
+        const type = document.getElementById('m-type').value;
+        const splitSection = document.getElementById('split-section');
+        const lugarDestGroup = document.getElementById('lugar-destino-group');
+        
+        if (type === 'transferencia') {
+            splitSection.style.display = 'none';
+            lugarDestGroup.style.display = 'block';
+            document.getElementById('lugar-origen-group').querySelector('label').textContent = '¿De dónde sale el dinero?';
+        } else if (type === 'ingreso') {
+            splitSection.style.display = 'none';
+            lugarDestGroup.style.display = 'none';
+            document.getElementById('lugar-origen-group').querySelector('label').textContent = '¿A dónde entra el dinero?';
+        } else {
+            splitSection.style.display = 'block';
+            lugarDestGroup.style.display = 'none';
+            document.getElementById('lugar-origen-group').querySelector('label').textContent = '¿De dónde sale el dinero?';
+        }
+    }
+
     function setSplit(m, b) { splitMode=m; document.querySelectorAll('.split-btn').forEach(x=>x.classList.remove('selected')); b.classList.add('selected'); document.getElementById('custom-split').style.display = m==='custom'?'flex':'none'; }
 
     document.getElementById('form-movimiento').addEventListener('submit', e => {
         e.preventDefault();
         const t = document.getElementById('m-type').value;
-        dbData.movimientos.unshift({
+        const mov = {
             id: Date.now(), date: document.getElementById('m-date').value, desc: document.getElementById('m-desc').value, amount: parseFloat(document.getElementById('m-amount').value),
-            category: document.getElementById('m-category').value, type: t, payer: t==='gasto'?document.getElementById('m-payer').value:'pipe',
+            category: t === 'transferencia' ? 'Transferencia' : document.getElementById('m-category').value, type: t,
+            payer: t==='gasto'?document.getElementById('m-payer').value:'pipe',
             splitType: t==='gasto'?splitMode:null, splitP: t==='gasto'?document.getElementById('split-p').value:null, splitL: t==='gasto'?document.getElementById('split-l').value:null,
-            lugar: document.getElementById('m-place').value||'Efectivo'
-        });
+            lugar: document.getElementById('m-place').value||'Efectivo',
+            lugarDestino: t === 'transferencia' ? (document.getElementById('m-place-dest').value || 'Efectivo') : (document.getElementById('m-place').value || 'Efectivo')
+        };
+        dbData.movimientos.unshift(mov);
         saveData(); renderMovimientos(); e.target.reset(); document.getElementById('m-date').valueAsDate = new Date(); toggleSplitOptions();
         if('vibrate' in navigator) navigator.vibrate([50,30,50]); mostrarToast('✅ Guardado', 'success');
     });
@@ -673,10 +673,11 @@
         const f = dbData.movimientos.filter(x => { const d = new Date(x.date); return d.getFullYear()===y && d.getMonth()===m; }).sort((a,b)=>new Date(b.date)-new Date(a.date));
         if(!f.length) { l.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:20px;">Sin movimientos.</p>'; return; }
         f.forEach(x => {
-            const isE = x.type==='gasto', col = isE?'var(--danger)':'var(--success)', sign = isE?'-':'+';
+            const isE = x.type==='gasto', col = x.type==='transferencia'?'var(--accent-blue)':(isE?'var(--danger)':'var(--success)'), sign = x.type==='transferencia'?'↔':(isE?'-':'+');
             let pi = x.payer==='pipe'?'<i class="fas fa-male" style="color:#3B82F6"></i>':x.payer==='luu'?'<i class="fas fa-female" style="color:#EC4899"></i>':'<i class="fas fa-paw" style="color:#F59E0B"></i>';
             const lb = x.lugar?`<span class="badge" style="background:#e0e7ff; color:#3730a3; margin-left:5px;">${x.lugar}</span>`:'';
-            l.innerHTML += `<div class="list-item"><div class="item-info"><div class="item-title">${x.desc} <span class="badge" style="background:#eee; color:#333; margin-left:5px;">${x.category}</span>${lb}</div><div class="item-sub">${x.date} ${pi}</div></div><div style="text-align:right"><div style="font-weight:bold; color:${col}">${sign}$${parseFloat(x.amount).toLocaleString()}</div><button class="delete-btn" onclick="deleteMov(${x.id})"><i class="fas fa-trash"></i></button></div></div>`;
+            const lbDest = x.type==='transferencia' && x.lugarDestino?`<span class="badge" style="background:#D1FAE5; color:#065F46; margin-left:5px;">→ ${x.lugarDestino}</span>`:'';
+            l.innerHTML += `<div class="list-item"><div class="item-info"><div class="item-title">${x.desc} <span class="badge" style="background:#eee; color:#333; margin-left:5px;">${x.category}</span>${lb}${lbDest}</div><div class="item-sub">${x.date} ${pi}</div></div><div style="text-align:right"><div style="font-weight:bold; color:${col}">${sign}$${parseFloat(x.amount).toLocaleString()}</div><button class="delete-btn" onclick="deleteMov(${x.id})"><i class="fas fa-trash"></i></button></div></div>`;
         });
     }
 
@@ -686,7 +687,7 @@
         if(mov && mov.desc && mov.desc.toLowerCase().includes('pago cuota:')) {
             const cn = mov.desc.replace('Pago cuota: ','').trim();
             const cr = dbData.creditos.find(c=>c.name.toLowerCase()===cn.toLowerCase());
-            if(cr) { cr.paidMonths = Math.max(0, cr.paidMonths-1); cr.currentBalance += (parseFloat(mov.amount) - (cr.currentBalance*cr.rate)); mostrarToast('️ Crédito revertido', 'warning'); }
+            if(cr) { cr.paidMonths = Math.max(0, cr.paidMonths-1); cr.currentBalance += (parseFloat(mov.amount) - (cr.currentBalance*cr.rate)); mostrarToast('⚠️ Crédito revertido', 'warning'); }
         }
         dbData.movimientos = dbData.movimientos.filter(x=>x.id!==id);
         saveData(); renderMovimientos(); updateDashboard(); renderCreditos();
@@ -737,13 +738,13 @@
         const c = dbData.creditos.find(x=>x.id===currentCreditId); currentPayCreditId = currentCreditId;
         document.getElementById('modal-pay-title').textContent = isAbono?'Abono Capital':'Pagar Cuota';
         const pa = document.getElementById('pay-amount'); pa.value = isAbono?'':Math.round(c.cuota);
-        const ps = document.getElementById('pay-place'); ps.innerHTML = ''; dbData.lugares.forEach(l => { const o=document.createElement('option'); o.value=l; o.textContent=l; ps.appendChild(o); });
+        const ps = document.getElementById('pay-place'); ps.innerHTML = ''; dbData.lugares.forEach(l => { const o=document.createElement('option'); o.value=l.name; o.textContent=l.name; ps.appendChild(o); });
         document.getElementById('modal-pay-credit').style.display = 'flex';
     }
 
     function confirmPayCredit() {
         const v = parseFloat(document.getElementById('pay-amount').value), l = document.getElementById('pay-place').value;
-        if(isNaN(v)||v<=0) return mostrarToast('❌ Inválido', 'error');
+        if(isNaN(v)||v<=0) return mostrarToast(' Inválido', 'error');
         const c = dbData.creditos.find(x=>x.id===currentPayCreditId); closeModal('modal-pay-credit'); procesarPagoCredito(c, v, isCapitalAbonoMode, l);
     }
 
@@ -767,7 +768,7 @@
 
     function mostrarCongratulaciones(name) {
         const o = document.createElement('div'); o.className='congrats-overlay';
-        o.innerHTML = `<div class="congrats-modal"><div class="congrats-icon">🎉</div><div class="congrats-title">¡Felicidades!</div><div class="congrats-text">Terminaste de pagar <strong>${name}</strong>. ¡Libertad financiera! 💪</div><button class="congrats-btn" onclick="this.parentElement.parentElement.remove()">¡Genial!</button></div>`;
+        o.innerHTML = `<div class="congrats-modal"><div class="congrats-icon">🎉</div><div class="congrats-title">¡Felicidades!</div><div class="congrats-text">Terminaste de pagar <strong>${name}</strong>. ¡Libertad financiera! </div><button class="congrats-btn" onclick="this.parentElement.parentElement.remove()">¡Genial!</button></div>`;
         document.body.appendChild(o); if('vibrate' in navigator) navigator.vibrate([100,50,100,50,200]);
     }
 
@@ -871,22 +872,50 @@
         saveData(); renderProyectos(); openProjectModal(currentProjectId);
         if('vibrate' in navigator) navigator.vibrate([50,30,50]); mostrarToast('✅ Ahorro registrado', 'success');
     }
-    function deleteCurrentProject() { if(confirm('¿Eliminar proyecto?')) { dbData.proyectos=dbData.proyectos.filter(x=>x.id!==currentProjectId); saveData(); renderProyectos(); closeModal('modal-proyecto'); mostrarToast('🗑️ Eliminado', 'warning'); } }
+    function deleteCurrentProject() { if(confirm('¿Eliminar proyecto?')) { dbData.proyectos=dbData.proyectos.filter(x=>x.id!==currentProjectId); saveData(); renderProyectos(); closeModal('modal-proyecto'); mostrarToast('️ Eliminado', 'warning'); } }
     function deleteProject(id) { if(confirm('¿Eliminar?')) { dbData.proyectos=dbData.proyectos.filter(x=>x.id!==id); saveData(); renderProyectos(); mostrarToast('🗑️ Eliminado', 'warning'); } }
 
     function renderCategories() {
         const s = document.getElementById('m-category'), l = document.getElementById('config-categories-list'); s.innerHTML=''; l.innerHTML='';
-        dbData.categorias.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; s.appendChild(o); l.innerHTML+=`<div class="list-item"><span>${c}</span><button class="delete-btn" onclick="removeCategory('${c}')"><i class="fas fa-times"></i></button></div>`; });
+        dbData.categorias.forEach(c => { if(c !== 'Transferencia') { const o=document.createElement('option'); o.value=c; o.textContent=c; s.appendChild(o); l.innerHTML+=`<div class="list-item"><span>${c}</span><button class="delete-btn" onclick="removeCategory('${c}')"><i class="fas fa-times"></i></button></div>`; } });
     }
     function addCategory() { const n = document.getElementById('new-cat-name').value; if(n&&!dbData.categorias.includes(n)) { dbData.categorias.push(n); saveData(); renderCategories(); document.getElementById('new-cat-name').value=''; mostrarToast('✅ Añadida', 'success'); } }
     function removeCategory(n) { if(confirm('¿Quitar?')) { dbData.categorias=dbData.categorias.filter(x=>x!==n); saveData(); renderCategories(); mostrarToast('🗑️ Quitada', 'warning'); } }
 
     function renderPlaces() {
-        const s = document.getElementById('m-place'), l = document.getElementById('config-places-list'); if(!s||!l) return; s.innerHTML=''; l.innerHTML='';
-        dbData.lugares.forEach(p => { const o=document.createElement('option'); o.value=p; o.textContent=p; s.appendChild(o); l.innerHTML+=`<div class="list-item"><span><i class="fas fa-wallet" style="color:var(--accent-blue); margin-right:8px;"></i>${p}</span><button class="delete-btn" onclick="removePlace('${p.replace(/'/g,"\\'")}')"><i class="fas fa-times"></i></button></div>`; });
+        const s = document.getElementById('m-place'), sd = document.getElementById('m-place-dest'), l = document.getElementById('config-places-list'); 
+        if(!s||!l) return; 
+        s.innerHTML=''; sd.innerHTML=''; l.innerHTML='';
+        dbData.lugares.forEach((p, idx) => { 
+            const o1=document.createElement('option'); o1.value=p.name; o1.textContent=p.name; s.appendChild(o1);
+            const o2=document.createElement('option'); o2.value=p.name; o2.textContent=p.name; sd.appendChild(o2);
+            l.innerHTML+=`<div class="list-item"><div class="item-info"><span><i class="fas fa-wallet" style="color:var(--accent-blue); margin-right:8px;"></i>${p.name}</span><div class="item-sub">Saldo inicial: $${(p.saldo||0).toLocaleString()}</div></div><div style="display:flex; gap:5px;"><button class="btn btn-sm" onclick="editPlaceSaldo(${idx})" style="width:auto; padding:6px 10px;"><i class="fas fa-edit"></i></button><button class="delete-btn" onclick="removePlace('${p.name.replace(/'/g,"\\'")}')"><i class="fas fa-times"></i></button></div></div>`; 
+        });
     }
-    function addPlace() { const n = document.getElementById('new-place-name').value.trim(); if(n&&!dbData.lugares.includes(n)) { dbData.lugares.push(n); saveData(); renderPlaces(); document.getElementById('new-place-name').value=''; mostrarToast('✅ Añadido', 'success'); } }
-    function removePlace(n) { if(confirm(`¿Quitar "${n}"?`)) { dbData.lugares=dbData.lugares.filter(x=>x!==n); saveData(); renderPlaces(); mostrarToast('🗑️ Quitado', 'warning'); } }
+
+    function addPlace() { 
+        const n = document.getElementById('new-place-name').value.trim(); 
+        if(n&&!dbData.lugares.find(l=>l.name===n)) { 
+            dbData.lugares.push({name: n, saldo: 0}); 
+            saveData(); renderPlaces(); 
+            document.getElementById('new-place-name').value=''; 
+            mostrarToast('✅ Añadido', 'success'); 
+        } 
+    }
+
+    function editPlaceSaldo(idx) {
+        const p = dbData.lugares[idx];
+        const nuevoSaldo = prompt(`Saldo inicial de "${p.name}":`, p.saldo || 0);
+        if (nuevoSaldo !== null && !isNaN(parseFloat(nuevoSaldo))) {
+            p.saldo = parseFloat(nuevoSaldo);
+            saveData();
+            renderPlaces();
+            updateDashboard();
+            mostrarToast('✅ Saldo actualizado', 'success');
+        }
+    }
+
+    function removePlace(n) { if(confirm(`¿Quitar "${n}"?`)) { dbData.lugares=dbData.lugares.filter(x=>x.name!==n); saveData(); renderPlaces(); mostrarToast('️ Quitado', 'warning'); } }
 
     function renderBudgetsConfig() {
         const l = document.getElementById('config-budgets-list'); if(!l) return; l.innerHTML='';
@@ -894,30 +923,52 @@
         if(!cats.length) { l.innerHTML='<p style="color:var(--text-light); font-size:0.9rem; text-align:center; padding:10px;">Sin presupuestos.</p>'; return; }
         cats.forEach(c => { l.innerHTML+=`<div class="list-item"><div class="item-info"><div class="item-title">${c}</div><div class="item-sub">Límite: $${p[c].toLocaleString()}/mes</div></div><button class="delete-btn" onclick="removeBudget('${c.replace(/'/g,"\\'")}')"><i class="fas fa-times"></i></button></div>`; });
     }
-    function openBudgetModal() { const s=document.getElementById('budget-category'); s.innerHTML=''; dbData.categorias.forEach(c => { if(!['Deudas','Ahorro/Proyecto'].includes(c)) { const o=document.createElement('option'); o.value=c; o.textContent=c; s.appendChild(o); } }); document.getElementById('budget-amount').value=''; document.getElementById('modal-budget').style.display='flex'; }
+    function openBudgetModal() { const s=document.getElementById('budget-category'); s.innerHTML=''; dbData.categorias.forEach(c => { if(!['Deudas','Ahorro/Proyecto','Transferencia'].includes(c)) { const o=document.createElement('option'); o.value=c; o.textContent=c; s.appendChild(o); } }); document.getElementById('budget-amount').value=''; document.getElementById('modal-budget').style.display='flex'; }
     function saveBudget() { const c=document.getElementById('budget-category').value, a=parseFloat(document.getElementById('budget-amount').value); if(!c||!a||a<=0) return mostrarToast('❌ Inválido', 'error'); if(!dbData.presupuestos) dbData.presupuestos={}; dbData.presupuestos[c]=a; saveData(); renderBudgetsConfig(); closeModal('modal-budget'); mostrarToast('✅ Guardado', 'success'); }
-    function removeBudget(c) { if(confirm(`¿Eliminar presupuesto de "${c}"?`)) { delete dbData.presupuestos[c]; saveData(); renderBudgetsConfig(); mostrarToast('🗑️ Eliminado', 'warning'); } }
+    function removeBudget(c) { if(confirm(`¿Eliminar presupuesto de "${c}"?`)) { delete dbData.presupuestos[c]; saveData(); renderBudgetsConfig(); mostrarToast('️ Eliminado', 'warning'); } }
 
     function resetAll() {
-        if(confirm('⚠️ ¿ESTÁS SEGURO? Se borrará TODO.')) {
+        if(confirm('️ ¿ESTÁS SEGURO? Se borrará TODO.')) {
             if(confirm('🚨 ÚLTIMA OPORTUNIDAD: ¿Realmente borrar TODO?')) {
                 localStorage.removeItem('pipeLuuData_v2');
-                dbData = { movimientos:[], creditos:[], comprasCredito:[], proyectos:[], categorias:['Hogar','Comida','Transporte','Ocio','Salud','Gatos','Ahorro/Proyecto','Deudas','Otros'], lugares:['Efectivo','Cuenta Ahorros','Nequi','Daviplata','Tarjeta Pipe','Tarjeta Luu'], presupuestos:{} };
+                dbData = { movimientos:[], creditos:[], comprasCredito:[], proyectos:[], categorias:['Hogar','Comida','Transporte','Ocio','Salud','Gatos','Ahorro/Proyecto','Deudas','Otros','Transferencia'], lugares:[{name:'Efectivo',saldo:0},{name:'Cuenta Ahorros',saldo:0},{name:'Nequi',saldo:0},{name:'Daviplata',saldo:0}], presupuestos:{} };
                 saveData(); location.reload();
             }
         }
     }
 
     function exportCSV() {
-        let c = "fecha,tipo,descripcion,monto,categoria,lugar,payer,splitType,splitP,splitL\n";
-        dbData.movimientos.forEach(m => { c += `${m.date},${m.type},"${m.desc}",${m.amount},${m.category},${m.lugar||''},${m.payer},${m.splitType||''},${m.splitP||''},${m.splitL||''}\n`; });
+        let c = "fecha,tipo,descripcion,monto,categoria,lugar,lugarDestino,payer,splitType,splitP,splitL\n";
+        dbData.movimientos.forEach(m => { 
+            c += `${m.date},${m.type},"${m.desc}",${m.amount},${m.category},${m.lugar||''},${m.lugarDestino||''},${m.payer},${m.splitType||''},${m.splitP||''},${m.splitL||''}\n`; 
+        });
         const b = new Blob([c], {type:'text/csv'}), u = URL.createObjectURL(b), a = document.createElement('a'); a.href=u; a.download='finanzas_pipe_luu.csv'; a.click(); mostrarToast(' Descargado', 'success');
     }
+
     function importCSV() {
         const f = document.getElementById('csv-file').files[0]; if(!f) return alert('Selecciona archivo');
         const r = new FileReader(); r.onload = e => {
             const t = e.target.result, rows = t.split('\n').slice(1); let cnt=0;
-            rows.forEach(row => { const cols=row.split(','); if(cols.length>=5) { dbData.movimientos.push({id:Date.now()+Math.random(), date:cols[0], type:cols[1], desc:cols[2].replace(/"/g,''), amount:parseFloat(cols[3]), category:cols[4], lugar:cols[5]||'Efectivo', payer:cols[6]||'pipe', splitType:cols[7]||'1000', splitP:cols[8]||100, splitL:cols[9]||0}); cnt++; } });
+            rows.forEach(row => { 
+                const cols=row.split(','); 
+                if(cols.length>=5) { 
+                    dbData.movimientos.push({
+                        id:Date.now()+Math.random(), 
+                        date:cols[0], 
+                        type:cols[1], 
+                        desc:cols[2].replace(/"/g,''), 
+                        amount:parseFloat(cols[3]), 
+                        category:cols[4], 
+                        lugar:cols[5]||'Efectivo', 
+                        lugarDestino:cols[6]||cols[5]||'Efectivo',
+                        payer:cols[7]||'pipe', 
+                        splitType:cols[8]||'1000', 
+                        splitP:cols[9]||100, 
+                        splitL:cols[10]||0
+                    }); 
+                    cnt++; 
+                } 
+            });
             saveData(); renderMovimientos(); mostrarToast(`✅ ${cnt} importados`, 'success');
         }; r.readAsText(f);
     }
