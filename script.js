@@ -226,9 +226,13 @@ if (nuevosLugares && nuevosLugares.length > 0) {
         document.getElementById(id).classList.add('active');
         document.getElementById('nav-' + id).classList.add('active');
         window.scrollTo(0,0);
-        if(id==='dashboard') updateDashboard(); if(id==='movimientos') renderMovimientos();
-        if(id==='creditos') renderCreditos(); if(id==='compras-credito') renderComprasCredito();
-        if(id==='proyectos') renderProyectos(); if(id==='config') { renderCategories(); renderRecurrentes(); renderPlaces(); renderBudgetsConfig(); }
+        if(id==='dashboard') updateDashboard(); 
+        if(id==='reportes') renderAllCharts(); // ← AÑADIR ESTA LÍNEA
+        if(id==='movimientos') renderMovimientos();
+        if(id==='creditos') renderCreditos(); 
+        if(id==='compras-credito') renderComprasCredito();
+        if(id==='proyectos') renderProyectos(); 
+        if(id==='config') { renderCategories(); renderRecurrentes(); renderPlaces(); renderBudgetsConfig(); }
     }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.style.display = 'none'; }
@@ -1233,3 +1237,210 @@ if (nuevosLugares && nuevosLugares.length > 0) {
             mostrarToast('🗑️ Recurrente eliminado', 'warning');
         }
     }
+    // --- VARIABLES PARA GRÁFICOS ---
+let reportMonthOffset = 0;
+let charts = {}; // Almacenar instancias de gráficos
+
+// --- NAVEGACIÓN DE REPORTES ---
+function changeReportMonth(delta) {
+    reportMonthOffset += delta;
+    renderAllCharts();
+}
+
+// --- RENDERIZAR TODOS LOS GRÁFICOS ---
+function renderAllCharts() {
+    const td = getTargetDate(reportMonthOffset);
+    const mn = td.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+    document.getElementById('report-month-label').textContent = mn.charAt(0).toUpperCase() + mn.slice(1);
+    
+    renderChartCategorias();
+    renderChartIngresosGastos();
+    renderChartBalance();
+    renderChartTopGastos();
+}
+
+// --- GRÁFICO 1: GASTOS POR CATEGORÍA ---
+function renderChartCategorias() {
+    const td = getTargetDate(reportMonthOffset);
+    const y = td.getFullYear(), m = td.getMonth();
+    
+    const gastosPorCat = {};
+    dbData.movimientos.forEach(mov => {
+        const d = new Date(mov.date);
+        if (mov.type === 'gasto' && d.getFullYear() === y && d.getMonth() === m) {
+            const cat = mov.category || 'Otros';
+            if (!['Deudas', 'Ahorro/Proyecto', 'Transferencia'].includes(cat)) {
+                gastosPorCat[cat] = (gastosPorCat[cat] || 0) + parseFloat(mov.amount);
+            }
+        }
+    });
+    
+    const ctx = document.getElementById('chart-categorias');
+    if (!ctx) return;
+    
+    if (charts.categorias) charts.categorias.destroy();
+    
+    if (Object.keys(gastosPorCat).length === 0) {
+        ctx.parentElement.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:50px;">No hay gastos este mes</p>';
+        return;
+    }
+    
+    charts.categorias = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(gastosPorCat),
+            datasets: [{
+                data: Object.values(gastosPorCat),
+                backgroundColor: [
+                    '#3B82F6', '#10B981', '#F59E0B', '#EF4444', 
+                    '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+
+// --- GRÁFICO 2: INGRESOS VS GASTOS ---
+function renderChartIngresosGastos() {
+    const td = getTargetDate(reportMonthOffset);
+    const y = td.getFullYear(), m = td.getMonth();
+    
+    let ingresos = 0, gastos = 0;
+    dbData.movimientos.forEach(mov => {
+        const d = new Date(mov.date);
+        if (d.getFullYear() === y && d.getMonth() === m) {
+            if (mov.type === 'ingreso') ingresos += parseFloat(mov.amount);
+            if (mov.type === 'gasto') gastos += parseFloat(mov.amount);
+        }
+    });
+    
+    const ctx = document.getElementById('chart-ingresos-gastos');
+    if (!ctx) return;
+    
+    if (charts.ingresosGastos) charts.ingresosGastos.destroy();
+    
+    charts.ingresosGastos = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Ingresos', 'Gastos'],
+            datasets: [{
+                label: 'Monto ($)',
+                data: [ingresos, gastos],
+                backgroundColor: ['#10B981', '#EF4444']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+// --- GRÁFICO 3: EVOLUCIÓN DEL BALANCE ---
+function renderChartBalance() {
+    const balances = [];
+    const labels = [];
+    
+    for (let i = 5; i >= 0; i--) {
+        const td = getTargetDate(-i);
+        const y = td.getFullYear(), m = td.getMonth();
+        const mesName = td.toLocaleString('es-ES', { month: 'short' });
+        
+        let ingresos = 0, gastos = 0;
+        dbData.movimientos.forEach(mov => {
+            const d = new Date(mov.date);
+            if (d.getFullYear() === y && d.getMonth() === m) {
+                if (mov.type === 'ingreso') ingresos += parseFloat(mov.amount);
+                if (mov.type === 'gasto') gastos += parseFloat(mov.amount);
+            }
+        });
+        
+        balances.push(ingresos - gastos);
+        labels.push(mesName);
+    }
+    
+    const ctx = document.getElementById('chart-balance');
+    if (!ctx) return;
+    
+    if (charts.balance) charts.balance.destroy();
+    
+    charts.balance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Balance ($)',
+                data: balances,
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+// --- GRÁFICO 4: TOP 5 GASTOS ---
+function renderChartTopGastos() {
+    const td = getTargetDate(reportMonthOffset);
+    const y = td.getFullYear(), m = td.getMonth();
+    
+    const gastosPorDesc = {};
+    dbData.movimientos.forEach(mov => {
+        const d = new Date(mov.date);
+        if (mov.type === 'gasto' && d.getFullYear() === y && d.getMonth() === m) {
+            gastosPorDesc[mov.desc] = (gastosPorDesc[mov.desc] || 0) + parseFloat(mov.amount);
+        }
+    });
+    
+    const sorted = Object.entries(gastosPorDesc)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+    
+    const ctx = document.getElementById('chart-top-gastos');
+    if (!ctx) return;
+    
+    if (charts.topGastos) charts.topGastos.destroy();
+    
+    if (sorted.length === 0) {
+        ctx.parentElement.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:50px;">No hay gastos este mes</p>';
+        return;
+    }
+    
+    charts.topGastos = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sorted.map(x => x[0].substring(0, 20) + (x[0].length > 20 ? '...' : '')),
+            datasets: [{
+                label: 'Gasto ($)',
+                data: sorted.map(x => x[1]),
+                backgroundColor: '#F59E0B'
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
