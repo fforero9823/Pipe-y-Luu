@@ -398,10 +398,24 @@
                     nuevosLugares = nuevosLugares.map(l => ({name: l, saldo: 0}));
                 }
                 
+                // Migración de owner en lugares
+if (nuevosLugares && nuevosLugares.length > 0) {
+    if (typeof nuevosLugares[0] === 'string') {
+        nuevosLugares = nuevosLugares.map(l => ({name: l, owner: 'conjunto', saldo: 0}));
+    } else if (!nuevosLugares[0].owner) {
+        nuevosLugares = nuevosLugares.map(l => ({...l, owner: l.owner || 'conjunto'}));
+    }
+}
+
                 dbData = {
-                    movimientos: fd.movimientos || [], creditos: fd.creditos || [], comprasCredito: fd.comprasCredito || [],
-                    proyectos: fd.proyectos || [], categorias: fd.categorias || dbData.categorias,
-                    lugares: nuevosLugares, presupuestos: fd.presupuestos || {}
+                    movimientos: fd.movimientos || [], 
+                    recurrentes: fd.recurrentes || [],
+                    creditos: fd.creditos || [], 
+                    comprasCredito: fd.comprasCredito || [],
+                    proyectos: fd.proyectos || [], 
+                    categorias: fd.categorias || dbData.categorias,
+                    lugares: nuevosLugares, 
+                    presupuestos: fd.presupuestos || {}
                 };
                 saveLocalData();
                 updateConnectionStatus(true); // ÉXITO: Cambia a Nube
@@ -423,13 +437,27 @@
                 if(nuevosLugares.length > 0 && typeof nuevosLugares[0] === 'string') {
                     nuevosLugares = nuevosLugares.map(l => ({name: l, saldo: 0}));
                 }
+// Migración de owner en lugares
+if (nuevosLugares && nuevosLugares.length > 0) {
+    if (typeof nuevosLugares[0] === 'string') {
+        nuevosLugares = nuevosLugares.map(l => ({name: l, owner: 'conjunto', saldo: 0}));
+    } else if (!nuevosLugares[0].owner) {
+        nuevosLugares = nuevosLugares.map(l => ({...l, owner: l.owner || 'conjunto'}));
+    }
+}
+
                 dbData = {
-                    movimientos: fd.movimientos || [], creditos: fd.creditos || [], comprasCredito: fd.comprasCredito || [],
-                    proyectos: fd.proyectos || [], categorias: fd.categorias || dbData.categorias,
-                    lugares: nuevosLugares, presupuestos: fd.presupuestos || {}
+                    movimientos: fd.movimientos || [], 
+                    recurrentes: fd.recurrentes || [],
+                    creditos: fd.creditos || [], 
+                    comprasCredito: fd.comprasCredito || [],
+                    proyectos: fd.proyectos || [], 
+                    categorias: fd.categorias || dbData.categorias,
+                    lugares: nuevosLugares, 
+                    presupuestos: fd.presupuestos || {}
                 };
                 saveLocalData();
-                renderCategories(); renderPlaces(); renderBudgetsConfig();
+                renderCategories(); renderPlaces(); renderBudgetsConfig(); renderRecurrentes();
                 updateDashboard(); renderMovimientos(); renderCreditos(); renderComprasCredito(); renderProyectos();
                 updateConnectionStatus(true);
             }
@@ -518,7 +546,7 @@
 
                 dbData.movimientos.push({
                     ...rec,
-                    id: Date.now() + Math.random(), // ID único para el nuevo movimiento
+                    id: Date.now() + Math.floor(Math.random() * 1000000),
                     date: fecha
                 });
                 huboCambios = true;
@@ -1393,7 +1421,7 @@
         if(confirm('️ ¿ESTÁS SEGURO? Se borrará TODO.')) {
             if(confirm('🚨 ÚLTIMA OPORTUNIDAD: ¿Realmente borrar TODO?')) {
                 localStorage.removeItem('pipeLuuData_v2');
-                dbData = { movimientos:[], creditos:[], comprasCredito:[], proyectos:[], categorias:['Hogar','Comida','Transporte','Ocio','Salud','Gatos','Ahorro/Proyecto','Deudas','Otros','Transferencia'], lugares:[{name:'Efectivo',saldo:0},{name:'Cuenta Ahorros',saldo:0},{name:'Nequi',saldo:0},{name:'Daviplata',saldo:0}], presupuestos:{} };
+                dbData = { movimientos:[], recurrentes:[], creditos:[], comprasCredito:[], proyectos:[], categorias:['Hogar','Comida','Transporte','Ocio','Salud','Gatos','Ahorro/Proyecto','Deudas','Otros','Transferencia'], lugares:[{name:'Efectivo',saldo:0},{name:'Cuenta Ahorros',saldo:0},{name:'Nequi',saldo:0},{name:'Daviplata',saldo:0}], presupuestos:{} };               
                 saveData(); location.reload();
             }
         }
