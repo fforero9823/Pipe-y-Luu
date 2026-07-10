@@ -156,49 +156,72 @@ if (nuevosLugares && nuevosLugares.length > 0) {
             if (dbData.proyectos) dbData.proyectos.forEach(p => { if (!p.locations) p.locations = [{ name: 'General', amount: p.current || 0, yield: 0 }]; });
         }
     }
-    function procesarRecurrentes() {
-        if (!dbData.recurrentes || dbData.recurrentes.length === 0) return;
+function procesarRecurrentes() {
+    if (!dbData.recurrentes || dbData.recurrentes.length === 0) return;
 
-        // SOLO procesa el mes que se está viendo actualmente
-        const td = getTargetDate(currentMonthOffset);
-        const y = td.getFullYear();
-        const m = td.getMonth();
-        const diasEnMes = new Date(y, m + 1, 0).getDate();
-        let huboCambios = false;
+    const td = getTargetDate(currentMonthOffset);
+    const y = td.getFullYear();
+    const m = td.getMonth();
+    const diasEnMes = new Date(y, m + 1, 0).getDate();
+    
+    // Fecha actual (hoy) para comparar
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Normalizar a medianoche
+    
+    let huboCambios = false;
 
-        dbData.recurrentes.forEach(rec => {
-            // Verificar si YA existe en ESTE mes exacto
-            const yaExiste = dbData.movimientos.some(mov => {
-                const movDate = new Date(mov.date);
-                return mov.desc === rec.desc &&
-                       movDate.getFullYear() === y &&
-                       movDate.getMonth() === m;
-            });
-
-            if (!yaExiste) {
-                let dia = rec.dayOfMonth || 1;
-                if (dia > diasEnMes) dia = diasEnMes;
-
-                const fecha = `${y}-${String(m + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-
-                dbData.movimientos.push({
-                    ...rec,
-                    id: Date.now() + Math.floor(Math.random() * 1000000),
-                    date: fecha
-                });
-                // Limpiar propiedades internas que no deben ir al movimiento
-                delete dbData.movimientos[dbData.movimientos.length - 1].dayOfMonth;
-            
-                huboCambios = true;
+    dbData.recurrentes.forEach(rec => {
+        // --- BLOQUEO 1: No generar en meses anteriores a startDate ---
+        if (rec.startDate) {
+            const start = new Date(rec.startDate);
+            if (y < start.getFullYear() || (y === start.getFullYear() && m < start.getMonth())) {
+                return;
             }
+        }
+        
+        // --- BLOQUEO 2: No generar si la fecha del gasto aún no llega en la vida real ---
+        let dia = rec.dayOfMonth || 1;
+        if (dia > diasEnMes) dia = diasEnMes;
+        
+        // Construir la fecha exacta del movimiento en este mes
+        const fechaMovimiento = new Date(y, m, dia);
+        
+        // Si la fecha del movimiento es mayor a hoy, NO generar
+        if (fechaMovimiento > hoy) {
+            return;
+        }
+        // ---------------------------------------------------------------
+
+        // Verificar si ya existe en este mes
+        const yaExiste = dbData.movimientos.some(mov => {
+            const movDate = new Date(mov.date);
+            return mov.desc === rec.desc &&
+                   movDate.getFullYear() === y &&
+                   movDate.getMonth() === m;
         });
 
-        if (huboCambios) {
-            saveData();
-            renderMovimientos();
-            updateDashboard();
+        if (!yaExiste) {
+            const fecha = `${y}-${String(m + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+
+            dbData.movimientos.push({
+                ...rec,
+                id: Date.now() + Math.floor(Math.random() * 1000000),
+                date: fecha
+            });
+            // Limpiar propiedades internas
+            delete dbData.movimientos[dbData.movimientos.length - 1].dayOfMonth;
+            delete dbData.movimientos[dbData.movimientos.length - 1].startDate;
+            
+            huboCambios = true;
         }
+    });
+
+    if (huboCambios) {
+        saveData();
+        renderMovimientos();
+        updateDashboard();
     }
+}
     // --- UI HELPERS ---
     function mostrarToast(msg, tipo = 'success') {
         const c = document.getElementById('toastContainer'), t = document.createElement('div');
