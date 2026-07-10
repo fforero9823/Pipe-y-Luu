@@ -155,9 +155,12 @@
                             <div class="split-btn" onclick="setSplit('0100', this)">100% Luu</div>
                             <div class="split-btn" onclick="setSplit('custom', this)">Personalizado</div>
                         </div>
-                        <div id="custom-split" style="display:none; margin-top:10px; display:flex; gap:10px;">
-                            <input type="number" id="split-p" placeholder="% Pipe" value="50" inputmode="numeric">
-                            <input type="number" id="split-l" placeholder="% Luu" value="50" inputmode="numeric">
+                        <div id="custom-split" style="display:none; margin-top:10px; display:flex; gap:10px; align-items:center;">
+                            <input type="number" id="split-p" placeholder="% Pipe" value="50" inputmode="numeric" oninput="autoAdjustSplit('p')" min="0" max="100">
+                            <span style="font-weight:bold; color:var(--text-light);">%</span>
+                            <input type="number" id="split-l" placeholder="% Luu" value="50" inputmode="numeric" oninput="autoAdjustSplit('l')" min="0" max="100">
+                            <span style="font-weight:bold; color:var(--text-light);">%</span>
+                            <div id="split-total" style="margin-left:auto; font-weight:bold; color:var(--success);">✓ 100%</div>
                         </div>
                     </div>
                 </div>
@@ -349,9 +352,12 @@
                     <div class="split-btn" onclick="setEditSplit('0100', this)" id="edit-split-0100">100% Luu</div>
                     <div class="split-btn" onclick="setEditSplit('custom', this)" id="edit-split-custom">Personalizado</div>
                 </div>
-                <div id="edit-custom-split" style="display:none; margin-top:10px; display:flex; gap:10px;">
-                    <input type="number" id="edit-split-p" placeholder="% Pipe" inputmode="numeric">
-                    <input type="number" id="edit-split-l" placeholder="% Luu" inputmode="numeric">
+                <div id="edit-custom-split" style="display:none; margin-top:10px; display:flex; gap:10px; align-items:center;">
+                    <input type="number" id="edit-split-p" placeholder="% Pipe" inputmode="numeric" oninput="autoAdjustEditSplit('p')" min="0" max="100">
+                    <span style="font-weight:bold; color:var(--text-light);">%</span>
+                    <input type="number" id="edit-split-l" placeholder="% Luu" inputmode="numeric" oninput="autoAdjustEditSplit('l')" min="0" max="100">
+                    <span style="font-weight:bold; color:var(--text-light);">%</span>
+                    <div id="edit-split-total" style="margin-left:auto; font-weight:bold; color:var(--success);">✓ 100%</div>
                 </div>
             </div>
         </div>
@@ -801,8 +807,61 @@ if (nuevosLugares && nuevosLugares.length > 0) {
         else { splitSection.style.display = 'block'; lugarDestGroup.style.display = 'none'; document.getElementById('lugar-origen-group').querySelector('label').textContent = '¿De dónde sale el dinero?'; }
     }
 
-    function setSplit(m, b) { splitMode=m; document.querySelectorAll('.split-btn').forEach(x=>x.classList.remove('selected')); b.classList.add('selected'); document.getElementById('custom-split').style.display = m==='custom'?'flex':'none'; }
+    function setSplit(m, b) { 
+        splitMode = m; 
+        document.querySelectorAll('.split-btn').forEach(x => x.classList.remove('selected')); 
+        b.classList.add('selected'); 
+        document.getElementById('custom-split').style.display = m === 'custom' ? 'flex' : 'none'; 
+    
+        // Resetear a 50/50 cuando se selecciona personalizado
+        if (m === 'custom') {
+            document.getElementById('split-p').value = 50;
+            document.getElementById('split-l').value = 50;
+            updateSplitTotal();
+        }
+    }
 
+    // Función para auto-ajustar porcentajes
+    function autoAdjustSplit(who) {
+        const inputP = document.getElementById('split-p');
+        const inputL = document.getElementById('split-l');
+    
+        let p = parseFloat(inputP.value) || 0;
+        let l = parseFloat(inputL.value) || 0;
+    
+        // Limitar entre 0 y 100
+        if (p > 100) { p = 100; inputP.value = 100; }
+        if (p < 0) { p = 0; inputP.value = 0; }
+        if (l > 100) { l = 100; inputL.value = 100; }
+        if (l < 0) { l = 0; inputL.value = 0; }
+    
+        // Auto-ajustar el otro campo
+        if (who === 'p') {
+            l = 100 - p;
+            inputL.value = l;
+        } else {
+            p = 100 - l;
+            inputP.value = p;
+        }
+    
+        updateSplitTotal();
+    }
+
+    // Función para mostrar el total
+    function updateSplitTotal() {
+        const p = parseFloat(document.getElementById('split-p').value) || 0;
+        const l = parseFloat(document.getElementById('split-l').value) || 0;
+        const total = p + l;
+        const totalDiv = document.getElementById('split-total');
+    
+        if (total === 100) {
+            totalDiv.textContent = '✓ 100%';
+            totalDiv.style.color = 'var(--success)';
+        } else {
+            totalDiv.textContent = `⚠️ ${total}%`;
+            totalDiv.style.color = 'var(--danger)';
+        }
+    }
             document.getElementById('form-movimiento').addEventListener('submit', e => {
         e.preventDefault();
         
@@ -812,6 +871,17 @@ if (nuevosLugares && nuevosLugares.length > 0) {
         const checkboxRecurrente = document.getElementById('m-recurrente');
         const esRecurrente = checkboxRecurrente ? checkboxRecurrente.checked : false;
         
+        // Validar porcentajes si es personalizado
+        if (t === 'gasto' && splitMode === 'custom') {
+            const p = parseFloat(document.getElementById('split-p').value) || 0;
+            const l = parseFloat(document.getElementById('split-l').value) || 0;
+    
+            if (p + l !== 100) {
+                mostrarToast('❌ Los porcentajes deben sumar 100%', 'error');
+                return; // Detener el guardado
+            }
+        }
+
         const mov = {
             id: Date.now(), 
             date: document.getElementById('m-date').value, 
@@ -897,9 +967,53 @@ if (nuevosLugares && nuevosLugares.length > 0) {
 
     function setEditSplit(m, btn) { 
         editSplitMode = m; 
-        document.querySelectorAll('#modal-edit-movimiento .split-btn').forEach(x=>x.classList.remove('selected')); 
+        document.querySelectorAll('#modal-edit-movimiento .split-btn').forEach(x => x.classList.remove('selected')); 
         btn.classList.add('selected'); 
-        document.getElementById('edit-custom-split').style.display = m==='custom'?'flex':'none'; 
+        document.getElementById('edit-custom-split').style.display = m === 'custom' ? 'flex' : 'none'; 
+    
+        if (m === 'custom') {
+            document.getElementById('edit-split-p').value = 50;
+            document.getElementById('edit-split-l').value = 50;
+            updateEditSplitTotal();
+        }
+    }
+
+    function autoAdjustEditSplit(who) {
+        const inputP = document.getElementById('edit-split-p');
+        const inputL = document.getElementById('edit-split-l');
+    
+        let p = parseFloat(inputP.value) || 0;
+        let l = parseFloat(inputL.value) || 0;
+        
+        if (p > 100) { p = 100; inputP.value = 100; }
+        if (p < 0) { p = 0; inputP.value = 0; }
+        if (l > 100) { l = 100; inputL.value = 100; }
+        if (l < 0) { l = 0; inputL.value = 0; }
+    
+        if (who === 'p') {
+            l = 100 - p;
+            inputL.value = l;
+        } else {
+            p = 100 - l;
+            inputP.value = p;
+        }
+    
+        updateEditSplitTotal();
+    }
+
+    function updateEditSplitTotal() {
+        const p = parseFloat(document.getElementById('edit-split-p').value) || 0;
+        const l = parseFloat(document.getElementById('edit-split-l').value) || 0;
+        const total = p + l;
+        const totalDiv = document.getElementById('edit-split-total');
+    
+        if (total === 100) {
+            totalDiv.textContent = '✓ 100%';
+            totalDiv.style.color = 'var(--success)';
+        } else {
+            totalDiv.textContent = `⚠️ ${total}%`;
+            totalDiv.style.color = 'var(--danger)';
+        }
     }
 
     function openEditModal(id) {
@@ -965,11 +1079,22 @@ if (nuevosLugares && nuevosLugares.length > 0) {
 
     function saveEditMovement() {
         if (!editingMovId) return;
-        
+    
         const idx = dbData.movimientos.findIndex(x => x.id === editingMovId);
         if (idx === -1) return;
 
         const t = document.getElementById('edit-m-type').value;
+    
+        // Validar porcentajes si es personalizado
+        if (t === 'gasto' && editSplitMode === 'custom') {
+            const p = parseFloat(document.getElementById('edit-split-p').value) || 0;
+            const l = parseFloat(document.getElementById('edit-split-l').value) || 0;
+        
+            if (p + l !== 100) {
+                mostrarToast('❌ Los porcentajes deben sumar 100%', 'error');
+                return;
+            }
+        }
         
         const updatedMov = {
             id: editingMovId,
