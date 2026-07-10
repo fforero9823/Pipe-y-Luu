@@ -1,12 +1,13 @@
-const CACHE_NAME = 'pipe-luu-v13'; // CAMBIA LA VERSIÓN CADA VEZ QUE ACTUALICES
+const CACHE_NAME = 'pipe-luu-v14'; // CAMBIA LA VERSIÓN CADA VEZ QUE ACTUALICES
 const urlsToCache = [
   './',
   './index.html',
-  './style.css', 
-  './script.js', 
+  './style.css',
+  './script.js',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js' // ← AÑADIR
 ];
 
 // Instalación
