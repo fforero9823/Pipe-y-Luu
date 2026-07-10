@@ -1,7 +1,9 @@
-const CACHE_NAME = 'pipe-luu-v12'; // CAMBIA LA VERSIÓN CADA VEZ QUE ACTUALICES
+const CACHE_NAME = 'pipe-luu-v13'; // CAMBIA LA VERSIÓN CADA VEZ QUE ACTUALICES
 const urlsToCache = [
   './',
   './index.html',
+  './style.css', 
+  './script.js', 
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
