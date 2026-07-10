@@ -157,39 +157,46 @@ if (nuevosLugares && nuevosLugares.length > 0) {
         }
     }
     function procesarRecurrentes() {
-        let huboCambios = false;
-        const td = getTargetDate(currentMonthOffset);
-        const y = td.getFullYear(), m = td.getMonth();
-        const diasEnMes = new Date(y, m+1, 0).getDate(); // Último día del mes (28, 30 o 31)
+        if (!dbData.recurrentes || dbData.recurrentes.length === 0) return;
 
-        if (!dbData.recurrentes) return;
+        // SOLO procesa el mes que se está viendo actualmente
+        const td = getTargetDate(currentMonthOffset);
+        const y = td.getFullYear();
+        const m = td.getMonth();
+        const diasEnMes = new Date(y, m + 1, 0).getDate();
+        let huboCambios = false;
 
         dbData.recurrentes.forEach(rec => {
-            // Verificar si ya existe un movimiento con esta descripción en este mes
-            const yaExiste = dbData.movimientos.some(mov =>
-                mov.desc === rec.desc &&
-                new Date(mov.date).getMonth() === m &&
-                new Date(mov.date).getFullYear() === y
-            );
+            // Verificar si YA existe en ESTE mes exacto
+            const yaExiste = dbData.movimientos.some(mov => {
+                const movDate = new Date(mov.date);
+                return mov.desc === rec.desc &&
+                       movDate.getFullYear() === y &&
+                       movDate.getMonth() === m;
+            });
 
             if (!yaExiste) {
-                // Ajustar el día si el mes es más corto (ej: configurar día 31 en febrero)
                 let dia = rec.dayOfMonth || 1;
                 if (dia > diasEnMes) dia = diasEnMes;
-                
-                const fecha = `${y}-${String(m+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+
+                const fecha = `${y}-${String(m + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
 
                 dbData.movimientos.push({
                     ...rec,
                     id: Date.now() + Math.floor(Math.random() * 1000000),
                     date: fecha
                 });
+                // Limpiar propiedades internas que no deben ir al movimiento
+                delete dbData.movimientos[dbData.movimientos.length - 1].dayOfMonth;
+            
                 huboCambios = true;
             }
         });
 
         if (huboCambios) {
-            saveData(); // Guarda y actualiza la UI automáticamente
+            saveData();
+            renderMovimientos();
+            updateDashboard();
         }
     }
     // --- UI HELPERS ---
@@ -1241,35 +1248,48 @@ if (nuevosLugares && nuevosLugares.length > 0) {
             mostrarToast('🗑️ Recurrente eliminado', 'warning');
         }
     }
-    // --- VARIABLES PARA GRÁFICOS ---
+// --- VARIABLES PARA GRÁFICOS ---
 let reportMonthOffset = 0;
-let charts = {}; // Almacenar instancias de gráficos
 
-// --- NAVEGACIÓN DE REPORTES ---
+// Helper seguro para destruir y recrear gráficos sin errores
+function getSafeChartCtx(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return null;
+    const existing = Chart.getChart(canvas);
+    if (existing) existing.destroy();
+    return canvas.getContext('2d');
+}
+
 function changeReportMonth(delta) {
     reportMonthOffset += delta;
-    currentMonthOffset = reportMonthOffset; // ← Mantener sincronizado
+    currentMonthOffset = reportMonthOffset; // Sincronizar con dashboard
+    updateDashboard(); // Actualizar también el dashboard por si acaso
     renderAllCharts();
 }
 
-// --- RENDERIZAR TODOS LOS GRÁFICOS ---
 function renderAllCharts() {
+    // Sincronizar offsets al entrar o cambiar mes
+    reportMonthOffset = currentMonthOffset;
+
     const td = getTargetDate(reportMonthOffset);
     const mn = td.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
-    document.getElementById('report-month-label').textContent = mn.charAt(0).toUpperCase() + mn.slice(1);
-    
+    const labelEl = document.getElementById('report-month-label');
+    if (labelEl) labelEl.textContent = mn.charAt(0).toUpperCase() + mn.slice(1);
+
     renderChartCategorias();
     renderChartIngresosGastos();
     renderChartBalance();
     renderChartTopGastos();
 }
 
-// --- GRÁFICO 1: GASTOS POR CATEGORÍA ---
 function renderChartCategorias() {
+    const ctx = getSafeChartCtx('chart-categorias');
+    if (!ctx) return;
+
     const td = getTargetDate(reportMonthOffset);
     const y = td.getFullYear(), m = td.getMonth();
-    
     const gastosPorCat = {};
+
     dbData.movimientos.forEach(mov => {
         const d = new Date(mov.date);
         if (mov.type === 'gasto' && d.getFullYear() === y && d.getMonth() === m) {
@@ -1279,45 +1299,37 @@ function renderChartCategorias() {
             }
         }
     });
-    
-    const ctx = document.getElementById('chart-categorias');
-    if (!ctx) return;
-    
-    if (charts.categorias) charts.categorias.destroy();
-    
-    if (Object.keys(gastosPorCat).length === 0) {
-        ctx.parentElement.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:50px;">No hay gastos este mes</p>';
+
+    const labels = Object.keys(gastosPorCat);
+    const data = Object.values(gastosPorCat);
+
+    if (labels.length === 0) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: ['Sin gastos'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
         return;
     }
-    
-    charts.categorias = new Chart(ctx, {
+
+    new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: Object.keys(gastosPorCat),
-            datasets: [{
-                data: Object.values(gastosPorCat),
-                backgroundColor: [
-                    '#3B82F6', '#10B981', '#F59E0B', '#EF4444', 
-                    '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'
-                ]
-            }]
+            labels,
+            datasets: [{ data, backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'] }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 }
 
-// --- GRÁFICO 2: INGRESOS VS GASTOS ---
 function renderChartIngresosGastos() {
+    const ctx = getSafeChartCtx('chart-ingresos-gastos');
+    if (!ctx) return;
+
     const td = getTargetDate(reportMonthOffset);
     const y = td.getFullYear(), m = td.getMonth();
-    
     let ingresos = 0, gastos = 0;
+
     dbData.movimientos.forEach(mov => {
         const d = new Date(mov.date);
         if (d.getFullYear() === y && d.getMonth() === m) {
@@ -1325,127 +1337,80 @@ function renderChartIngresosGastos() {
             if (mov.type === 'gasto') gastos += parseFloat(mov.amount);
         }
     });
-    
-    const ctx = document.getElementById('chart-ingresos-gastos');
-    if (!ctx) return;
-    
-    if (charts.ingresosGastos) charts.ingresosGastos.destroy();
-    
-    charts.ingresosGastos = new Chart(ctx, {
+
+    new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['Ingresos', 'Gastos'],
-            datasets: [{
-                label: 'Monto ($)',
-                data: [ingresos, gastos],
-                backgroundColor: ['#10B981', '#EF4444']
-            }]
+            datasets: [{ label: 'Monto ($)', data: [ingresos, gastos], backgroundColor: ['#10B981', '#EF4444'] }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 }
 
-// --- GRÁFICO 3: EVOLUCIÓN DEL BALANCE ---
 function renderChartBalance() {
-    const balances = [];
-    const labels = [];
-    
+    const ctx = getSafeChartCtx('chart-balance');
+    if (!ctx) return;
+
+    const balances = [], labels = [];
     for (let i = 5; i >= 0; i--) {
         const td = getTargetDate(-i);
         const y = td.getFullYear(), m = td.getMonth();
         const mesName = td.toLocaleString('es-ES', { month: 'short' });
-        
-        let ingresos = 0, gastos = 0;
+        let inc = 0, exp = 0;
         dbData.movimientos.forEach(mov => {
             const d = new Date(mov.date);
             if (d.getFullYear() === y && d.getMonth() === m) {
-                if (mov.type === 'ingreso') ingresos += parseFloat(mov.amount);
-                if (mov.type === 'gasto') gastos += parseFloat(mov.amount);
+                if (mov.type === 'ingreso') inc += parseFloat(mov.amount);
+                if (mov.type === 'gasto') exp += parseFloat(mov.amount);
             }
         });
-        
-        balances.push(ingresos - gastos);
+        balances.push(inc - exp);
         labels.push(mesName);
     }
-    
-    const ctx = document.getElementById('chart-balance');
-    if (!ctx) return;
-    
-    if (charts.balance) charts.balance.destroy();
-    
-    charts.balance = new Chart(ctx, {
+
+    new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
-            datasets: [{
-                label: 'Balance ($)',
-                data: balances,
-                borderColor: '#3B82F6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
+            labels,
+            datasets: [{ label: 'Balance ($)', data: balances, borderColor: '#3B82F6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.4 }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 }
 
-// --- GRÁFICO 4: TOP 5 GASTOS ---
 function renderChartTopGastos() {
+    const ctx = getSafeChartCtx('chart-top-gastos');
+    if (!ctx) return;
+
     const td = getTargetDate(reportMonthOffset);
     const y = td.getFullYear(), m = td.getMonth();
-    
     const gastosPorDesc = {};
+
     dbData.movimientos.forEach(mov => {
         const d = new Date(mov.date);
         if (mov.type === 'gasto' && d.getFullYear() === y && d.getMonth() === m) {
             gastosPorDesc[mov.desc] = (gastosPorDesc[mov.desc] || 0) + parseFloat(mov.amount);
         }
     });
-    
-    const sorted = Object.entries(gastosPorDesc)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
-    
-    const ctx = document.getElementById('chart-top-gastos');
-    if (!ctx) return;
-    
-    if (charts.topGastos) charts.topGastos.destroy();
-    
+
+    const sorted = Object.entries(gastosPorDesc).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
     if (sorted.length === 0) {
-        ctx.parentElement.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:50px;">No hay gastos este mes</p>';
+        new Chart(ctx, {
+            type: 'bar',
+            data: { labels: ['Sin datos'], datasets: [{ data: [0], backgroundColor: ['#e2e8f0'] }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
         return;
     }
-    
-    charts.topGastos = new Chart(ctx, {
+
+    new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: sorted.map(x => x[0].substring(0, 20) + (x[0].length > 20 ? '...' : '')),
-            datasets: [{
-                label: 'Gasto ($)',
-                data: sorted.map(x => x[1]),
-                backgroundColor: '#F59E0B'
-            }]
+            labels: sorted.map(x => x[0].length > 15 ? x[0].substring(0, 15) + '...' : x[0]),
+            datasets: [{ label: 'Gasto ($)', data: sorted.map(x => x[1]), backgroundColor: '#F59E0B' }]
         },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            }
-        }
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 }
