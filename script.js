@@ -226,8 +226,12 @@ if (nuevosLugares && nuevosLugares.length > 0) {
         document.getElementById(id).classList.add('active');
         document.getElementById('nav-' + id).classList.add('active');
         window.scrollTo(0,0);
+    
         if(id==='dashboard') updateDashboard(); 
-        if(id==='reportes') renderAllCharts(); // ← AÑADIR ESTA LÍNEA
+        if(id==='reportes') {
+            reportMonthOffset = currentMonthOffset; // ← Sincronizar offsets
+            renderAllCharts();
+        }
         if(id==='movimientos') renderMovimientos();
         if(id==='creditos') renderCreditos(); 
         if(id==='compras-credito') renderComprasCredito();
@@ -1244,6 +1248,7 @@ let charts = {}; // Almacenar instancias de gráficos
 // --- NAVEGACIÓN DE REPORTES ---
 function changeReportMonth(delta) {
     reportMonthOffset += delta;
+    currentMonthOffset = reportMonthOffset; // ← Mantener sincronizado
     renderAllCharts();
 }
 
