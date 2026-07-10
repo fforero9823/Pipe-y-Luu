@@ -10,6 +10,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
    <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,6 +24,7 @@
 
 <nav>
     <button onclick="navTo('dashboard')" class="active" id="nav-dashboard">📊 Dashboard</button>
+    <button onclick="navTo('reportes')" id="nav-reportes">📈 Reportes</button>
     <button onclick="navTo('movimientos')" id="nav-movimientos">💳 Movimientos</button>
     <button onclick="navTo('creditos')" id="nav-creditos">💵 Créditos</button>
     <button onclick="navTo('compras-credito')" id="nav-compras-credito">🛒 Compras Crédito</button>
@@ -48,7 +51,46 @@
         <div class="card"><h2>📊 Presupuestos del Mes</h2><div id="dash-budgets-summary">No hay presupuestos configurados.</div></div>
         <div class="card"><h2>Resumen de Créditos este Mes</h2><div id="dash-credits-summary">No hay cuotas este mes.</div></div>
     </div>
+    
+    <div id="reportes" class="section">
+        <div class="card">
+            <h2>📊 Resumen del Mes</h2>
+            <div class="month-selector">
+                <button class="month-btn" onclick="changeReportMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                <span class="month-display" id="report-month-label">Cargando...</span>
+                <button class="month-btn" onclick="changeReportMonth(1)"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
 
+        <div class="card">
+            <h2>🥧 Gastos por Categoría</h2>
+            <div style="position: relative; height: 300px;">
+                <canvas id="chart-categorias"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Ingresos vs Gastos</h2>
+            <div style="position: relative; height: 300px;">
+                <canvas id="chart-ingresos-gastos"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📈 Evolución del Balance (Últimos 6 meses)</h2>
+            <div style="position: relative; height: 300px;">
+                <canvas id="chart-balance"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>💰 Top 5 Gastos del Mes</h2>
+            <div style="position: relative; height: 300px;">
+                <canvas id="chart-top-gastos"></canvas>
+            </div>
+        </div>
+    </div>
+    
     <div id="movimientos" class="section">
         <div class="card">
             <h2>Nuevo Movimiento</h2>
