@@ -164,33 +164,31 @@ if (nuevosLugares && nuevosLugares.length > 0) {
         const m = td.getMonth();
         const diasEnMes = new Date(y, m + 1, 0).getDate();
     
-        // Fecha actual (hoy) para comparar
         const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0); // Normalizar a medianoche
+        hoy.setHours(0, 0, 0, 0);
     
         let huboCambios = false;
 
         dbData.recurrentes.forEach(rec => {
-            // --- BLOQUEO 1: No generar en meses anteriores a startDate ---
-            if (rec.startDate) {
-                const start = new Date(rec.startDate);
-                if (y < start.getFullYear() || (y === start.getFullYear() && m < start.getMonth())) {
-                    return;
-                }
+            // Si no tiene startDate (recurrente viejo), usar hoy como fecha de inicio
+            const fechaInicio = rec.startDate ? new Date(rec.startDate) : hoy;
+        
+            // BLOQUEO: No generar si el mes es anterior a la fecha de inicio
+            const inicioYear = fechaInicio.getFullYear();
+            const inicioMonth = fechaInicio.getMonth();
+        
+            if (y < inicioYear || (y === inicioYear && m < inicioMonth)) {
+                return;
             }
         
-            // --- BLOQUEO 2: No generar si la fecha del gasto aún no llega en la vida real ---
+            // BLOQUEO 2: No generar si la fecha del gasto aún no llega en la vida real
             let dia = rec.dayOfMonth || 1;
             if (dia > diasEnMes) dia = diasEnMes;
         
-            // Construir la fecha exacta del movimiento en este mes
             const fechaMovimiento = new Date(y, m, dia);
-        
-            // Si la fecha del movimiento es mayor a hoy, NO generar
             if (fechaMovimiento > hoy) {
                 return;
             }
-            // ---------------------------------------------------------------
 
             // Verificar si ya existe en este mes
             const yaExiste = dbData.movimientos.some(mov => {
@@ -208,7 +206,6 @@ if (nuevosLugares && nuevosLugares.length > 0) {
                     id: Date.now() + Math.floor(Math.random() * 1000000),
                     date: fecha
                 });
-                // Limpiar propiedades internas
                 delete dbData.movimientos[dbData.movimientos.length - 1].dayOfMonth;
                 delete dbData.movimientos[dbData.movimientos.length - 1].startDate;
             
